@@ -1,0 +1,1374 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Wedding Invitation • Gemah Ripah Desa Penari</title>
+  <meta name="theme-color" content="#075e54" />
+  <style>
+    :root{
+      --bg:#ece5dd;
+      --panel:#fff;
+      --panel2:#f0f2f5;
+      --text:#111;
+      --muted:#667781;
+      --chatbg:#ece5dd;
+      --bubbleIn:#fff;
+      --bubbleOut:#d9fdd3;
+      --font:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      --green:#25d366;
+      --darkgreen:#128c7e;
+    }
+
+    /* cursor press effect */
+    *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    a,button,[role="button"],
+    .chip,.stickerItem,.galleryThumb,.thumb,
+    .miniIconBtn,.sendBtn,.iconBtn,.close,.miniBtn,
+    .lightbox-nav,.callBtn,.vcBtn,[data-copy]{
+      cursor:pointer;
+      transition:transform .12s cubic-bezier(.34,1.4,.64,1),opacity .1s,background .12s,box-shadow .12s;
+    }
+    a:active,button:active,[role="button"]:active,
+    .chip:active,.stickerItem:active,.galleryThumb:active,.thumb:active,
+    .miniIconBtn:active,.sendBtn:active,.iconBtn:active,.close:active,.miniBtn:active,
+    .lightbox-nav:active,.callBtn:active,.vcBtn:active,[data-copy]:active{
+      transform:scale(.93)!important; opacity:.82;
+    }
+
+    html,body{ height:100%; margin:0; }
+    body{ background:#111; font-family:var(--font); color:var(--text); -webkit-font-smoothing:antialiased; }
+    a{ color:inherit; text-decoration:none; }
+
+    .app{ height:100%; display:flex; align-items:center; justify-content:center; }
+    .phone{
+      width:min(430px,100vw); height:min(860px,100vh);
+      background:var(--panel);
+      border-radius:clamp(0px,24px,24px);
+      overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,.5);
+      position:relative; display:flex; flex-direction:column;
+    }
+
+    /* ── SPLASH ── */
+    .splash{
+      position:absolute; inset:0;
+      background:linear-gradient(160deg,#075e54 0%,#128c7e 50%,#25d366 100%);
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:16px; z-index:30; padding:32px; text-align:center;
+    }
+    .splash.hidden{ display:none; }
+    .splash-logo{
+      width:90px; height:90px; border-radius:50%;
+      background:rgba(255,255,255,.15); display:grid; place-items:center;
+      border:2px solid rgba(255,255,255,.3); box-shadow:0 8px 32px rgba(0,0,0,.25);
+    }
+    .splash-logo svg{ width:52px; height:52px; fill:#fff; }
+    .splash h1{ margin:0; font-size:28px; font-weight:800; color:#fff; letter-spacing:-.5px; }
+    .splash .sub{ color:rgba(255,255,255,.85); font-size:14px; line-height:1.5; max-width:300px; }
+    .splash .guestName{ font-size:22px; font-weight:900; color:#fff; margin-top:-4px; }
+    .btn{
+      appearance:none; border:0; background:#fff; color:#075e54;
+      font-weight:800; font-size:15px; padding:14px 20px; border-radius:24px;
+      width:100%; max-width:340px; box-shadow:0 4px 16px rgba(0,0,0,.2);
+    }
+    .btn:hover{ box-shadow:0 6px 20px rgba(0,0,0,.25); }
+
+    /* ── TOPBAR ── */
+    .topbar{
+      height:60px; background:var(--darkgreen);
+      display:flex; align-items:center;
+      padding:8px 12px; gap:10px; flex:0 0 auto;
+    }
+    #topbarLeft{ display:flex; align-items:center; gap:10px; flex:1; min-width:0; cursor:pointer; }
+    .avatarSmall{ width:40px; height:40px; border-radius:50%; background:#ccc; overflow:hidden; flex:0 0 auto; }
+    .avatarSmall img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .titleWrap{ flex:1; min-width:0; }
+    .titleWrap .title{ font-weight:700; font-size:16px; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .titleWrap .subtitle{ font-size:12px; color:rgba(255,255,255,.75); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
+    .headerBtns{ display:flex; gap:4px; align-items:center; }
+    .iconBtn{
+      width:38px; height:38px; border-radius:50%; border:none; background:transparent;
+      display:grid; place-items:center; color:#fff;
+    }
+    .iconBtn:hover{ background:rgba(255,255,255,.12); }
+
+    /* ── CHAT ── */
+    .chat{ flex:1; display:flex; flex-direction:column; min-height:0; }
+    .chatScroll{
+      flex:1; overflow-y:auto; overflow-x:hidden; padding:12px 10px 10px;
+      background-color:var(--chatbg);
+      background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c9b99a' fill-opacity='0.18'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .chatScroll::-webkit-scrollbar{ width:5px; }
+    .chatScroll::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.18); border-radius:3px; }
+
+    .dayDivider{
+      width:fit-content; margin:10px auto 14px;
+      padding:5px 12px; border-radius:8px;
+      background:rgba(255,255,255,.88); box-shadow:0 1px 2px rgba(0,0,0,.1);
+      font-size:12px; color:#667781; font-weight:500;
+    }
+
+    /* ── BUBBLES ── */
+    .msgRow{
+      display:flex; margin:5px 0; gap:6px; align-items:flex-end;
+      animation:bubblePop .28s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    .msgRow.newSender{ margin-top:12px; }
+    @keyframes bubblePop{
+      from{ opacity:0; transform:scale(.82) translateY(10px); }
+      to{ opacity:1; transform:scale(1) translateY(0); }
+    }
+    .msgRow.in{ justify-content:flex-start; }
+    .msgRow.out{ justify-content:flex-end; }
+    .bubble{
+      max-width:76%; padding:7px 10px 5px; border-radius:12px;
+      line-height:1.45; word-wrap:break-word; white-space:pre-line;
+      position:relative; font-size:14px;
+    }
+    .in .bubble{
+      background:var(--bubbleIn); border-radius:0 14px 14px 14px;
+      box-shadow:0 1px 2px rgba(0,0,0,.1);
+    }
+    .out .bubble{
+      background:var(--bubbleOut); border-radius:14px 14px 0 14px;
+      box-shadow:0 1px 2px rgba(0,0,0,.1);
+    }
+    .in .bubble::before{
+      content:""; position:absolute; top:0; left:-8px;
+      width:0; height:0; border-top:8px solid var(--bubbleIn); border-left:8px solid transparent;
+    }
+    .out .bubble::after{
+      content:""; position:absolute; top:0; right:-8px;
+      width:0; height:0; border-top:8px solid var(--bubbleOut); border-right:8px solid transparent;
+    }
+    .sender{ font-size:13px; font-weight:800; margin-bottom:4px; }
+    .sender.c0{ color:#e91e63; } .sender.c1{ color:#9c27b0; } .sender.c2{ color:#673ab7; }
+    .sender.c3{ color:#2196f3; } .sender.c4{ color:#009688; } .sender.c5{ color:#ff5722; }
+    .sender.c6{ color:#795548; } .sender.c7{ color:#607d8b; }
+    .meta{ display:flex; align-items:center; justify-content:flex-end; gap:4px; margin-top:3px; font-size:11px; color:#8a8d91; }
+    .out .meta{ color:#5a9a6e; }
+    .tick{ display:inline-flex; align-items:center; color:#53bdeb; }
+    .stickerMsg{ font-size:44px; line-height:1; background:transparent!important; box-shadow:none!important; padding:4px 6px 2px; }
+    .stickerMsg::before,.stickerMsg::after{ display:none!important; }
+
+    /* typing */
+    .typingRow{ display:flex; align-items:center; gap:6px; margin:6px 0; padding:0 4px; animation:bubblePop .2s ease both; }
+    .typingBubble{
+      background:var(--bubbleIn); box-shadow:0 1px 2px rgba(0,0,0,.1);
+      border-radius:0 12px 12px 12px; padding:10px 14px;
+      display:inline-flex; gap:4px; align-items:center; position:relative;
+    }
+    .typingBubble::before{ content:""; position:absolute; top:0; left:-8px; width:0; height:0; border-top:8px solid var(--bubbleIn); border-left:8px solid transparent; }
+    .dot{ width:6px; height:6px; border-radius:50%; background:#aaa; animation:dotBounce 1.2s ease infinite; }
+    .dot:nth-child(2){ animation-delay:.2s; } .dot:nth-child(3){ animation-delay:.4s; }
+    @keyframes dotBounce{ 0%,60%,100%{ transform:translateY(0); opacity:.5; } 30%{ transform:translateY(-5px); opacity:1; } }
+    .typingLabel{ font-size:12px; color:var(--muted); font-style:italic; margin-left:4px; }
+
+    /* chips */
+    .chipGrid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+    .chip{
+      padding:9px 10px; background:rgba(37,211,102,.12); border:1.5px solid var(--green);
+      border-radius:12px; font-weight:700; font-size:12px; text-align:center; color:#075e54; user-select:none;
+    }
+    .chip.full{ grid-column:1/-1; }
+
+    /* media in chat */
+    .mediaGrid3{ display:grid; grid-template-columns:repeat(3,1fr); gap:3px; margin-top:6px; border-radius:10px; overflow:hidden; }
+    .thumb{ overflow:hidden; background:#e0e0e0; aspect-ratio:1/1; position:relative; }
+    .thumb img{ width:100%; height:100%; object-fit:cover; display:block; transition:transform .2s; }
+    .thumb:hover img{ transform:scale(1.04); }
+    .thumb.wide{ aspect-ratio:16/9; }
+    .thumb .play-icon{ position:absolute; inset:0; display:grid; place-items:center; background:rgba(0,0,0,.3); }
+    .play-icon svg{ width:36px; height:36px; fill:#fff; filter:drop-shadow(0 2px 4px rgba(0,0,0,.4)); }
+
+    /* input bar */
+    .inputBar{ padding:8px 10px 12px; background:#f0f2f5; border-top:1px solid #e0e0e0; flex:0 0 auto; }
+    .inputRow{ display:flex; gap:8px; align-items:flex-end; }
+    .field{ flex:1; background:#fff; border:none; border-radius:22px; padding:10px 14px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+    .field input,.field textarea,.field select{
+      width:100%; background:transparent; border:0; outline:none;
+      color:var(--text); font:inherit; font-size:14px; resize:none;
+    }
+    .sendBtn{
+      width:46px; height:46px; border-radius:50%; border:0;
+      background:var(--darkgreen); color:#fff;
+      display:grid; place-items:center;
+      box-shadow:0 2px 8px rgba(0,0,0,.2); flex:0 0 auto;
+    }
+    .sendBtn:hover{ background:#0f7a70; }
+    .miniIconBtn{
+      width:46px; height:46px; border-radius:50%; border:none; background:#fff;
+      box-shadow:0 1px 3px rgba(0,0,0,.12); display:grid; place-items:center; flex:0 0 auto; color:var(--darkgreen);
+    }
+
+    /* skip floating */
+    .skipFloating{
+      position:absolute; right:14px; bottom:80px; z-index:20;
+      display:flex; align-items:center; gap:8px;
+      background:rgba(0,0,0,.65); color:#fff; border:none; border-radius:24px;
+      padding:9px 14px 9px 12px; font-size:13px; font-weight:700;
+      box-shadow:0 4px 16px rgba(0,0,0,.3); backdrop-filter:blur(8px);
+    }
+    .skipFloating:hover{ background:rgba(0,0,0,.8); }
+
+    /* stickers */
+    .stickerGrid{ display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-top:10px; }
+    .stickerItem{
+      aspect-ratio:1; border-radius:14px; border:1.5px solid #e0e0e0; background:#f8f8f8;
+      display:grid; place-items:center; font-size:22px; user-select:none;
+    }
+
+    /* modals */
+    .modal{
+      position:absolute; inset:0; background:rgba(0,0,0,.55);
+      display:none; z-index:40; align-items:flex-end; backdrop-filter:blur(2px);
+    }
+    .modal.show{ display:flex; }
+    .modal.center{ align-items:center; justify-content:center; }
+    .sheet{
+      width:100%; max-height:92%; overflow:hidden; border-radius:20px 20px 0 0; background:#fff;
+      box-shadow:0 -4px 24px rgba(0,0,0,.2); display:flex; flex-direction:column;
+      animation:sheetUp .28s cubic-bezier(.34,1.4,.64,1) both;
+    }
+    .modal.center .sheet{ border-radius:20px; max-width:94%; max-height:90%; animation:sheetPop .25s cubic-bezier(.34,1.4,.64,1) both; }
+    @keyframes sheetUp{ from{ transform:translateY(100%); } to{ transform:translateY(0); } }
+    @keyframes sheetPop{ from{ opacity:0; transform:scale(.88); } to{ opacity:1; transform:scale(1); } }
+    .sheetHeader{ background:var(--darkgreen); padding:14px; display:flex; align-items:center; gap:12px; flex:0 0 auto; }
+    .sheetHeader h3{ margin:0; font-size:15px; font-weight:800; color:#fff; flex:1; }
+    .close{ width:32px; height:32px; border-radius:50%; border:none; background:rgba(255,255,255,.2); color:#fff; display:grid; place-items:center; font-size:14px; }
+    .close:hover{ background:rgba(255,255,255,.35); }
+    .sheetBody{ padding:14px 14px 20px; overflow-y:auto; flex:1; }
+    .sheetBody::-webkit-scrollbar{ width:4px; }
+    .sheetBody::-webkit-scrollbar-thumb{ background:#ccc; border-radius:2px; }
+    .card{ background:#f8f8f8; border:1px solid #eee; border-radius:14px; padding:14px; margin:10px 0; }
+    .card h4{ margin:0 0 10px; font-size:13px; font-weight:800; color:#111; }
+    .kv{ display:grid; gap:5px; font-size:13px; }
+    .note{ color:var(--muted); font-size:12px; line-height:1.4; }
+    .copyRow{ display:flex; gap:8px; align-items:center; justify-content:space-between; background:#f0f0f0; border:1px solid #e0e0e0; padding:10px 12px; border-radius:12px; margin-top:8px; font-size:13px; }
+    .copyRow code{ font-family:monospace; color:var(--darkgreen); }
+    .miniBtn{ padding:8px 12px; border-radius:10px; border:1.5px solid var(--darkgreen); background:#e8f5e9; color:#075e54; font-weight:700; font-size:12px; white-space:nowrap; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+    .miniBtn:hover{ background:#d0eeda; }
+    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .field{ flex:1; background:#f8f8f8; border:1px solid #eee; border-radius:12px; padding:10px 12px; }
+    .field label{ display:block; font-size:11px; color:var(--muted); margin-bottom:4px; font-weight:700; }
+
+    /* group profile */
+    .groupProfileHeader{
+      position:relative; background:linear-gradient(135deg,#128c7e,#075e54);
+      padding:20px 16px 16px; display:flex; flex-direction:column; align-items:center; gap:10px; flex:0 0 auto;
+    }
+    .groupProfileAvatar{ width:88px; height:88px; border-radius:50%; border:3px solid rgba(255,255,255,.6); overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,.3); position:relative; }
+    .groupProfileAvatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .groupProfileAvatar .editBadge{ position:absolute; bottom:0; right:0; width:26px; height:26px; border-radius:50%; background:var(--darkgreen); border:2px solid #fff; display:grid; place-items:center; }
+    .groupProfileInfo{ color:#fff; text-align:center; }
+    .groupProfileInfo h2{ margin:0; font-size:18px; font-weight:800; }
+    .groupProfileInfo p{ margin:3px 0 0; font-size:12px; opacity:.85; }
+
+    /* gallery */
+    .galleryGrid{ display:grid; grid-template-columns:repeat(3,1fr); gap:2px; }
+    .galleryThumb{ aspect-ratio:1; overflow:hidden; position:relative; background:#ddd; }
+    .galleryThumb img{ width:100%; height:100%; object-fit:cover; display:block; transition:opacity .15s; }
+    .galleryThumb:hover img{ opacity:.85; }
+    .galleryThumb .vidOverlay{ position:absolute; inset:0; display:grid; place-items:center; background:rgba(0,0,0,.25); }
+    .galleryThumb .vidOverlay svg{ width:28px; height:28px; fill:#fff; }
+
+    /* lightbox */
+    .lightbox{ position:absolute; inset:0; background:rgba(0,0,0,.96); z-index:50; display:none; flex-direction:column; }
+    .lightbox.show{ display:flex; }
+    .lightbox-header{ display:flex; align-items:center; gap:10px; padding:12px 14px; background:rgba(0,0,0,.6); flex:0 0 auto; }
+    .lightbox-header span{ color:#fff; font-size:14px; font-weight:600; flex:1; }
+    .lightbox-body{ flex:1; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; }
+    .lightbox-body img{ max-width:100%; max-height:100%; object-fit:contain; user-select:none; }
+    .lightbox-body.slide-left img{ animation:slideLeft .28s cubic-bezier(.34,1,.64,1) both; }
+    .lightbox-body.slide-right img{ animation:slideRight .28s cubic-bezier(.34,1,.64,1) both; }
+    @keyframes slideLeft{ from{ transform:translateX(60px); opacity:0; } to{ transform:translateX(0); opacity:1; } }
+    @keyframes slideRight{ from{ transform:translateX(-60px); opacity:0; } to{ transform:translateX(0); opacity:1; } }
+    .lightbox-nav{ position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,255,255,.15); border:none; color:#fff; width:40px; height:40px; border-radius:50%; display:grid; place-items:center; font-size:18px; backdrop-filter:blur(4px); }
+    .lightbox-nav:hover{ background:rgba(255,255,255,.3); }
+    .lightbox-nav.prev{ left:10px; } .lightbox-nav.next{ right:10px; }
+    .lightbox-dots{ display:flex; gap:6px; justify-content:center; padding:10px; flex:0 0 auto; }
+    .lightbox-dots span{ width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.4); transition:background .15s,transform .15s; }
+    .lightbox-dots span.active{ background:#fff; transform:scale(1.3); }
+
+    /* call screen */
+    .callScreen{ position:absolute; inset:0; background:linear-gradient(160deg,#1a1a2e,#16213e,#0f3460); z-index:45; display:none; flex-direction:column; align-items:center; }
+    .callScreen.show{ display:flex; }
+    .callTop{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:40px 20px 20px; }
+    .callAvatarEmoji{ width:100px; height:100px; border-radius:50%; background:linear-gradient(135deg,#128c7e,#25d366); display:grid; place-items:center; font-size:44px; box-shadow:0 0 0 12px rgba(255,255,255,.08); animation:callPulse 2s ease-in-out infinite; }
+    @keyframes callPulse{ 0%,100%{ box-shadow:0 0 0 8px rgba(255,255,255,.1),0 0 0 16px rgba(255,255,255,.05); } 50%{ box-shadow:0 0 0 14px rgba(255,255,255,.07),0 0 0 28px rgba(255,255,255,.03); } }
+    .callName{ color:#fff; font-size:22px; font-weight:800; margin-top:8px; }
+    .callStatus{ color:rgba(255,255,255,.7); font-size:14px; margin-top:4px; }
+    .callTimer{ color:rgba(255,255,255,.9); font-size:16px; font-weight:600; margin-top:8px; font-variant-numeric:tabular-nums; }
+    .callBtns{ display:flex; gap:28px; padding:28px 20px 40px; justify-content:center; flex:0 0 auto; }
+    .callBtn{ display:flex; flex-direction:column; align-items:center; gap:8px; background:none; border:none; color:#fff; }
+    .callBtnCircle{ width:60px; height:60px; border-radius:50%; display:grid; place-items:center; }
+    .callBtnCircle.red{ background:#e53935; } .callBtnCircle.gray{ background:rgba(255,255,255,.18); }
+    .callBtnLabel{ font-size:11px; color:rgba(255,255,255,.75); }
+    .callWaveAnim{ display:flex; gap:4px; align-items:center; margin-top:8px; }
+    .callWaveAnim span{ width:4px; border-radius:2px; background:var(--green); animation:wavePulse 1s ease-in-out infinite; }
+    .callWaveAnim span:nth-child(1){ height:10px; animation-delay:0s; } .callWaveAnim span:nth-child(2){ height:18px; animation-delay:.15s; }
+    .callWaveAnim span:nth-child(3){ height:26px; animation-delay:.3s; } .callWaveAnim span:nth-child(4){ height:18px; animation-delay:.45s; }
+    .callWaveAnim span:nth-child(5){ height:10px; animation-delay:.6s; }
+    @keyframes wavePulse{ 0%,100%{ opacity:.4; transform:scaleY(.6); } 50%{ opacity:1; transform:scaleY(1); } }
+
+    /* video call */
+    .vcScreen{ position:absolute; inset:0; background:#000; z-index:45; display:none; flex-direction:column; }
+    .vcScreen.show{ display:flex; }
+    .vcMain{ flex:1; position:relative; overflow:hidden; }
+    .vcMain video.vcRemote{ width:100%; height:100%; object-fit:cover; display:block; }
+    .vcSelf{ position:absolute; top:14px; right:14px; width:90px; height:130px; border-radius:14px; overflow:hidden; border:2px solid rgba(255,255,255,.4); box-shadow:0 4px 16px rgba(0,0,0,.5); background:#1a1a2e; }
+    .vcSelf video{ width:100%; height:100%; object-fit:cover; display:block; }
+    .vcSelfPlaceholder{ width:100%; height:100%; background:linear-gradient(135deg,#1a1a2e,#0f3460); display:grid; place-items:center; font-size:30px; }
+    .vcHeader{ position:absolute; top:0; left:0; right:0; background:linear-gradient(to bottom,rgba(0,0,0,.65),transparent); padding:14px 14px 28px; display:flex; align-items:center; gap:10px; }
+    .vcName{ color:#fff; font-size:16px; font-weight:700; flex:1; }
+    .vcTimer{ color:rgba(255,255,255,.9); font-size:14px; font-weight:600; font-variant-numeric:tabular-nums; }
+    .vcBtns{ position:absolute; bottom:0; left:0; right:0; background:linear-gradient(to top,rgba(0,0,0,.72),transparent); padding:28px 14px 32px; display:flex; gap:20px; justify-content:center; align-items:center; }
+    .vcBtn{ display:flex; flex-direction:column; align-items:center; gap:6px; background:none; border:none; color:#fff; }
+    .vcBtnCircle{ width:54px; height:54px; border-radius:50%; display:grid; place-items:center; }
+    .vcBtnCircle.red{ background:#e53935; } .vcBtnCircle.dark{ background:rgba(255,255,255,.18); }
+    .vcBtnLabel{ font-size:10px; color:rgba(255,255,255,.75); }
+    .vcConnecting{ position:absolute; inset:0; background:linear-gradient(160deg,#075e54,#128c7e); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; z-index:5; transition:opacity .6s; }
+    .vcConnecting.hidden{ opacity:0; pointer-events:none; }
+    .vcConnAvatarEmoji{ width:90px; height:90px; border-radius:50%; background:rgba(255,255,255,.2); display:grid; place-items:center; font-size:42px; animation:callPulse 2s ease-in-out infinite; }
+    .vcConnName{ color:#fff; font-size:20px; font-weight:800; }
+    .vcConnStatus{ color:rgba(255,255,255,.8); font-size:14px; }
+
+    /* toast */
+    .toast{ position:absolute; left:50%; bottom:90px; transform:translateX(-50%); background:rgba(0,0,0,.78); padding:10px 16px; border-radius:22px; font-size:13px; color:#fff; display:none; z-index:60; backdrop-filter:blur(8px); white-space:nowrap; box-shadow:0 4px 16px rgba(0,0,0,.3); }
+
+    /* video wrap */
+    .videoWrap{ border-radius:14px; overflow:hidden; background:#000; }
+    video{ width:100%; height:auto; display:block; }
+
+    /* members */
+    .memberList{ display:grid; gap:0; }
+    .memberItem{ display:flex; align-items:center; gap:12px; padding:10px 4px; border-bottom:1px solid #f0f0f0; }
+    .memberItem:last-child{ border-bottom:none; }
+    .memberAvatar{ width:40px; height:40px; border-radius:50%; overflow:hidden; flex:0 0 40px; background:#e8f5e9; display:grid; place-items:center; font-size:18px; }
+    .memberAvatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .memberName{ font-size:14px; font-weight:700; color:#111; }
+    .memberRole{ font-size:11px; color:var(--muted); }
+    .adminBadge{ display:inline-block; font-size:10px; font-weight:700; background:#e8f5e9; color:#075e54; border:1px solid #a5d6a7; border-radius:4px; padding:1px 5px; margin-left:6px; vertical-align:middle; }
+
+    input[type=file]{ display:none; }
+  </style>
+</head>
+<body>
+<div class="app">
+<div class="phone" id="phone">
+
+  <audio id="bgm" preload="auto" loop>
+    <source src="assets/backsound.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- SPLASH -->
+  <section class="splash" id="splash">
+    <div class="splash-logo">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.77.46 3.43 1.27 4.87L2 22l5.3-1.25A9.94 9.94 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm4.64 13.48c-.21.59-1.22 1.13-1.67 1.17-.43.04-.84.2-2.83-.59-2.38-.94-3.9-3.36-4.02-3.52-.12-.16-.98-1.31-.98-2.5 0-1.18.62-1.77.85-2.01.21-.23.46-.29.62-.29.16 0 .31 0 .45.01.14 0 .34-.05.53.41.2.48.66 1.66.72 1.78.06.12.1.26.02.42-.08.16-.12.26-.24.4-.12.14-.25.31-.36.42-.12.12-.24.25-.1.49.13.24.6.99 1.28 1.6.88.78 1.62 1.02 1.86 1.14.23.12.37.1.51-.06.13-.16.57-.67.72-.9.15-.23.3-.19.51-.12.21.07 1.35.64 1.58.75.23.12.38.18.44.28.06.1.06.56-.15 1.15z"/></svg>
+    </div>
+    <h1 id="splashTitle">Wedding Invitation</h1>
+    <div class="sub" id="splashSub">Undangan Digital • Nana & Bowo 💍</div>
+    <div class="sub guestName" id="guestNameDisplay"></div>
+    <button class="btn" id="openInviteBtn">BUKA UNDANGAN</button>
+  </section>
+
+  <!-- TOPBAR -->
+  <header class="topbar" id="topbar" style="opacity:.35;pointer-events:none">
+    <div id="topbarLeft">
+      <div class="avatarSmall">
+        <img alt="Grup" id="groupAvatarImg" src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=240&q=70">
+      </div>
+      <div class="titleWrap">
+        <div class="title" id="groupTitle">Warga Desa Penari</div>
+        <div class="subtitle" id="headerStatus">Pak Lurah sedang mengetik...</div>
+      </div>
+    </div>
+    <div class="headerBtns" id="headerBtns">
+      <button class="iconBtn" id="musicBtn" title="Musik">
+        <svg id="musicIconOn" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="display:none">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77 0-4.28-2.99-7.86-7-8.77z"/>
+        </svg>
+        <svg id="musicIconOff" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+        </svg>
+      </button>
+      <button class="iconBtn" id="videoCallBtn" title="Video Call">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
+        </svg>
+      </button>
+      <button class="iconBtn" id="callBtn" title="Telepon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- CHAT -->
+  <main class="chat" id="chat">
+    <div class="chatScroll" id="chatScroll">
+      <div class="dayDivider">Hari ini</div>
+    </div>
+    <div class="inputBar">
+      <div class="inputRow">
+        <button class="miniIconBtn" id="openStickerModal" title="Stiker">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M12 21a9 9 0 1 0-9-9 9 9 0 0 0 9 9Z" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M8.2 14.2c.8 1.2 2.1 2 3.8 2s3-.8 3.8-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M9 10h.01M15 10h.01" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div class="field" style="border-radius:22px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+          <input id="guestInput" placeholder="Tulis pesan…" maxlength="200" style="background:transparent;border:0;outline:none;width:100%;font:inherit;font-size:14px"/>
+        </div>
+        <button class="sendBtn" id="sendMsgBtn" title="Kirim">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL: GROUP PROFILE -->
+  <div class="modal" id="modalGroup">
+    <div class="sheet" style="border-radius:20px 20px 0 0;max-height:95%">
+      <div class="groupProfileHeader">
+        <button class="close" data-close="#modalGroup" style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,.3)">✕</button>
+        <div class="groupProfileAvatar" id="changeGroupAvatar" title="Ganti foto grup">
+          <img alt="Foto grup" id="groupAvatarImgModal" src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=240&q=70">
+          <div class="editBadge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          </div>
+        </div>
+        <input type="file" id="groupAvatarInput" accept="image/*">
+        <div class="groupProfileInfo">
+          <h2 id="groupTitleModal">Warga Desa Penari</h2>
+          <p id="groupDescModal">Pengumuman Resmi & Silaturahmi Warga</p>
+        </div>
+      </div>
+      <div class="sheetBody">
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:12px 14px 8px;display:flex;align-items:center;justify-content:space-between">
+            <h4 style="margin:0">Media, Tautan & Dok</h4>
+            <button class="miniBtn" id="openGalleryFromProfile">Semua media</button>
+          </div>
+          <div style="padding:0 14px 14px">
+            <div class="galleryGrid" id="profileGalleryPreview" style="grid-template-columns:repeat(3,1fr);gap:3px;border-radius:10px;overflow:hidden"></div>
+          </div>
+        </div>
+        <div class="card">
+          <h4 id="memberCountTitle">13 anggota</h4>
+          <div class="memberList" id="memberList"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">
+          <button class="miniBtn" id="openNanaProfile" style="justify-content:center">👰 Profil Nana</button>
+          <button class="miniBtn" id="openBowoProfile" style="justify-content:center">🤵 Profil Bowo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: GALLERY -->
+  <div class="modal" id="modalGallery">
+    <div class="sheet" style="max-height:95%">
+      <div class="sheetHeader"><h3>Semua Media</h3><button class="close" data-close="#modalGallery">✕</button></div>
+      <div class="sheetBody" style="padding:8px"><div class="galleryGrid" id="galleryGrid"></div></div>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox">
+    <div class="lightbox-header">
+      <button style="background:none;border:none;color:#fff;padding:4px;cursor:pointer" id="lightboxClose">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      </button>
+      <span id="lightboxCounter">1 / 10</span>
+    </div>
+    <div class="lightbox-body" id="lightboxBody">
+      <img id="lightboxImg" alt="Foto" src=""/>
+      <button class="lightbox-nav prev" id="lbPrev">❮</button>
+      <button class="lightbox-nav next" id="lbNext">❯</button>
+    </div>
+    <div class="lightbox-dots" id="lightboxDots"></div>
+  </div>
+
+  <!-- MODAL: PROFIL NANA -->
+  <div class="modal center" id="modalNana">
+    <div class="sheet">
+      <div class="sheetHeader"><h3>👰 Profil Nana</h3><button class="close" data-close="#modalNana">✕</button></div>
+      <div class="sheetBody">
+        <div class="card">
+          <div style="position:relative;border-radius:12px;overflow:hidden;margin-bottom:12px">
+            <img id="nanaProfileImg" alt="Nana" src="assets/images/profiles/nana.jpg" style="width:100%;display:block;object-fit:cover">
+            <button onclick="document.getElementById('nanaImgInput').click()" style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.55);border:none;color:#fff;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer">✏️ Ganti Foto</button>
+          </div>
+          <input type="file" id="nanaImgInput" accept="image/*">
+          <div class="kv">
+            <div><b>Noor Khasanah, S.Kep.Ners</b></div>
+            <div class="note">Putri dari Bapak Basuki & Ibu Pardilah</div>
+            <div class="note">Sowangsan, Karangtalun, Imogiri, Bantul • DIY</div>
+          </div>
+          <div style="margin-top:12px"><a class="miniBtn" href="https://www.instagram.com/nnananoor" target="_blank" rel="noopener">📷 Instagram Nana</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PROFIL BOWO -->
+  <div class="modal center" id="modalBowo">
+    <div class="sheet">
+      <div class="sheetHeader"><h3>🤵 Profil Bowo</h3><button class="close" data-close="#modalBowo">✕</button></div>
+      <div class="sheetBody">
+        <div class="card">
+          <div style="position:relative;border-radius:12px;overflow:hidden;margin-bottom:12px">
+            <img id="bowoProfileImg" alt="Bowo" src="assets/images/profiles/bowo.jpg" style="width:100%;display:block;object-fit:cover">
+            <button onclick="document.getElementById('bowoImgInput').click()" style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.55);border:none;color:#fff;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer">✏️ Ganti Foto</button>
+          </div>
+          <input type="file" id="bowoImgInput" accept="image/*">
+          <div class="kv">
+            <div><b>Kartika Eko Hari Wibowo, S.Tr.Kom</b></div>
+            <div class="note">Putra dari Bapak Rusanta & Ibu Rusmiyati</div>
+            <div class="note">Jati, Banaran, Galur, Kulonprogo • DIY</div>
+          </div>
+          <div style="margin-top:12px"><a class="miniBtn" href="https://www.instagram.com/abdulkohar22_" target="_blank" rel="noopener">📷 Instagram Bowo</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: VIDEO -->
+  <div class="modal center" id="modalVideo">
+    <div class="sheet">
+      <div class="sheetHeader"><h3 id="videoModalTitle">Video Prewedding</h3><button class="close" data-close="#modalVideo">✕</button></div>
+      <div class="sheetBody">
+        <div class="videoWrap">
+          <video id="contentVideo" controls playsinline><source id="videoSource" src="" type="video/mp4"></video>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DETAIL ACARA -->
+  <div class="modal" id="modalEvent">
+    <div class="sheet">
+      <div class="sheetHeader"><h3>📅 Detail Acara</h3><button class="close" data-close="#modalEvent">✕</button></div>
+      <div class="sheetBody">
+        <div class="card">
+          <h4>🕌 Akad Nikah</h4>
+          <div class="kv"><div><b>Minggu, 29 Maret 2026</b></div><div>Pukul 08.00 WIB</div><div>Joglo YOSO • Bantul, DIY</div></div>
+        </div>
+        <div class="card">
+          <h4>🎉 Resepsi / Walimatul 'Ursy</h4>
+          <div class="kv"><div><b>Sesi 1</b> • 11.00 – 12.00 WIB</div><div><b>Sesi 2</b> • 12.00 – 13.00 WIB</div><div>Joglo YOSO • Bantul, DIY</div></div>
+        </div>
+        <button class="btn" id="goLocation" style="background:var(--darkgreen);color:#fff;margin-top:4px">📍 Lihat Lokasi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RSVP -->
+  <div class="modal" id="modalRSVP">
+    <div class="sheet">
+      <div class="sheetHeader"><h3>✅ Konfirmasi Kehadiran</h3><button class="close" data-close="#modalRSVP">✕</button></div>
+      <div class="sheetBody">
+        <div class="card">
+          <div class="field" style="margin:0 0 10px"><label>Nama</label><input id="rsvpName" placeholder="Isi nama…"/></div>
+          <div class="field" style="margin:0 0 10px"><label>Ucapan</label><textarea id="rsvpWish" rows="3" placeholder="Tulis ucapan singkat…"></textarea></div>
+          <div class="grid2">
+            <div class="field" style="margin:0"><label>Kehadiran</label>
+              <select id="rsvpAttend"><option value="">Pilih…</option><option value="Hadir">Hadir</option><option value="Tidak Hadir">Tidak Hadir</option></select>
+            </div>
+            <div class="field" style="margin:0"><label>Jumlah orang</label><input id="rsvpCount" type="number" min="1" max="20" placeholder="2"/></div>
+          </div>
+          <div style="margin-top:12px"><button class="btn" id="sendRSVP" style="background:var(--darkgreen);color:#fff">Kirim RSVP</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: AMPLOP DIGITAL -->
+  <div class="modal" id="modalGift">
+    <div class="sheet">
+      <div class="sheetHeader"><h3>💌 Amplop Digital</h3><button class="close" data-close="#modalGift">✕</button></div>
+      <div class="sheetBody">
+        <div class="card">
+          <h4>Transfer Bank</h4>
+          <div class="copyRow"><div><div style="font-weight:700;font-size:13px">Bank Mandiri • Noor Khasanah</div><code id="mandiriNo">1370013816844</code></div><button class="miniBtn" data-copy="#mandiriNo">Salin</button></div>
+          <div class="copyRow"><div><div style="font-weight:700;font-size:13px">Bank BRI • Kartika Eko Hari Wibowo</div><code id="briNo">037801052869500</code></div><button class="miniBtn" data-copy="#briNo">Salin</button></div>
+          <p class="note" style="margin:10px 0 0">Terima kasih sudah ikut bahagia bersama Nana & Bowo 🤍</p>
+        </div>
+        <div class="card">
+          <h4>Kirim Hadiah Fisik</h4>
+          <div class="kv">
+            <div><b>Alamat 1</b></div><div class="note">Jati, Banaran, Galur, Kulonprogo • DIY</div>
+            <div><b>Alamat 2</b></div><div class="note">Sowangsan, Karangtalun, Imogiri, Bantul • DIY</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: STICKERS -->
+  <div class="modal" id="modalSticker">
+    <div class="sheet">
+      <div class="sheetHeader"><h3>😊 Stiker Positif</h3><button class="close" data-close="#modalSticker">✕</button></div>
+      <div class="sheetBody"><div class="stickerGrid" id="stickerGrid"></div></div>
+    </div>
+  </div>
+
+  <!-- MODAL: PROFIL MEMPELAI -->
+  <div class="modal center" id="modalCouple">
+    <div class="sheet">
+      <div class="sheetHeader"><h3>💍 Profil Mempelai</h3><button class="close" data-close="#modalCouple">✕</button></div>
+      <div class="sheetBody">
+        <div class="card">
+          <h4>💖 Noor Khasanah, S.Kep.Ners (Nana)</h4>
+          <div class="kv"><div>Putri dari <b>Bapak Basuki</b> & <b>Ibu Pardilah</b></div><div class="note">Sowangsan, Karangtalun, Imogiri, Bantul • DIY</div></div>
+          <div style="margin-top:8px"><a class="miniBtn" href="https://www.instagram.com/nnananoor" target="_blank" rel="noopener">📷 Instagram Nana</a></div>
+        </div>
+        <div class="card">
+          <h4>💙 Kartika Eko Hari Wibowo, S.Tr.Kom (Bowo)</h4>
+          <div class="kv"><div>Putra dari <b>Bapak Rusanta</b> & <b>Ibu Rusmiyati</b></div><div class="note">Jati, Banaran, Galur, Kulonprogo • DIY</div></div>
+          <div style="margin-top:8px"><a class="miniBtn" href="https://www.instagram.com/abdulkohar22_" target="_blank" rel="noopener">📷 Instagram Bowo</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CALL SCREEN -->
+  <div class="callScreen" id="callScreen">
+    <div class="callTop">
+      <div class="callAvatarEmoji">💑</div>
+      <div class="callName">Nana & Bowo</div>
+      <div class="callStatus" id="callStatus">Menghubungi…</div>
+      <div class="callWaveAnim" id="callWave" style="display:none"><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="callTimer" id="callTimer" style="display:none">00:00</div>
+    </div>
+    <div class="callBtns">
+      <button class="callBtn" id="callMuteBtn">
+        <div class="callBtnCircle gray"><svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></div>
+        <span class="callBtnLabel">Mic</span>
+      </button>
+      <button class="callBtn" id="callEndBtn">
+        <div class="callBtnCircle red"><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.99.99 0 0 1-.29-.7c0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.1-.7-.28-.79-.73-1.68-1.36-2.66-1.85-.33-.16-.56-.5-.56-.9v-3.1A16.1 16.1 0 0 0 12 9z"/></svg></div>
+        <span class="callBtnLabel">Tutup</span>
+      </button>
+      <button class="callBtn" id="callSpeakerBtn">
+        <div class="callBtnCircle gray"><svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg></div>
+        <span class="callBtnLabel">Speaker</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- VIDEO CALL SCREEN -->
+  <div class="vcScreen" id="vcScreen">
+    <div class="vcMain">
+      <video id="vcVideo" class="vcRemote" playsinline loop>
+        <source src="assets/videos/prewedding.mp4" type="video/mp4">
+        <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4">
+      </video>
+      <div class="vcConnecting" id="vcConnecting">
+        <div class="vcConnAvatarEmoji">💑</div>
+        <div class="vcConnName">Nana & Bowo</div>
+        <div class="vcConnStatus" id="vcConnStatus">Menghubungkan…</div>
+      </div>
+      <div class="vcHeader">
+        <div class="vcName">Nana & Bowo</div>
+        <div class="vcTimer" id="vcTimer" style="display:none">00:00</div>
+      </div>
+      <div class="vcSelf">
+        <video id="vcSelfVideo" playsinline autoplay muted style="display:none"></video>
+        <div class="vcSelfPlaceholder" id="vcSelfPlaceholder">🤳</div>
+      </div>
+      <div class="vcBtns">
+        <button class="vcBtn" id="vcMuteBtn">
+          <div class="vcBtnCircle dark"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg></div>
+          <span class="vcBtnLabel">Mic</span>
+        </button>
+        <button class="vcBtn" id="vcEndBtn">
+          <div class="vcBtnCircle red"><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.99.99 0 0 1-.29-.7c0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.1-.7-.28-.79-.73-1.68-1.36-2.66-1.85-.33-.16-.56-.5-.56-.9v-3.1A16.1 16.1 0 0 0 12 9z"/></svg></div>
+          <span class="vcBtnLabel">Tutup</span>
+        </button>
+        <button class="vcBtn" id="vcCamBtn">
+          <div class="vcBtnCircle dark"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg></div>
+          <span class="vcBtnLabel">Kamera</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════��══════════════════════
+const CONFIG = {
+  groupName:"Warga Desa Penari",
+  groupDesc:"Pengumuman Resmi & Silaturahmi Warga",
+  locationUrl:"https://maps.app.goo.gl/EYeMgqbRfZyX16FA6",
+  couple:{brideName:"Nana",groomName:"Bowo"},
+  photos:[
+    "assets/images/gallery/momen-01.jpg",
+    "assets/images/gallery/momen-02.jpg",
+    "assets/images/gallery/momen-03.jpg"
+  ],
+  allPhotos:[
+    "assets/images/gallery/momen-01.jpg",
+    "assets/images/gallery/momen-02.jpg",
+    "assets/images/gallery/momen-03.jpg",
+    "assets/images/gallery/momen-04.jpg",
+    "assets/images/gallery/momen-05.jpg",
+    "assets/images/gallery/momen-06.jpg",
+    "assets/images/gallery/momen-07.jpg",
+    "assets/images/gallery/momen-08.jpg",
+    "assets/images/gallery/momen-09.jpg",
+    "assets/images/gallery/momen-10.jpg"
+  ],
+  videoSrc:"assets/videos/prewedding.mp4",
+  videoFallback:"https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+  videoThumb:"https://images.unsplash.com/photo-1524503033411-f6e95c3e8f67?auto=format&fit=crop&w=900&q=70",
+  stickers:["🤍","💖","💙","💞","💗","💘","🥰","😍","😘","😊","😁","✨","🌸","🌷","🌟","🙏","🤲","🫶","🎉","💐","💍","🥳","😇","🤗","🙌"],
+  members:[
+    {name:"Pak Lurah Sutrisno",role:"Admin",emoji:"👮‍♂️",isAdmin:true},
+    {name:"Bu RT Siti Aminah",role:"Admin",emoji:"👩‍🦳",isAdmin:true},
+    {name:"Nana",role:"Mempelai Wanita",emoji:"👰",imgKey:"nana"},
+    {name:"Bowo",role:"Mempelai Pria",emoji:"🤵",imgKey:"bowo"},
+    {name:"Bu Rini",role:"Warga",emoji:"👩"},
+    {name:"Pak Joko",role:"Warga",emoji:"👨"},
+    {name:"Mas Arif",role:"Warga",emoji:"👦"},
+    {name:"Mbak Diah",role:"Warga",emoji:"👩‍🦱"},
+    {name:"Bu Yanti",role:"Warga",emoji:"👩"},
+    {name:"Pak Dukuh Slamet Riyadi",role:"Dukuh",emoji:"👨‍🦳"},
+    {name:"Pak Hadi",role:"Warga",emoji:"👨‍🦲"},
+    {name:"Bu Lurah",role:"Warga",emoji:"👩"},
+    {name:"Anda",role:"Tamu Undangan",emoji:"🙂"}
+  ]
+};
+
+// ══════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════
+const $  = s => document.querySelector(s);
+const chatScroll = $("#chatScroll");
+const bgm        = $("#bgm");
+let   skipChatAnim = false;
+
+function nowHHMM(){ return new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"}); }
+function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function qs(k){ try{ return new URL(location.href).searchParams.get(k); }catch(e){ return null; } }
+function scrollBottom(){ chatScroll.scrollTop = chatScroll.scrollHeight; }
+function escapeHtml(s){ return (s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m])); }
+function toast(msg){
+  const t=$("#toast"); t.textContent=msg; t.style.display="block";
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.style.display="none",1800);
+}
+const _sCol={}; let _cIdx=0;
+function senderColor(n){ if(!_sCol[n]) _sCol[n]=_cIdx++%8; return _sCol[n]; }
+
+// ══════════════════════════════════════════════════════
+// AUDIO CONTEXT  (beep sounds)
+// ══════════════════════════════════════════════════════
+let _actx=null;
+function getACtx(){
+  if(!_actx) try{ _actx=new(window.AudioContext||window.webkitAudioContext)(); }catch(e){}
+  return _actx;
+}
+function unlockAudio(){ try{ const c=getACtx(); if(c&&c.state==="suspended") c.resume(); }catch(e){} }
+function beep(f1,f2,dur,vol=0.6){
+  try{
+    const c=getACtx(); if(!c) return;
+    const o=c.createOscillator(),g=c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.frequency.setValueAtTime(f1,c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(f2,c.currentTime+dur);
+    o.type="sine";
+    g.gain.setValueAtTime(vol,c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,c.currentTime+dur);
+    o.start(c.currentTime); o.stop(c.currentTime+dur);
+  }catch(e){}
+}
+const playIncoming = ()=>beep(1400,1200,.15,.75);
+const playOutgoing = ()=>beep(900,750,.1,.75);
+const playClick    = ()=>beep(700,500,.06,.45);
+let _tLoop=null;
+function startTypingSound(){ let on=true; _tLoop=()=>on=false; (function loop(){ if(!on)return; beep(600,600,.04,.06); if(on)setTimeout(loop,130); })(); }
+function stopTypingSound(){ if(_tLoop){ _tLoop(); _tLoop=null; } }
+
+// ══════════════════════════════════════════════════════
+// MUSIC  —  fixed: single clean listener, proper sync
+// ══════════════════════════════════════════════════════
+const MUSIC_KEY="wp_music_v4";
+function getMusicPref(){ return localStorage.getItem(MUSIC_KEY)??"on"; }
+function setMusicPref(v){ localStorage.setItem(MUSIC_KEY,v); }
+
+function syncMusicIcon(){
+  const playing = bgm && !bgm.paused && bgm.readyState>0;
+  document.getElementById("musicIconOn").style.display  = playing ? ""     : "none";
+  document.getElementById("musicIconOff").style.display = playing ? "none" : "";
+}
+
+async function tryPlayMusic(){
+  if(!bgm) return false;
+  try{
+    // Fix: kalau src belum di-set atau kosong, set sekarang
+    if(!bgm.currentSrc || bgm.networkState===HTMLMediaElement.NETWORK_EMPTY){
+      bgm.src = "assets/backsound.mp3";
+      bgm.load();
+    }
+    await bgm.play();
+    setMusicPref("on");
+    syncMusicIcon();
+    return true;
+  }catch(err){
+    console.warn("Music blocked:", err.message);
+    setMusicPref("off");
+    syncMusicIcon();
+    return false;
+  }
+}
+
+function pauseMusic(){
+  if(!bgm) return;
+  bgm.pause();
+  setMusicPref("off");
+  syncMusicIcon();
+}
+
+async function toggleMusic(){
+  unlockAudio();
+  if(bgm.paused){
+    const ok = await tryPlayMusic();
+    toast(ok ? "Musik: ON 🎵" : "Gagal memutar musik, coba lagi 🎵");
+  }else{
+    pauseMusic();
+    toast("Musik: OFF 🔇");
+  }
+}
+
+function initMusicBtn(){
+  // Sync icon saat event audio berubah
+  bgm.addEventListener("play",  syncMusicIcon);
+  bgm.addEventListener("pause", syncMusicIcon);
+  bgm.addEventListener("ended", syncMusicIcon);
+  bgm.addEventListener("error", syncMusicIcon);
+
+  // Clone tombol → hapus semua listener lama → pasang SATU listener baru
+  const old = document.getElementById("musicBtn");
+  const btn = old.cloneNode(true);
+  old.parentNode.replaceChild(btn, old);
+
+  btn.addEventListener("click", async e=>{
+    e.stopImmediatePropagation(); // cegah topbar click, TANPA stopPropagation capture
+    await toggleMusic();
+  });
+
+  // Pause saat tab tersembunyi, resume saat kembali
+  document.addEventListener("visibilitychange", ()=>{
+    if(!bgm) return;
+    if(document.hidden){
+      if(!bgm.paused) bgm.pause();
+    }else{
+      if(getMusicPref()==="on") bgm.play().catch(()=>{});
+    }
+    syncMusicIcon();
+  });
+
+  syncMusicIcon();
+}
+
+async function autoPlayMusic(){
+  // Dipanggil setelah user gesture (klik "Buka Undangan")
+  const ok = await tryPlayMusic();
+  if(!ok) syncMusicIcon();
+}
+
+// ══════════════════════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════════════════════
+function openModal(sel){ $(sel).classList.add("show"); }
+function closeModal(sel){
+  const el=$(sel); if(!el) return;
+  el.classList.remove("show");
+  if(sel==="#modalVideo"){ const v=$("#contentVideo"); if(v){v.pause();v.currentTime=0;} }
+}
+document.addEventListener("click", e=>{
+  const cb=e.target.closest("[data-close]");
+  if(cb){ closeModal(cb.getAttribute("data-close")); return; }
+  if(e.target.classList.contains("modal")) closeModal("#"+e.target.id);
+});
+document.addEventListener("keydown", e=>{
+  if(e.key!=="Escape") return;
+  document.querySelectorAll(".modal.show").forEach(m=>closeModal("#"+m.id));
+  closeLightbox(); closeCallScreen(); closeVCScreen();
+});
+
+// ══════════════════════════════════════════════════════
+// LIGHTBOX
+// ══════════════════════════════════════════════════════
+let lbPhotos=[],lbIndex=0;
+function openLightbox(photos,idx){ lbPhotos=[...photos]; lbIndex=idx; renderLB("none"); $("#lightbox").classList.add("show"); }
+function closeLightbox(){ $("#lightbox").classList.remove("show"); }
+function renderLB(dir="none"){
+  const body=$("#lightboxBody");
+  body.className="lightbox-body";
+  if(dir==="left")  body.classList.add("slide-left");
+  if(dir==="right") body.classList.add("slide-right");
+  $("#lightboxImg").src=lbPhotos[lbIndex];
+  $("#lightboxCounter").textContent=`${lbIndex+1} / ${lbPhotos.length}`;
+  const d=$("#lightboxDots"); d.innerHTML="";
+  if(lbPhotos.length<=14) lbPhotos.forEach((_,i)=>{
+    const s=document.createElement("span");
+    if(i===lbIndex) s.classList.add("active");
+    s.onclick=()=>{ lbIndex=i; renderLB(); };
+    d.appendChild(s);
+  });
+}
+function lbGo(dir){ lbIndex=(lbIndex+dir+lbPhotos.length)%lbPhotos.length; renderLB(dir===1?"left":"right"); }
+$("#lbPrev").onclick=()=>lbGo(-1);
+$("#lbNext").onclick=()=>lbGo(1);
+$("#lightboxClose").onclick=closeLightbox;
+$("#lightbox").addEventListener("click",e=>{ if(e.target===$("#lightbox")||e.target===$("#lightboxBody")) closeLightbox(); });
+let _swX=null;
+$("#lightboxBody").addEventListener("touchstart",e=>{ _swX=e.touches[0].clientX; },{passive:true});
+$("#lightboxBody").addEventListener("touchend",e=>{ if(_swX===null)return; const dx=e.changedTouches[0].clientX-_swX; if(Math.abs(dx)>40)lbGo(dx<0?1:-1); _swX=null; });
+document.addEventListener("keydown",e=>{ if(!$("#lightbox").classList.contains("show"))return; if(e.key==="ArrowRight")lbGo(1); if(e.key==="ArrowLeft")lbGo(-1); });
+
+// ══════════════════════════════════════════════════════
+// GALLERY
+// ══════════════════════════════════════════════════════
+function buildGallery(){
+  const grid=$("#galleryGrid"); grid.innerHTML="";
+  CONFIG.allPhotos.forEach((src,i)=>{
+    const d=document.createElement("div"); d.className="galleryThumb";
+    d.innerHTML=`<img src="${src}" alt="Foto ${i+1}">`;
+    d.onclick=()=>openLightbox(CONFIG.allPhotos,i);
+    grid.appendChild(d);
+  });
+  const vd=document.createElement("div"); vd.className="galleryThumb";
+  vd.innerHTML=`<img src="${CONFIG.videoThumb}" alt="Video"><div class="vidOverlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`;
+  vd.onclick=()=>openVideoModal(CONFIG.videoSrc,"Video Prewedding Nana & Bowo");
+  grid.appendChild(vd);
+}
+function buildProfileGallery(){
+  const grid=$("#profileGalleryPreview"); if(!grid) return; grid.innerHTML="";
+  CONFIG.allPhotos.slice(0,5).forEach((src,i)=>{
+    const d=document.createElement("div"); d.className="galleryThumb";
+    d.innerHTML=`<img src="${src}" alt="Foto ${i+1}">`;
+    d.onclick=()=>{ closeModal("#modalGroup"); openLightbox(CONFIG.allPhotos,i); };
+    grid.appendChild(d);
+  });
+  const vd=document.createElement("div"); vd.className="galleryThumb";
+  vd.innerHTML=`<img src="${CONFIG.videoThumb}" alt="Video"><div class="vidOverlay"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>`;
+  vd.onclick=()=>{ closeModal("#modalGroup"); openVideoModal(CONFIG.videoSrc,"Video Prewedding"); };
+  grid.appendChild(vd);
+}
+function buildMemberList(){
+  const list=$("#memberList"); if(!list) return; list.innerHTML="";
+  CONFIG.members.forEach(m=>{
+    const div=document.createElement("div"); div.className="memberItem";
+    const imgSrc=m.imgKey==="nana"?"assets/images/profiles/nana.jpg":m.imgKey==="bowo"?"assets/images/profiles/bowo.jpg":null;
+    const av=imgSrc
+      ?`<div class="memberAvatar"><img src="${imgSrc}" alt="${m.name}"></div>`
+      :`<div class="memberAvatar" style="background:hsl(${(m.name.charCodeAt(0)*37)%360},45%,82%)">${m.emoji}</div>`;
+    div.innerHTML=`${av}<div><div class="memberName">${escapeHtml(m.name)}${m.isAdmin?`<span class="adminBadge">Admin</span>`:""}</div><div class="memberRole">${escapeHtml(m.role)}</div></div>`;
+    list.appendChild(div);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// VIDEO MODAL
+// ══════════════════════════════════════════════════════
+function openVideoModal(src,title="Video"){
+  $("#videoModalTitle").textContent=title;
+  $("#videoSource").src=src||CONFIG.videoFallback;
+  openModal("#modalVideo");
+  const v=$("#contentVideo"); v.load(); v.play().catch(()=>{});
+}
+
+// ══════════════════════════════════════════════════════
+// CALL SCREEN
+// ══════════════════════════════════════════════════════
+let _callTimer=null,_callSec=0,_callAudio=null;
+function openCallScreen(){
+  $("#callScreen").classList.add("show");
+  $("#callStatus").textContent="Menghubungi…";
+  $("#callTimer").style.display="none";
+  $("#callWave").style.display="none";
+  _callSec=0;
+  setTimeout(()=>{
+    if(!$("#callScreen").classList.contains("show")) return;
+    $("#callStatus").textContent="Terhubung 🟢";
+    $("#callWave").style.display="flex";
+    $("#callTimer").style.display="block";
+    try{
+      _callAudio=document.createElement("audio");
+      _callAudio.src=CONFIG.videoSrc||CONFIG.videoFallback;
+      _callAudio.loop=true; _callAudio.volume=0.55;
+      _callAudio.play().catch(()=>{});
+    }catch(e){}
+    _callTimer=setInterval(()=>{
+      _callSec++;
+      $("#callTimer").textContent=`${String(Math.floor(_callSec/60)).padStart(2,"0")}:${String(_callSec%60).padStart(2,"0")}`;
+    },1000);
+  },2500);
+}
+function closeCallScreen(){
+  $("#callScreen").classList.remove("show");
+  clearInterval(_callTimer); _callTimer=null;
+  if(_callAudio){ _callAudio.pause(); _callAudio=null; }
+}
+$("#callEndBtn").onclick=closeCallScreen;
+$("#callMuteBtn").onclick=()=>toast("Mikrofon dimatikan 🔇");
+$("#callSpeakerBtn").onclick=()=>toast("Speaker ON 🔊");
+
+// ══════════════════════════════════════════════════════
+// VIDEO CALL SCREEN
+// ══════════════════════════════════════════════════════
+let _vcTimer=null,_vcSec=0,_vcStream=null;
+async function startSelfCam(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+    _vcStream=stream;
+    const v=$("#vcSelfVideo"); v.srcObject=stream; v.style.display="block";
+    $("#vcSelfPlaceholder").style.display="none";
+  }catch(e){ $("#vcSelfVideo").style.display="none"; $("#vcSelfPlaceholder").style.display="grid"; }
+}
+function stopSelfCam(){
+  if(_vcStream){ _vcStream.getTracks().forEach(t=>t.stop()); _vcStream=null; }
+  const v=$("#vcSelfVideo"); v.srcObject=null; v.style.display="none";
+  $("#vcSelfPlaceholder").style.display="grid";
+}
+function openVCScreen(){
+  $("#vcScreen").classList.add("show");
+  $("#vcConnecting").className="vcConnecting";
+  $("#vcConnStatus").textContent="Menghubungkan…";
+  $("#vcTimer").style.display="none"; _vcSec=0;
+  startSelfCam();
+  setTimeout(()=>{ if(!$("#vcScreen").classList.contains("show")) return; $("#vcConnStatus").textContent="Menghubungkan video…"; },1200);
+  setTimeout(()=>{
+    if(!$("#vcScreen").classList.contains("show")) return;
+    $("#vcConnecting").classList.add("hidden");
+    $("#vcTimer").style.display="block";
+    const vid=$("#vcVideo");
+    vid.src=CONFIG.videoSrc||CONFIG.videoFallback; vid.load();
+    vid.muted=false; vid.play().catch(()=>{ vid.muted=true; vid.play().catch(()=>{}); });
+    _vcTimer=setInterval(()=>{
+      _vcSec++;
+      $("#vcTimer").textContent=`${String(Math.floor(_vcSec/60)).padStart(2,"0")}:${String(_vcSec%60).padStart(2,"0")}`;
+    },1000);
+  },3000);
+}
+function closeVCScreen(){
+  $("#vcScreen").classList.remove("show");
+  clearInterval(_vcTimer); _vcTimer=null;
+  stopSelfCam();
+  const vid=$("#vcVideo"); vid.pause(); vid.currentTime=0;
+}
+$("#vcEndBtn").onclick=closeVCScreen;
+$("#vcMuteBtn").onclick=()=>toast("Mikrofon dimatikan 🔇");
+$("#vcCamBtn").onclick=()=>{
+  if(_vcStream){
+    const t=_vcStream.getVideoTracks()[0];
+    if(t){ t.enabled=!t.enabled; toast(t.enabled?"Kamera dinyalakan 📷":"Kamera dimatikan 📷"); }
+  }else toast("Kamera tidak tersedia 📷");
+};
+
+// ══════════════════════════════════════════════════════
+// TOPBAR → group profile
+// ══════════════════════════════════════════════════════
+document.getElementById("topbarLeft").addEventListener("click",()=>{ playClick(); openModal("#modalGroup"); });
+
+// ══════════════════════════════════════════════════════
+// CHAT RENDERING
+// ══════════════════════════════════════════════════════
+let _lastSender="";
+function addTypingRow(name){
+  const row=document.createElement("div"); row.className="typingRow";
+  row.innerHTML=`<div class="typingBubble"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><span class="typingLabel">${escapeHtml(name)}</span>`;
+  chatScroll.appendChild(row); scrollBottom(); return row;
+}
+function createBubble({dir="in",sender="",time=nowHHMM(),isSticker=false}){
+  const isNew=sender!==_lastSender;
+  const row=document.createElement("div");
+  row.className=`msgRow ${dir}${isNew&&dir==="in"?" newSender":""}`;
+  if(sender) _lastSender=sender;
+  const bubble=document.createElement("div");
+  bubble.className=`bubble${isSticker?" stickerMsg":""}`;
+  const showSender=dir==="in"&&sender&&isNew;
+  bubble.innerHTML=`
+    ${showSender?`<div class="sender c${senderColor(sender)}">${escapeHtml(sender)}</div>`:""}
+    <div class="text"></div>
+    <div class="meta">
+      <span>${time}</span>
+      ${dir==="out"?`<span class="tick"><svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor"><path d="M11.07.66 4.4 7.33 1.6 4.53.2 5.93l4.2 4.2 8.1-8.1L11.07.66zm2.8 0-8.1 8.1-.93-.93L3.4 9.27l1.33 1.33L15.27 2.07 13.87.66z"/></svg></span>`:""}
+    </div>`;
+  row.appendChild(bubble); chatScroll.appendChild(row); scrollBottom();
+  return{row,bubble,textEl:bubble.querySelector(".text")};
+}
+async function typeInto(el,text){
+  el.innerHTML=escapeHtml(String(text??"")).replace(/\n/g,"<br>"); scrollBottom();
+}
+async function sendMsg({dir="in",sender="",text="",typingLabel="",isSticker=false,typing=true}){
+  if(dir==="in"&&typing&&!skipChatAnim){
+    const tr=addTypingRow(typingLabel||sender);
+    startTypingSound();
+    const len=String(text).length;
+    await wait(len<50?600+Math.random()*900:len<150?900+Math.random()*900:1200+Math.random()*1400);
+    stopTypingSound(); tr.remove();
+  }
+  const{textEl}=createBubble({dir,sender,isSticker});
+  if(isSticker){ textEl.textContent=text; dir==="in"?playIncoming():playOutgoing(); return; }
+  if(dir==="in"){ textEl.textContent="…"; await wait(200+Math.random()*400); playIncoming(); await typeInto(textEl,text); }
+  else{ playOutgoing(); await typeInto(textEl,text); }
+}
+
+// ══════════════════════════════════════════════════════
+// MEDIA IN CHAT
+// ══════════════════════════════════════════════════════
+function addMediaInChat(){
+  const{textEl,bubble}=createBubble({dir:"in",sender:"Pak Lurah Sutrisno 👮‍♂️"});
+  textEl.textContent="📷 3 Foto & 🎥 1 Video";
+  const extra=document.createElement("div");
+  extra.innerHTML=`
+    <div class="mediaGrid3" style="margin-top:8px;border-radius:10px;overflow:hidden">
+      ${CONFIG.photos.map((s,i)=>`<div class="thumb" data-pi="${i}"><img src="${s}" alt="Foto ${i+1}"></div>`).join("")}
+    </div>
+    <div class="thumb wide" id="chatVideoThumb" style="margin-top:3px;border-radius:10px;overflow:hidden">
+      <img src="${CONFIG.videoThumb}" alt="Video">
+      <div class="play-icon"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+    </div>`;
+  bubble.insertBefore(extra,bubble.querySelector(".meta"));
+  extra.querySelectorAll("[data-pi]").forEach(el=>{ el.onclick=()=>openLightbox(CONFIG.photos,+el.dataset.pi); });
+  extra.querySelector("#chatVideoThumb").onclick=()=>openVideoModal(CONFIG.videoSrc,"Video Prewedding Nana & Bowo");
+}
+function addChipMessage(){
+  const{textEl,bubble}=createBubble({dir:"in",sender:"Pak Lurah Sutrisno 👮‍♂️"});
+  textEl.innerHTML=escapeHtml("🕌 Akad Nikah\nMinggu, 29 Maret 2026 • Pukul 08.00 WIB\n\n🎉 Resepsi / Walimatul 'Ursy\nSesi 1 : 11.00 – 12.00 WIB\nSesi 2 : 12.00 – 13.00 WIB\n\n📍 Joglo YOSO, Bantul").replace(/\n/g,"<br>");
+  const chips=document.createElement("div");
+  chips.innerHTML=`<div class="chipGrid">
+    <div class="chip" id="cLoc">📍 Lihat Lokasi</div>
+    <div class="chip" id="cRSVP">✅ RSVP Kehadiran</div>
+    <div class="chip" id="cGift">💌 Amplop Digital</div>
+    <div class="chip" id="cWish">💬 Kirim Ucapan</div>
+    <div class="chip" id="cCouple">💍 Profil Mempelai</div>
+    <div class="chip" id="cEvent">📅 Detail Acara</div>
+    <div class="chip full" id="cGallery">🗂 Galeri Foto & Video</div>
+  </div>`;
+  bubble.insertBefore(chips,bubble.querySelector(".meta")); scrollBottom();
+  $("#cLoc").onclick=()=>window.open(CONFIG.locationUrl,"_blank","noopener");
+  $("#cRSVP").onclick=()=>openModal("#modalRSVP");
+  $("#cGift").onclick=()=>openModal("#modalGift");
+  $("#cWish").onclick=()=>{ $("#guestInput").focus(); toast("Tulis ucapanmu di kolom chat 💬"); };
+  $("#cCouple").onclick=()=>openModal("#modalCouple");
+  $("#cEvent").onclick=()=>openModal("#modalEvent");
+  $("#cGallery").onclick=()=>openModal("#modalGallery");
+}
+
+// ══════════════════════════════════════════════════════
+// AUTO REPLY
+// ══════════════════════════════════════════════════════
+function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+async function autoReply(type,payload){
+  const who=Math.random()<.5?`${CONFIG.couple.brideName} 👰‍♀️`:`${CONFIG.couple.groomName} 🤵‍♂️`;
+  let msg="";
+  if(type==="wish") msg=pick(["Aamiin… makasih banyak doanya ya 🤍","Terima kasih, bikin hati hangat 🫶","MasyaAllah makasih! Semoga kebaikannya kembali berlipat 🤍✨","Wah makasih banget ya 🙏 Seneng banget baca ucapannya 🤍"]);
+  else if(type==="sticker") msg=pick(["Aaa gemes 🤍","Makasihh 🫶","Lovee 🤍✨","Duh bikin senyum 😊🤍"]);
+  else if(type==="rsvp-hadir"){ const n=payload?.name||""; msg=pick([`MasyaAllah, makasih ${n}! Sampai ketemu di hari H ya 🤍`,`Siap, kami tunggu kehadirannya ${n} 🙏🤍`,`Noted ya ${n}! Hati-hati di jalan nanti 🤍✨`]); }
+  else if(type==="rsvp-tidak"){ const n=payload?.name||""; msg=pick([`Makasih ${n} sudah konfirmasi 🙏 Semoga bisa ketemu lain waktu ya 🤍`,`Gapapa ${n}, makasih sudah kasih kabar. Sehat selalu 🤍✨`]); }
+  else msg="Terima kasih ya 🤍";
+  await sendMsg({dir:"in",sender:who,text:msg});
+}
+
+// ══════════════════════════════════════════════════════
+// SKIP FLOATING
+// ══════════════════════════════════════════════════════
+function addSkipFloating(){
+  if($("#skipFloating")) return;
+  const btn=document.createElement("button");
+  btn.id="skipFloating"; btn.className="skipFloating";
+  btn.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2-8.14L11.03 12 8 14.14V9.86zM16 6h2v12h-2z"/></svg>Lewati`;
+  btn.onclick=()=>{ skipChatAnim=true; btn.style.opacity="0"; btn.style.transform="scale(.8)"; setTimeout(()=>btn.remove(),200); toast("Animasi di-skip 💨"); };
+  $("#phone").appendChild(btn);
+}
+
+// ══════════════════════════════════════════════════════
+// FULL CHAT SCRIPT
+// ══════════════════════════════════════════════════════
+async function runFullChat(){
+  $("#headerStatus").textContent="Pak Lurah sedang mengetik...";
+  await sendMsg({dir:"in",sender:"Pak Lurah Sutrisno 👮‍♂️",text:"Assalamu'alaikum warahmatullahi wabarakatuh.\nMohon izin menyampaikan pengumuman penting malam ini.\nSaya minta seluruh warga membaca sampai akhir.\nIni serius.\nDan bisa jadi… cukup mengejutkan."});
+  await sendMsg({dir:"in",sender:"Bu Rini 👩",text:"Lhoh Pak, jangan bikin deg-degan gini 😳"});
+  await sendMsg({dir:"in",sender:"Pak Joko 👨",text:"Ada apa ini? Kok vibes-nya beda…"});
+  await sendMsg({dir:"in",sender:"Mas Arif 👦",text:"Jangan-jangan soal ronda yang kemarin kosong ya Pak 😅"});
+  await sendMsg({dir:"in",sender:"Pak Lurah Sutrisno 👮‍♂️",text:"Bukan soal ronda.\nBukan soal iuran.\nDan bukan soal bantuan sosial.\nIni menyangkut masa depan seseorang…\nYang selama ini mungkin diam-diam sudah kalian perhatikan 😌"});
+  await sendMsg({dir:"in",sender:"Mbak Diah 👩‍🦱",text:"Waduhhhh ini kayak teaser sinetron 😭😂"});
+  await sendMsg({dir:"in",sender:"Bu RT Siti Aminah 👩‍🦳",text:"Hehehe saya sudah curiga dari tadi 🤭"});
+  await sendMsg({dir:"in",sender:"Pak Hadi 👨‍🦲",text:"Pak Lurah langsung saja, jantung saya sudah berdebar ini 😅"});
+  await sendMsg({dir:"in",sender:"Pak Lurah Sutrisno 👮‍♂️",text:"Baiklah…\nDaripada grup ini makin panas.\nDengan mengucap syukur Alhamdulillah,\nakan dilangsungkan pernikahan putri dari Bapak Basuki dan Ibu Pardilah:\n\n💐 Noor Khasanah, S.Kep.Ners\n\nDengan putra dari Bapak Rusanta dan Ibu Rusmiyati:\n\n💐 Kartika Eko Hari Wibowo, S.Tr.Kom"});
+  if(!skipChatAnim){ const t=addTypingRow("Pak Lurah Sutrisno 👮‍♂️ mengetik..."); await wait(900+Math.random()*500); t.remove(); }
+  addChipMessage();
+  if(!skipChatAnim){ const t=addTypingRow("Pak Lurah Sutrisno 👮‍♂️ mengirim media..."); await wait(800+Math.random()*500); t.remove(); }
+  addMediaInChat();
+  await sendMsg({dir:"in",sender:"Pak Lurah Sutrisno 👮‍♂️",text:"Mari kita doakan bersama semoga kedua mempelai menjadi keluarga sakinah, mawaddah, warahmah 🤲✨\n\nDan bagi yang merasa kehilangan…\nSaya sarankan segera menyusul 😄\n\nWassalamu'alaikum warahmatullahi wabarakatuh."});
+  await sendMsg({dir:"in",sender:"Mas Arif 👦",text:"ASTAGAAA ternyata Nana beneran 😭😭\nSelamat yaaa!"});
+  await sendMsg({dir:"in",sender:"Mbak Diah 👩‍🦱",text:"Aku udah feeling dari kemarin 😆\nSelamat Nana & Bowo 💐"});
+  await sendMsg({dir:"in",sender:"Pak Joko 👨",text:"Saya kira pengumuman banjir atau apa 😅\nTernyata pengumuman bikin senyum semua."});
+  await sendMsg({dir:"in",sender:"Bu Yanti 👩",text:"MasyaAllah… ikut bahagia 🤲\nSemoga lancar sampai hari H."});
+  await sendMsg({dir:"in",sender:"Pak Dukuh Slamet Riyadi 👨‍🦳",text:"Alhamdulillah. Satu lagi pemuda resmi naik level 😄\nSemoga jadi keluarga yang berkah."});
+  await sendMsg({dir:"in",sender:"Bu Rini 👩",text:"Siap hadir sesi 2 Pak Lurah 👍\nInsyaAllah rame nanti."});
+  await sendMsg({dir:"in",sender:"Pak Hadi 👨‍🦲",text:"Ini pasti yang jomblo pada langsung overthinking 😆"});
+  await sendMsg({dir:"in",sender:"Mas Arif 👦",text:"Pak Lurah tolong minggu depan bikin pengumuman jodoh buat saya juga 😭😂"});
+  await sendMsg({dir:"in",sender:"Pak Lurah Sutrisno 👮‍♂️",text:"Untuk urusan jodoh, silakan usaha dan doa masing-masing 😄\nYang penting tanggal 29 Maret jangan sampai salah kostum ya warga!"});
+  await sendMsg({dir:"in",sender:`${CONFIG.couple.brideName} 👰‍♀️`,text:"Aamiin… terima kasih banyak untuk semua doa dan ucapannya 🙏🤍\nMakasih Pak Lurah sudah jadi humas dadakan 😄"});
+  await sendMsg({dir:"in",sender:`${CONFIG.couple.groomName} 🤵‍♂️`,text:"Waalaikumsalam warahmatullahi wabarakatuh 🙏\nAlhamdulillah. Terima kasih warga Desa Penari semuanya 💙\nDitunggu kehadirannya ya! 🎉"});
+  $("#headerStatus").textContent=CONFIG.groupDesc;
+}
+
+// ═════════════════════��════════════════════════════════
+// DIRECT CHAT
+// ══════════════════════════════════════════════════════
+const guestInput=$("#guestInput");
+async function sendGuestChat(){
+  const text=guestInput.value.trim(); if(!text) return;
+  guestInput.value=""; _lastSender="";
+  await sendMsg({dir:"out",text,typing:false});
+  await autoReply("wish");
+}
+$("#sendMsgBtn").onclick=async()=>{ playClick(); await sendGuestChat(); };
+guestInput.addEventListener("keydown",async e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); await sendGuestChat(); } });
+
+// ══════════════════════════════════════════════════════
+// RSVP
+// ══════════════════════════════════════════════════════
+$("#sendRSVP").onclick=async()=>{
+  const name=($("#rsvpName").value||"").trim();
+  const wish=($("#rsvpWish").value||"").trim();
+  const attend=($("#rsvpAttend").value||"").trim();
+  const count=($("#rsvpCount").value||"1").trim();
+  if(!name){ toast("Nama belum diisi"); return; }
+  if(!attend){ toast("Pilih kehadiran dulu"); return; }
+  const text=`✅ RSVP\nNama: ${name}\n${wish?`Ucapan: ${wish}\n`:""}Kehadiran: ${attend}\nJumlah: ${count} orang`;
+  _lastSender="";
+  await sendMsg({dir:"out",text,typing:false});
+  closeModal("#modalRSVP"); toast("RSVP terkirim ✅");
+  await autoReply(attend==="Hadir"?"rsvp-hadir":"rsvp-tidak",{name});
+};
+
+// ══════════════════════════════════════════════════════
+// STICKERS
+// ══════════════════════════════════════════════════════
+function initStickers(){
+  const g=$("#stickerGrid"); g.innerHTML="";
+  CONFIG.stickers.forEach(s=>{
+    const el=document.createElement("div"); el.className="stickerItem"; el.textContent=s;
+    el.onclick=async()=>{ _lastSender=""; await sendMsg({dir:"out",text:s,isSticker:true,typing:false}); closeModal("#modalSticker"); await autoReply("sticker"); };
+    g.appendChild(el);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+// IMAGE UPLOADS
+// ══════════════════════════════════════════════════════
+function setupImageUploads(){
+  // Group avatar
+  document.getElementById("changeGroupAvatar").onclick=()=>document.getElementById("groupAvatarInput").click();
+  document.getElementById("groupAvatarInput").addEventListener("change",e=>{
+    const file=e.target.files[0]; if(!file) return;
+    const r=new FileReader();
+    r.onload=ev=>{ ["#groupAvatarImg","#groupAvatarImgModal"].forEach(s=>{ const el=$(s); if(el) el.src=ev.target.result; }); toast("Foto grup diperbarui ✅"); };
+    r.readAsDataURL(file);
+  });
+  function imgUp(inputId,imgId,label){
+    document.getElementById(inputId)?.addEventListener("change",e=>{
+      const file=e.target.files[0]; if(!file) return;
+      const r=new FileReader();
+      r.onload=ev=>{ document.getElementById(imgId).src=ev.target.result; buildMemberList(); toast(`${label} diperbarui ✅`); };
+      r.readAsDataURL(file);
+    });
+  }
+  imgUp("nanaImgInput","nanaProfileImg","Foto Nana");
+  imgUp("bowoImgInput","bowoProfileImg","Foto Bowo");
+}
+
+// ══════════════════════════════════════════════════════
+// COPY BUTTONS
+// ══════════════════════════════════════════════════════
+document.addEventListener("click",e=>{
+  const btn=e.target.closest("[data-copy]"); if(!btn) return;
+  navigator.clipboard.writeText($(btn.getAttribute("data-copy")).textContent.trim())
+    .then(()=>toast("Tersalin ✅")).catch(()=>toast("Gagal menyalin"));
+});
+
+// ══════════════════════════════════════════════════════
+// OTHER BUTTON BINDINGS
+// ══════════════════════════════════════════════════════
+$("#videoCallBtn").onclick=e=>{ e.stopImmediatePropagation(); playClick(); openVCScreen(); };
+$("#callBtn").onclick=e=>{ e.stopImmediatePropagation(); playClick(); openCallScreen(); };
+$("#openStickerModal").onclick=()=>{ playClick(); openModal("#modalSticker"); };
+$("#openNanaProfile").onclick=()=>{ playClick(); openModal("#modalNana"); };
+$("#openBowoProfile").onclick=()=>{ playClick(); openModal("#modalBowo"); };
+$("#openGalleryFromProfile").onclick=()=>{ closeModal("#modalGroup"); openModal("#modalGallery"); };
+$("#goLocation").onclick=()=>window.open(CONFIG.locationUrl,"_blank","noopener");
+
+// ══════════════════════════════════════════════════════
+// SPLASH → START
+// ══════════════════════════════════════════════════════
+async function splashSequence(){
+  const name=qs("name")||"";
+  await wait(300);
+  if(name){ $("#guestNameDisplay").textContent=escapeHtml(name); }
+  else { $("#guestNameDisplay").style.display="none"; }
+}
+
+function enableMain(){
+  const tb=$("#topbar");
+  tb.style.transition="opacity .35s"; tb.style.opacity="1"; tb.style.pointerEvents="auto";
+}
+
+async function startApp(){
+  unlockAudio(); // ← user gesture: AudioContext boleh aktif
+  $("#openInviteBtn").disabled=true;
+  $("#splash").style.transition="opacity .35s"; $("#splash").style.opacity="0";
+  await wait(380);
+  $("#splash").classList.add("hidden");
+  enableMain();
+
+  // Init tombol musik DULU, baru auto-play
+  initMusicBtn();
+  await autoPlayMusic();
+
+  buildGallery();
+  buildProfileGallery();
+  buildMemberList();
+  initStickers();
+  setupImageUploads();
+  addSkipFloating();
+
+  // Sync judul grup
+  $("#groupTitle").textContent=CONFIG.groupName;
+  $("#groupTitleModal").textContent=CONFIG.groupName;
+  $("#groupDescModal").textContent=CONFIG.groupDesc;
+
+  try{ await runFullChat(); }catch(e){ console.error(e); }
+}
+
+$("#openInviteBtn").addEventListener("click", startApp);
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+(function init(){
+  // Default: icon muted (musik belum play)
+  document.getElementById("musicIconOn").style.display  = "none";
+  document.getElementById("musicIconOff").style.display = "";
+  splashSequence();
+})();
+</script>
+</body>
+</html>
