@@ -559,7 +559,7 @@ select.modal-select{width:100%;padding:10px 12px;border:1px solid var(--border);
         <span class="section-toggle" id="toggle-12">▾</span>
       </div>
       <div class="section-body open" id="body-12">
-        <div class="field"><label>Base URL</label><input id="baseUrl" value="https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/"/></div>
+        <div class="field"><label>Base URL</label><input id="baseUrl"/></div>
         <div class="field">
           <label>Format Parameter</label>
           <div class="radio-group">
@@ -614,6 +614,12 @@ select.modal-select{width:100%;padding:10px 12px;border:1px solid var(--border);
 <div class="toast" id="toast"></div>
 
 <script>
+// ─── CONSTANTS ───
+const MAX_GALLERY_PHOTOS = 15;
+const MAX_AUDIO_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const AUTO_SAVE_DEBOUNCE_MS = 800;
+const DEFAULT_BASE_URL = 'https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/';
+
 // ─── STATE ───
 let galleryPhotos = [];
 let loveStoryItems = [];
@@ -623,12 +629,14 @@ let photoData = {};
 let videoType = 'youtube';
 let audioType = 'file';
 let cdInterval = null;
+let _idCounter = 0;
 
 // ─── UTILS ───
+function nextId(){return ++_idCounter;}
 function getLS(key){try{return JSON.parse(localStorage.getItem(key));}catch(e){return null;}}
 function setLS(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(toast._t);toast._t=setTimeout(()=>t.style.display='none',2500);}
-function escHtml(s){return(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+function escHtml(s){return(s||'').replace(/[&<>"'`]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;','`':'&#096;'}[m]));}
 function val(id){const el=document.getElementById(id);return el?el.value.trim():'';}
 function setVal(id,v){const el=document.getElementById(id);if(el)el.value=v||'';}
 function getChecked(name){const el=document.querySelector(`input[name="${name}"]:checked`);return el?el.value:'';}
@@ -848,7 +856,7 @@ function fillForm(cfg){
     setVal('zoomPass',cfg.livestream.zoomPass);setVal('liveSchedule',cfg.livestream.schedule);
   }
   if(cfg.linkSettings){
-    setVal('baseUrl',cfg.linkSettings.baseUrl||'https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/');
+    setVal('baseUrl',cfg.linkSettings.baseUrl||DEFAULT_BASE_URL);
     setChecked('paramFormat',cfg.linkSettings.paramFormat||'to');
   }
   // status badge
@@ -912,7 +920,7 @@ function scheduleAutoSave(){
     savedBadge.style.display='inline-block';
     clearTimeout(saveDraft._t);
     saveDraft._t=setTimeout(()=>savedBadge.style.display='none',2000);
-  },800);
+  },AUTO_SAVE_DEBOUNCE_MS);
 }
 
 // ─── PHOTO UPLOAD ───
@@ -941,7 +949,7 @@ function clearPhoto(previewId, dataKey){
 
 // ─── GALLERY ───
 function handleGalleryUpload(files){
-  const remaining=15-galleryPhotos.length;
+  const remaining=MAX_GALLERY_PHOTOS-galleryPhotos.length;
   const toAdd=Math.min(files.length,remaining);
   let loaded=0;
   for(let i=0;i<toAdd;i++){
@@ -953,7 +961,7 @@ function handleGalleryUpload(files){
     };
     reader.readAsDataURL(files[i]);
   }
-  if(files.length>remaining)toast(`Hanya ${remaining} foto lagi yang bisa ditambahkan (max 15)`);
+  if(files.length>remaining)toast(`Hanya ${remaining} foto lagi yang bisa ditambahkan (max ${MAX_GALLERY_PHOTOS})`);
 }
 
 function renderGallery(){
@@ -964,7 +972,7 @@ function renderGallery(){
       <button class="gallery-del" onclick="removeGalleryPhoto(${i})">✕</button>
     </div>
   `).join('');
-  document.getElementById('galleryCounter').textContent=`${galleryPhotos.length} / 15 foto`;
+  document.getElementById('galleryCounter').textContent=`${galleryPhotos.length} / ${MAX_GALLERY_PHOTOS} foto`;
 }
 
 function removeGalleryPhoto(idx){
@@ -1017,7 +1025,7 @@ function setAudioType(type){
 function handleAudioUpload(input){
   const file=input.files[0];
   if(!file)return;
-  if(file.size>5*1024*1024){toast('File terlalu besar! Maksimal 5MB');return;}
+  if(file.size>MAX_AUDIO_FILE_SIZE){toast('File terlalu besar! Maksimal 5MB');return;}
   const reader=new FileReader();
   reader.onload=e=>{
     photoData.audioFile=e.target.result;
@@ -1064,7 +1072,7 @@ function updateCountdownPreview(){
 
 // ─── LOVE STORY ───
 function addLoveStoryItem(data){
-  const id=Date.now()+Math.random();
+  const id=nextId();
   const item={id,year:data?.year||'',title:data?.title||'',desc:data?.desc||''};
   loveStoryItems.push(item);
   renderLoveStory();
@@ -1119,7 +1127,7 @@ function updateLoveStory(id,field,value){
 
 // ─── BANK / EWALLET ───
 function addBankItem(data){
-  const id=Date.now()+Math.random();
+  const id=nextId();
   const item={id,bankName:data?.bankName||'',accountName:data?.accountName||'',accountNumber:data?.accountNumber||''};
   bankItems.push(item);
   renderBanks();updateProgress();
@@ -1147,7 +1155,7 @@ function renderBanks(){
 function updateBank(id,field,value){const item=bankItems.find(i=>i.id===id);if(item)item[field]=value;scheduleAutoSave();}
 
 function addEwalletItem(data){
-  const id=Date.now()+Math.random();
+  const id=nextId();
   const item={id,type:data?.type||'OVO',number:data?.number||''};
   ewalletItems.push(item);
   renderEwallets();updateProgress();
@@ -1221,7 +1229,7 @@ const cfg=getLS('wedding_config');
 if(cfg){fillForm(cfg);}
 else{
   // Set defaults
-  setVal('baseUrl','https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/');
+  setVal('baseUrl',DEFAULT_BASE_URL);
   setChecked('paramFormat','to');
 }
 updateProgress();
