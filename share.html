@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bagikan Undangan — Undangan Digital</title>
+<style>
+/* ── Reset & Variables ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --green-dark:  #075e54;
+  --green-mid:   #128c7e;
+  --green-light: #25d366;
+  --green-pale:  #dcf8c6;
+  --bg:          #f0f2f5;
+  --card:        #ffffff;
+  --text:        #111b21;
+  --muted:       #667781;
+  --border:      #e9edef;
+  --red:         #e53935;
+  --red-bg:      #ffebee;
+  --yellow:      #f9a825;
+  --sidebar-w:   240px;
+  --r:           10px;
+  --shadow:      0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.08);
+  --shadow-lg:   0 4px 16px rgba(0,0,0,.14);
+}
+
+html { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+body { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; overflow-x: hidden; }
+a { text-decoration: none; color: inherit; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+/* ════════════════════════════
+   SIDEBAR
+════════════════════════════ */
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--green-dark);
+  display: flex; flex-direction: column;
+  z-index: 100;
+  transition: transform .25s ease;
+}
+
+.sidebar-brand {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  flex-shrink: 0;
+}
+.sidebar-brand .logo  { font-size: 22px; font-weight: 700; color: #fff; line-height: 1.2; }
+.sidebar-brand .tagline { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 2px; }
+
+.sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+.nav-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 20px;
+  color: rgba(255,255,255,.72);
+  text-decoration: none;
+  font-size: 14px; font-weight: 500;
+  transition: background .15s, color .15s;
+  cursor: pointer;
+}
+.nav-item:hover  { background: rgba(255,255,255,.08); color: #fff; }
+.nav-item.active { background: rgba(255,255,255,.14); color: #fff; }
+.nav-item .nav-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,.1);
+  font-size: 11px; color: rgba(255,255,255,.4);
+  flex-shrink: 0;
+}
+
+/* ════════════════════════════
+   MAIN LAYOUT
+════════════════════════════ */
+.main {
+  margin-left: var(--sidebar-w);
+  display: flex; flex-direction: column;
+  min-height: 100vh; flex: 1;
+  min-width: 0;
+}
+
+/* ── Topbar ── */
+.topbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; gap: 12px;
+  position: sticky; top: 0; z-index: 50;
+  flex-shrink: 0;
+}
+.topbar-left  { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.topbar-title { font-size: 15px; font-weight: 700; color: var(--green-dark); white-space: nowrap; }
+.topbar-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+.hamburger {
+  display: none;
+  background: none; border: none;
+  font-size: 22px; cursor: pointer;
+  color: var(--green-dark); padding: 4px;
+  align-items: center; justify-content: center;
+}
+
+/* ── Buttons ── */
+.btn {
+  padding: 7px 14px; border-radius: var(--r);
+  font-size: 13px; font-weight: 500;
+  cursor: pointer; border: none;
+  transition: opacity .12s, transform .1s;
+  display: inline-flex; align-items: center; gap: 5px;
+  text-decoration: none; white-space: nowrap;
+  line-height: 1.4; font-family: inherit;
+}
+.btn:hover   { opacity: .88; }
+.btn:active  { transform: scale(.96); }
+.btn-primary  { background: var(--green-light); color: #fff; }
+.btn-secondary{ background: var(--green-mid);   color: #fff; }
+.btn-outline  { background: #fff; border: 1.5px solid var(--border); color: var(--text); }
+.btn-ghost    { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+.btn-danger   { background: var(--red); color: #fff; }
+.btn-sm       { padding: 5px 10px; font-size: 12px; }
+.btn-xs       { padding: 3px 8px; font-size: 11.5px; border-radius: 6px; }
+.btn-wa       { background: #25d366; color: #fff; }
+.btn-full     { width: 100%; justify-content: center; }
+
+/* ── Content ── */
+.content { padding: 24px; max-width: 960px; width: 100%; }
+
+/* ── Section Cards ── */
+.section-card {
+  background: var(--card);
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.sec-head {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none; gap: 8px;
+}
+.sec-head.no-collapse { cursor: default; }
+.sec-title {
+  font-size: 14px; font-weight: 700;
+  color: var(--green-dark);
+  display: flex; align-items: center; gap: 8px;
+}
+.sec-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 22px; height: 22px; padding: 0 5px;
+  background: var(--green-light); color: #fff;
+  border-radius: 11px; font-size: 11px; font-weight: 700;
+  flex-shrink: 0;
+}
+.chevron { color: var(--muted); font-size: 12px; transition: transform .2s; flex-shrink: 0; }
+.chevron.open { transform: rotate(180deg); }
+.sec-body { padding: 20px; }
+.sec-body.hide { display: none; }
+
+/* ── Form Elements ── */
+.fg { margin-bottom: 14px; }
+.fg:last-child { margin-bottom: 0; }
+.flbl { display: block; font-size: 12.5px; font-weight: 500; color: var(--text); margin-bottom: 5px; }
+.flbl .fhint { font-weight: 400; color: var(--muted); font-size: 11.5px; margin-left: 4px; }
+.finp, .fsel, .ftxt {
+  width: 100%; padding: 9px 12px;
+  border: 1.5px solid var(--border); border-radius: var(--r);
+  font-size: 13.5px; color: var(--text); background: #fff;
+  transition: border-color .15s, box-shadow .15s;
+  outline: none; font-family: inherit;
+}
+.finp:focus, .fsel:focus, .ftxt:focus {
+  border-color: var(--green-light);
+  box-shadow: 0 0 0 3px rgba(37,211,102,.12);
+}
+.ftxt { resize: vertical; min-height: 80px; line-height: 1.6; }
+.ftxt.mono { font-family: ui-monospace, "Cascadia Code", "Source Code Pro", monospace; font-size: 13px; }
+.fhint-block { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+
+/* ── Variable Badges ── */
+.badge-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.var-badge {
+  padding: 4px 10px; border-radius: 20px;
+  background: var(--green-pale); color: var(--green-dark);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  border: 1.5px solid rgba(37,211,102,.35);
+  transition: background .12s, transform .1s;
+  user-select: none;
+}
+.var-badge:hover  { background: var(--green-light); color: #fff; }
+.var-badge:active { transform: scale(.94); }
+
+/* ── File Drop Zone ── */
+.drop-zone {
+  border: 2px dashed var(--border); border-radius: var(--r);
+  padding: 28px 20px; text-align: center;
+  cursor: pointer; transition: border-color .15s, background .15s;
+  background: #fafafa;
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--green-light);
+  background: rgba(37,211,102,.04);
+}
+.drop-zone-icon { font-size: 32px; margin-bottom: 6px; }
+.drop-zone-text { font-size: 13.5px; color: var(--muted); }
+.drop-zone-sub  { font-size: 11.5px; color: var(--border); margin-top: 3px; }
+#fileInput { display: none; }
+
+/* ── Preview Table ── */
+.table-wrap {
+  overflow-x: auto;
+  border-radius: var(--r);
+  border: 1px solid var(--border);
+  margin-top: 14px;
+}
+.tbl {
+  width: 100%; border-collapse: collapse;
+  font-size: 13px;
+}
+.tbl th {
+  background: var(--green-dark); color: rgba(255,255,255,.9);
+  padding: 10px 12px; text-align: left;
+  font-size: 12px; font-weight: 600;
+  white-space: nowrap;
+}
+.tbl th:first-child { border-radius: var(--r) 0 0 0; }
+.tbl th:last-child  { border-radius: 0 var(--r) 0 0; }
+.tbl td {
+  padding: 9px 12px; border-bottom: 1px solid var(--border);
+  vertical-align: top; line-height: 1.4;
+}
+.tbl tr:last-child td { border-bottom: none; }
+.tbl tr:nth-child(even) td { background: #fafafa; }
+.tbl tr:hover td { background: rgba(37,211,102,.04); }
+.tbl .col-no    { width: 40px; text-align: center; color: var(--muted); }
+.tbl .col-actions { white-space: nowrap; }
+.tbl .text-muted { color: var(--muted); font-size: 12px; }
+.tbl .kode-chip {
+  display: inline-block; padding: 2px 8px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 5px; font-family: monospace; font-size: 12px; color: var(--green-dark);
+}
+.tbl .link-text {
+  font-family: monospace; font-size: 11.5px; color: var(--green-mid);
+  max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  display: block;
+}
+
+/* ── Action Row in table ── */
+.act-row { display: flex; flex-wrap: wrap; gap: 4px; }
+
+/* ── Import preview controls ── */
+.import-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.import-info { font-size: 12.5px; color: var(--muted); }
+.badge-count {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 10px;
+  background: var(--green-pale); color: var(--green-dark);
+  font-size: 12px; font-weight: 600;
+}
+.badge-dup {
+  background: #fff3cd; color: #856404;
+}
+
+/* ── Global Actions Bar ── */
+.global-actions {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap; margin-bottom: 16px;
+}
+.guest-summary {
+  font-size: 13px; color: var(--muted);
+  display: flex; align-items: center; gap: 6px; margin-left: auto;
+}
+
+/* ── Empty State ── */
+.empty-state {
+  padding: 40px 20px; text-align: center;
+  color: var(--muted);
+}
+.empty-state-icon { font-size: 36px; margin-bottom: 8px; }
+.empty-state-text { font-size: 14px; margin-bottom: 4px; font-weight: 500; color: var(--text); }
+.empty-state-sub  { font-size: 13px; }
+
+/* ── Generate CTA ── */
+.generate-wrap {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px;
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px; flex-wrap: wrap;
+}
+.generate-desc { font-size: 13px; color: var(--muted); flex: 1; min-width: 200px; }
+
+/* ── Toast ── */
+.toast-container {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  z-index: 9999; pointer-events: none;
+}
+.toast {
+  padding: 10px 20px; border-radius: 24px;
+  font-size: 13.5px; font-weight: 500; color: #fff;
+  background: #323232;
+  box-shadow: 0 4px 12px rgba(0,0,0,.25);
+  animation: toastIn .25s ease both;
+  pointer-events: none;
+  max-width: 320px; text-align: center;
+}
+.toast.success { background: var(--green-mid); }
+.toast.error   { background: var(--red); }
+@keyframes toastIn { from { opacity:0; transform: translateY(10px) scale(.92); } to { opacity:1; transform: none; } }
+
+/* ── Confirm Modal ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--card);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 400px; width: 90%;
+  transform: translateY(12px) scale(.97);
+  transition: transform .2s;
+  box-shadow: var(--shadow-lg);
+}
+.modal-overlay.open .modal { transform: none; }
+.modal-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.modal-body  { font-size: 14px; color: var(--muted); line-height: 1.5; margin-bottom: 18px; }
+.modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ── Bottom Nav ── */
+.bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -2px 10px rgba(0,0,0,.08);
+  z-index: 100;
+}
+.bottom-nav-inner { display: flex; align-items: stretch; height: 100%; }
+.bnav-item {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 3px;
+  text-decoration: none; color: var(--muted);
+  font-size: 10px; font-weight: 600;
+  border: none; background: none; cursor: pointer;
+  transition: color .15s; font-family: inherit;
+}
+.bnav-item .bnav-icon { font-size: 20px; }
+.bnav-item.active { color: var(--green-mid); }
+
+/* ── Sidebar overlay (mobile) ── */
+.sidebar-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 99;
+}
+.sidebar-overlay.open { display: block; }
+
+/* ── Duplicate row highlight ── */
+.dup-row td { background: #fff8e1 !important; }
+.dup-label {
+  display: inline-block; padding: 1px 6px;
+  background: #fff3cd; color: #856404;
+  border-radius: 4px; font-size: 11px;
+}
+
+/* ── Search/Filter ── */
+.filter-row {
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.search-wrap { position: relative; flex: 1; min-width: 180px; }
+.search-wrap .finp { padding-left: 32px; }
+.search-icon {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  color: var(--muted); font-size: 14px; pointer-events: none;
+}
+.cat-filter { min-width: 130px; }
+
+/* ── Pagination ── */
+.pagination {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0; gap: 8px; flex-wrap: wrap;
+}
+.pagination-info { font-size: 12.5px; color: var(--muted); }
+.pagination-btns { display: flex; gap: 4px; }
+.pg-btn {
+  padding: 5px 11px; border-radius: 7px;
+  border: 1px solid var(--border); background: #fff;
+  font-size: 13px; cursor: pointer; font-family: inherit;
+  color: var(--text); transition: background .12s;
+}
+.pg-btn:hover   { background: var(--bg); }
+.pg-btn.active  { background: var(--green-mid); color: #fff; border-color: var(--green-mid); }
+.pg-btn:disabled{ opacity: .4; cursor: default; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .sidebar { transform: translateX(calc(-1 * var(--sidebar-w))); }
+  .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-lg); }
+  .main { margin-left: 0; }
+  .hamburger { display: flex; }
+  .bottom-nav { display: flex; }
+  .content { padding: 16px 14px 76px; }
+  .topbar { padding: 0 14px; }
+  .topbar-right { gap: 4px; }
+  .btn { padding: 6px 10px; font-size: 12px; }
+  .tbl .col-actions .act-row { flex-direction: column; }
+  .frow { grid-template-columns: 1fr; }
+  .global-actions { gap: 6px; }
+  .guest-summary { margin-left: 0; }
+}
+@media (max-width: 480px) {
+  .topbar-title { font-size: 14px; }
+  .generate-wrap { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- Sidebar overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ════════════════════════════
+     SIDEBAR
+════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo">💍 Undangan Digital</div>
+    <div class="tagline">Guest Management</div>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-item" href="admin.html">
+      <span class="nav-icon">📊</span> Dashboard
+    </a>
+    <a class="nav-item" href="configure.html">
+      <span class="nav-icon">⚙️</span> Konfigurasi
+    </a>
+    <a class="nav-item active" href="share.html">
+      <span class="nav-icon">🎁</span> Bagikan
+    </a>
+    <a class="nav-item" href="index.html" target="_blank" rel="noopener">
+      <span class="nav-icon">👁️</span> Preview Undangan
+    </a>
+  </nav>
+  <div class="sidebar-footer">v1.0 · Undangan Digital</div>
+</aside>
+
+<!-- ════════════════════════════
+     MAIN
+════════════════════════════ -->
+<div class="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+      <span class="topbar-title">🎁 Bagikan Undangan</span>
+    </div>
+    <div class="topbar-right">
+      <a class="btn btn-outline btn-sm" href="admin.html">← Dashboard</a>
+      <a class="btn btn-ghost btn-sm" href="configure.html">⚙️ Configure</a>
+      <button class="btn btn-secondary btn-sm" onclick="openPreview()">👁️ Preview</button>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- ── Section A: Input Nama Manual ── -->
+    <div class="section-card" id="secA">
+      <div class="sec-head" onclick="toggleSection('secA')">
+        <div class="sec-title">
+          <span class="sec-badge">A</span>
+          ✍️ Input Nama Manual
+        </div>
+        <span class="chevron open" id="chevronA">▼</span>
+      </div>
+      <div class="sec-body" id="bodyA">
+        <div class="fg">
+          <label class="flbl" for="nameTextarea">
+            Daftar nama tamu
+            <span class="fhint">· Satu nama per baris</span>
+          </label>
+          <textarea
+            id="nameTextarea"
+            class="ftxt"
+            style="min-height:140px"
+            placeholder="Satu nama per baris...&#10;Contoh:&#10;Budi Santoso&#10;Dewi Rahayu&#10;Keluarga Pak Ahmad"
+          ></textarea>
+          <div class="fhint-block">Setiap baris akan menjadi satu tamu. Baris kosong diabaikan.</div>
+        </div>
+        <button class="btn btn-primary" onclick="importFromTextarea()">
+          ⬆️ Tambahkan ke Daftar
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Section B: Import Excel/CSV ── -->
+    <div class="section-card" id="secB">
+      <div class="sec-head" onclick="toggleSection('secB')">
+        <div class="sec-title">
+          <span class="sec-badge">B</span>
+          📂 Import Excel / CSV
+        </div>
+        <span class="chevron open" id="chevronB">▼</span>
+      </div>
+      <div class="sec-body" id="bodyB">
+
+        <!-- Drop zone -->
+        <div class="drop-zone" id="dropZone"
+             onclick="document.getElementById('fileInput').click()"
+             ondragover="handleDragOver(event)"
+             ondragleave="handleDragLeave(event)"
+             ondrop="handleDrop(event)">
+          <div class="drop-zone-icon">📊</div>
+          <div class="drop-zone-text">Klik atau seret file ke sini</div>
+          <div class="drop-zone-sub">Format: .xlsx, .xls, .csv</div>
+        </div>
+        <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="handleFileSelect(event)" />
+
+        <!-- Column mapping hint -->
+        <div class="fhint-block" style="margin-top:10px">
+          <strong>Kolom yang dikenali:</strong>
+          <code>nama</code> (wajib), <code>no_hp</code>, <code>kategori</code>, <code>jumlah_tamu</code>, <code>kode</code>.
+          Baris header otomatis terdeteksi.
+        </div>
+
+        <!-- Import preview -->
+        <div id="importPreviewWrap" style="display:none">
+          <div class="import-controls" id="importControls">
+            <span class="import-info">Ditemukan:</span>
+            <span class="badge-count" id="importCountBadge">0 baris</span>
+            <span class="badge-count badge-dup" id="importDupBadge" style="display:none">0 duplikat</span>
+            <button class="btn btn-danger btn-sm" onclick="clearImport()">✕ Batal</button>
+            <button class="btn btn-primary" id="confirmImportBtn" onclick="confirmImport()">
+              ✅ Konfirmasi Import
+            </button>
+          </div>
+          <div class="table-wrap">
+            <table class="tbl" id="importTable">
+              <thead>
+                <tr>
+                  <th class="col-no">#</th>
+                  <th>Nama</th>
+                  <th>No HP</th>
+                  <th>Kategori</th>
+                  <th>Jml Tamu</th>
+                  <th>Kode</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="importTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── Section C: Template Teks ── -->
+    <div class="section-card" id="secC">
+      <div class="sec-head" onclick="toggleSection('secC')">
+        <div class="sec-title">
+          <span class="sec-badge">C</span>
+          💬 Template Teks Pengantar
+        </div>
+        <span class="chevron open" id="chevronC">▼</span>
+      </div>
+      <div class="sec-body" id="bodyC">
+        <div class="fg">
+          <label class="flbl" for="templateTextarea">
+            Template pesan WhatsApp
+            <span class="fhint">· Klik badge di bawah untuk menyisipkan variabel</span>
+          </label>
+          <textarea
+            id="templateTextarea"
+            class="ftxt mono"
+            style="min-height:220px"
+            spellcheck="false"
+          ></textarea>
+          <div class="badge-row" id="varBadgeRow">
+            <span class="var-badge" onclick="insertVar('[nama]')">[nama]</span>
+            <span class="var-badge" onclick="insertVar('[judul-undangan]')">[judul-undangan]</span>
+            <span class="var-badge" onclick="insertVar('[link-undangan]')">[link-undangan]</span>
+            <span class="var-badge" onclick="insertVar('[mempelai-wanita]')">[mempelai-wanita]</span>
+            <span class="var-badge" onclick="insertVar('[mempelai-pria]')">[mempelai-pria]</span>
+            <span class="var-badge" onclick="insertVar('[yang-mengundang]')">[yang-mengundang]</span>
+          </div>
+          <div class="fhint-block" style="margin-top:8px">
+            Variabel <code>[nama]</code>, <code>[link-undangan]</code>, dll. diganti otomatis saat kirim/salin per tamu.
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-outline btn-sm" onclick="resetTemplate()">↺ Reset Default</button>
+          <button class="btn btn-ghost btn-sm" onclick="copyTemplate()">📋 Salin Template</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Generate Button ── -->
+    <div class="generate-wrap">
+      <div class="generate-desc">
+        <strong>Siap generate?</strong> Nama dari Section A dan import terkonfirmasi (Section B) akan diproses,
+        kode unik dibuat, lalu disimpan ke daftar tamu.
+      </div>
+      <button class="btn btn-primary" onclick="generateAndSave()" style="font-size:14px;padding:10px 20px">
+        ⚡ Generate &amp; Simpan
+      </button>
+    </div>
+
+    <!-- ── Results Table ── -->
+    <div class="section-card">
+      <div class="sec-head no-collapse">
+        <div class="sec-title">
+          <span class="sec-badge" id="guestCountBadge">0</span>
+          👥 Daftar Tamu
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇️ Download CSV</button>
+          <button class="btn btn-outline btn-sm" onclick="copyAllLinks()">📋 Salin Semua Link</button>
+        </div>
+      </div>
+      <div class="sec-body" style="padding-top:14px">
+
+        <!-- Filter row -->
+        <div class="filter-row">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" class="finp" placeholder="Cari nama atau kode..."
+                   oninput="applyFilter()" style="padding-left:32px" />
+          </div>
+          <select id="catFilter" class="fsel cat-filter" onchange="applyFilter()">
+            <option value="">Semua Kategori</option>
+          </select>
+          <button class="btn btn-danger btn-sm" onclick="deleteAllGuests()" id="deleteAllBtn" style="display:none">
+            🗑️ Hapus Semua
+          </button>
+        </div>
+
+        <!-- Global actions -->
+        <div class="global-actions" id="globalActions" style="display:none">
+          <span class="guest-summary" id="guestSummaryText"></span>
+        </div>
+
+        <!-- Table -->
+        <div id="guestTableWrap">
+          <div class="empty-state" id="emptyState">
+            <div class="empty-state-icon">📭</div>
+            <div class="empty-state-text">Belum ada tamu</div>
+            <div class="empty-state-sub">Tambahkan nama di Section A atau import Excel/CSV di Section B, lalu klik Generate &amp; Simpan.</div>
+          </div>
+          <div id="tableContainer" style="display:none">
+            <div class="table-wrap">
+              <table class="tbl" id="guestTable">
+                <thead>
+                  <tr>
+                    <th class="col-no">#</th>
+                    <th>Nama</th>
+                    <th>Kode</th>
+                    <th>Link Undangan</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="guestTbody"></tbody>
+              </table>
+            </div>
+            <div class="pagination" id="paginationWrap">
+              <span class="pagination-info" id="paginationInfo"></span>
+              <div class="pagination-btns" id="paginationBtns"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ════════════════════════════
+     BOTTOM NAV (mobile)
+════════════════════════════ -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a class="bnav-item" href="admin.html">
+      <span class="bnav-icon">📊</span>Dashboard
+    </a>
+    <a class="bnav-item" href="configure.html">
+      <span class="bnav-icon">⚙️</span>Konfigurasi
+    </a>
+    <a class="bnav-item active" href="share.html">
+      <span class="bnav-icon">🎁</span>Bagikan
+    </a>
+    <button class="bnav-item" onclick="openPreview()">
+      <span class="bnav-icon">👁️</span>Preview
+    </button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════
+     CONFIRM MODAL
+════════════════════════════ -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <div class="modal-title" id="confirmTitle">Konfirmasi</div>
+    <div class="modal-body" id="confirmBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+      <button class="btn btn-danger" id="confirmOkBtn">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- SheetJS CDN -->
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   CONSTANTS & STATE
+════════════════════════════════════════════════════════ */
+const LS_GUESTS = 'wedding_guests';
+const LS_CONFIG = 'wedding_config';
+const PAGE_SIZE  = 25;
+
+let importedRows    = [];   // rows parsed from file, pending confirm
+let confirmedImport = [];   // rows confirmed from B
+let currentPage     = 1;
+let filteredGuests  = [];
+let pendingDeleteId = null;
+let pendingDeleteAll = false;
+
+/* ── Default template ── */
+const DEFAULT_TEMPLATE =
+`Yth. Bapak/Ibu/Sdr/i [nama]
+
+Dengan segala kerendahan hati, kami mengundang kehadiran Anda pada acara pernikahan kami.
+
+[judul-undangan]
+
+Kepada: [nama]
+Tautan Undangan: [link-undangan]
+
+Kami berharap dapat menyambut kehadiran [nama] di acara bahagia ini.
+
+Dari: [yang-mengundang]
+[mempelai-wanita] & [mempelai-pria]`;
+
+/* ════════════════════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════════════════════ */
+
+/** XSS-safe HTML escape */
+function esc(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/** Generate a simple UUID-like id */
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+/** Read wedding_guests from localStorage (safe) */
+function loadGuests() {
+  try {
+    const raw = localStorage.getItem(LS_GUESTS);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch { return []; }
+}
+
+/** Save guests array to localStorage */
+function saveGuests(arr) {
+  localStorage.setItem(LS_GUESTS, JSON.stringify(arr));
+}
+
+/** Read wedding_config */
+function loadConfig() {
+  try {
+    const raw = localStorage.getItem(LS_CONFIG);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+/** Build invitation link for a guest kode */
+function buildLink(kode) {
+  const cfg = loadConfig();
+  const ls  = cfg.linkSettings || {};
+  const base = ls.baseUrl
+    ? ls.baseUrl.replace(/\/$/, '') + '/'
+    : (window.location.origin + '/');
+  const fmt  = ls.paramFormat || 'to';
+  const paramKey = fmt === 'nama' ? 'nama' : fmt === 'u' ? 'u' : 'to';
+  return base + 'index.html?' + paramKey + '=' + encodeURIComponent(kode);
+}
+
+/** Convert name to URL-safe slug */
+function toSlug(name) {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')    // strip diacritics
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    || 'tamu';
+}
+
+/** Make a slug unique among existing kode set */
+function uniqueSlug(base, existingSet) {
+  if (!existingSet.has(base)) return base;
+  let n = 1;
+  while (true) {
+    const candidate = base + '-' + String(n).padStart(3, '0');
+    if (!existingSet.has(candidate)) return candidate;
+    n++;
+  }
+}
+
+/** Fill template variables for a specific guest */
+function fillTemplate(tmpl, guest, link) {
+  const cfg  = loadConfig();
+  const gr   = cfg.groom   || {};
+  const br   = cfg.bride   || {};
+  const title = cfg.title  || 'Pernikahan Kami';
+  const who   = cfg.whoInvites || (br.nickname && gr.nickname
+    ? br.nickname + ' & ' + gr.nickname
+    : 'Keluarga');
+  return tmpl
+    .replace(/\[nama\]/g, guest.nama || '')
+    .replace(/\[judul-undangan\]/g, title)
+    .replace(/\[link-undangan\]/g, link)
+    .replace(/\[mempelai-wanita\]/g, br.fullName || br.nickname || '')
+    .replace(/\[mempelai-pria\]/g, gr.fullName || gr.nickname || '')
+    .replace(/\[yang-mengundang\]/g, who);
+}
+
+/** Copy text to clipboard with feedback */
+async function copyText(text, label) {
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast('✅ ' + (label || 'Tersalin ke clipboard'), 'success');
+  } catch {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    showToast('✅ ' + (label || 'Tersalin ke clipboard'), 'success');
+  }
+}
+
+/* ════════════════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════════════════ */
+function showToast(msg, type, duration) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => {
+    t.style.transition = 'opacity .3s, transform .3s';
+    t.style.opacity = '0';
+    t.style.transform = 'translateY(8px)';
+    setTimeout(() => t.remove(), 350);
+  }, duration || 2600);
+}
+
+/* ════════════════════════════════════════════════════════
+   SIDEBAR / MOBILE
+════════════════════════════════════════════════════════ */
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
+}
+
+/* ════════════════════════════════════════════════════════
+   COLLAPSIBLE SECTIONS
+════════════════════════════════════════════════════════ */
+function toggleSection(secId) {
+  const body    = document.getElementById('body' + secId.slice(-1));
+  const chevron = document.getElementById('chevron' + secId.slice(-1));
+  if (!body) return;
+  const hidden = body.classList.toggle('hide');
+  if (chevron) chevron.classList.toggle('open', !hidden);
+}
+
+/* ════════════════════════════════════════════════════════
+   SECTION C — TEMPLATE
+════════════════════════════════════════════════════════ */
+function initTemplate() {
+  const ta = document.getElementById('templateTextarea');
+  const saved = localStorage.getItem('wedding_share_template');
+  ta.value = saved || DEFAULT_TEMPLATE;
+  ta.addEventListener('input', () => {
+    localStorage.setItem('wedding_share_template', ta.value);
+  });
+}
+
+function getTemplate() {
+  return document.getElementById('templateTextarea').value;
+}
+
+function resetTemplate() {
+  const ta = document.getElementById('templateTextarea');
+  ta.value = DEFAULT_TEMPLATE;
+  localStorage.setItem('wedding_share_template', DEFAULT_TEMPLATE);
+  showToast('Template direset ke default', 'success');
+}
+
+function copyTemplate() {
+  copyText(getTemplate(), 'Template disalin');
+}
+
+function insertVar(varStr) {
+  const ta   = document.getElementById('templateTextarea');
+  const start = ta.selectionStart;
+  const end   = ta.selectionEnd;
+  const val   = ta.value;
+  ta.value    = val.slice(0, start) + varStr + val.slice(end);
+  ta.selectionStart = ta.selectionEnd = start + varStr.length;
+  ta.focus();
+  localStorage.setItem('wedding_share_template', ta.value);
+}
+
+/* ════════════════════════════════════════════════════════
+   SECTION A — MANUAL INPUT
+════════════════════════════════════════════════════════ */
+function importFromTextarea() {
+  const ta    = document.getElementById('nameTextarea');
+  const lines = ta.value.split('\n').map(l => l.trim()).filter(Boolean);
+  if (!lines.length) {
+    showToast('⚠️ Tidak ada nama yang dimasukkan', 'error');
+    return;
+  }
+
+  const guests = loadGuests();
+  const existingKodes = new Set(guests.map(g => g.kode));
+  const existingNama  = new Set(guests.map(g => g.nama.toLowerCase()));
+  let added = 0, skipped = 0;
+
+  lines.forEach(nama => {
+    if (existingNama.has(nama.toLowerCase())) {
+      skipped++;
+      return;
+    }
+    const slug  = toSlug(nama);
+    const kode  = uniqueSlug(slug, existingKodes);
+    existingKodes.add(kode);
+    existingNama.add(nama.toLowerCase());
+    guests.push({
+      id: uid(), nama, kode,
+      noHp: '', kategori: '', jumlahTamu: 1,
+      createdAt: new Date().toISOString()
+    });
+    added++;
+  });
+
+  saveGuests(guests);
+  ta.value = '';
+  renderGuestTable();
+  if (added && skipped) {
+    showToast(`✅ ${added} tamu ditambahkan, ${skipped} sudah ada`, 'success');
+  } else if (added) {
+    showToast(`✅ ${added} tamu berhasil ditambahkan`, 'success');
+  } else {
+    showToast(`ℹ️ Semua nama sudah ada di daftar (${skipped} dilewati)`, '');
+  }
+}
+
+/* ════════════════════════════════════════════════════════
+   SECTION B — IMPORT FILE
+════════════════════════════════════════════════════════ */
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.add('drag-over');
+}
+function handleDragLeave(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag-over');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+}
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) processFile(file);
+  e.target.value = '';
+}
+
+function processFile(file) {
+  if (!window.XLSX) {
+    showToast('⚠️ SheetJS belum dimuat, coba refresh halaman', 'error');
+    return;
+  }
+  const name = file.name.toLowerCase();
+  if (!name.endsWith('.xlsx') && !name.endsWith('.xls') && !name.endsWith('.csv')) {
+    showToast('⚠️ Format file tidak didukung (.xlsx, .xls, .csv)', 'error');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = new Uint8Array(ev.target.result);
+      const wb   = XLSX.read(data, { type: 'array' });
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const raw   = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+      if (!raw || raw.length < 2) {
+        showToast('⚠️ File kosong atau tidak valid', 'error');
+        return;
+      }
+
+      // Auto-detect header row (first row with recognizable column)
+      let headerIdx = 0;
+      const knownCols = ['nama', 'name', 'no_hp', 'nohp', 'kategori', 'category', 'jumlah_tamu', 'kode', 'code'];
+      for (let i = 0; i < Math.min(5, raw.length); i++) {
+        const rowLower = raw[i].map(c => String(c).toLowerCase().trim().replace(/[\s_-]/g, '_'));
+        if (rowLower.some(c => knownCols.includes(c))) { headerIdx = i; break; }
+      }
+
+      const headers = raw[headerIdx].map(c => String(c).toLowerCase().trim().replace(/[\s-]/g, '_'));
+      const colMap = {
+        nama:        headers.findIndex(h => ['nama','name'].includes(h)),
+        no_hp:       headers.findIndex(h => ['no_hp','nohp','phone','hp','telepon','telp','no_telp'].includes(h)),
+        kategori:    headers.findIndex(h => ['kategori','category','grup','group'].includes(h)),
+        jumlah_tamu: headers.findIndex(h => ['jumlah_tamu','jumlah','qty','pax','tamu'].includes(h)),
+        kode:        headers.findIndex(h => ['kode','code','slug','id_tamu'].includes(h)),
+      };
+
+      if (colMap.nama === -1) {
+        showToast('⚠️ Kolom "nama" tidak ditemukan di file', 'error');
+        return;
+      }
+
+      const rows = [];
+      for (let i = headerIdx + 1; i < raw.length; i++) {
+        const row  = raw[i];
+        const nama = String(row[colMap.nama] || '').trim();
+        if (!nama) continue; // skip empty
+        rows.push({
+          nama,
+          no_hp:       colMap.no_hp       >= 0 ? String(row[colMap.no_hp]       || '').trim() : '',
+          kategori:    colMap.kategori     >= 0 ? String(row[colMap.kategori]    || '').trim() : '',
+          jumlah_tamu: colMap.jumlah_tamu  >= 0 ? (parseInt(row[colMap.jumlah_tamu]) || 1)     : 1,
+          kode:        colMap.kode         >= 0 ? String(row[colMap.kode]        || '').trim() : '',
+          _rowIdx:     i,
+        });
+      }
+
+      if (!rows.length) {
+        showToast('⚠️ Tidak ada baris data yang valid', 'error');
+        return;
+      }
+
+      importedRows = rows;
+      renderImportPreview();
+      showToast(`📊 ${rows.length} baris ditemukan — periksa & konfirmasi`, 'success');
+    } catch (err) {
+      showToast('❌ Gagal membaca file: ' + err.message, 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderImportPreview() {
+  const guests  = loadGuests();
+  const existingNama = new Set(guests.map(g => g.nama.toLowerCase()));
+  let dupCount = 0;
+
+  const tbody = document.getElementById('importTbody');
+  tbody.innerHTML = '';
+
+  importedRows.forEach((row, i) => {
+    const isDup = existingNama.has(row.nama.toLowerCase());
+    if (isDup) dupCount++;
+    const tr = document.createElement('tr');
+    if (isDup) tr.className = 'dup-row';
+    tr.innerHTML =
+      `<td class="col-no">${i + 1}</td>` +
+      `<td>${esc(row.nama)}</td>` +
+      `<td>${esc(row.no_hp)}</td>` +
+      `<td>${esc(row.kategori)}</td>` +
+      `<td>${row.jumlah_tamu}</td>` +
+      `<td>${esc(row.kode) || '<span class="text-muted">auto</span>'}</td>` +
+      `<td>${isDup ? '<span class="dup-label">⚠ Duplikat</span>' : '<span style="color:var(--green-mid)">✓ Baru</span>'}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('importCountBadge').textContent = importedRows.length + ' baris';
+  const dupBadge = document.getElementById('importDupBadge');
+  if (dupCount) {
+    dupBadge.textContent = dupCount + ' duplikat';
+    dupBadge.style.display = '';
+  } else {
+    dupBadge.style.display = 'none';
+  }
+
+  document.getElementById('importPreviewWrap').style.display = '';
+}
+
+function clearImport() {
+  importedRows = [];
+  confirmedImport = [];
+  document.getElementById('importPreviewWrap').style.display = 'none';
+  showToast('Import dibatalkan');
+}
+
+function confirmImport() {
+  if (!importedRows.length) return;
+  confirmedImport = [...importedRows];
+  showToast(`✅ ${confirmedImport.length} baris siap di-generate`, 'success');
+  document.getElementById('confirmImportBtn').textContent = '✅ Terkonfirmasi (' + confirmedImport.length + ')';
+  document.getElementById('confirmImportBtn').disabled = true;
+}
+
+/* ════════════════════════════════════════════════════════
+   GENERATE & SAVE
+════════════════════════════════════════════════════════ */
+function generateAndSave() {
+  const ta       = document.getElementById('nameTextarea');
+  const manualLines = ta.value.split('\n').map(l => l.trim()).filter(Boolean);
+
+  if (!manualLines.length && !confirmedImport.length) {
+    showToast('⚠️ Tidak ada data untuk diproses. Isi Section A atau import dari Section B dulu.', 'error');
+    return;
+  }
+
+  const guests        = loadGuests();
+  const existingKodes = new Set(guests.map(g => g.kode));
+  const existingNama  = new Set(guests.map(g => g.nama.toLowerCase()));
+  let added = 0, skipped = 0;
+
+  // Helper to add one guest
+  function addGuest(nama, extra) {
+    if (existingNama.has(nama.toLowerCase())) { skipped++; return; }
+    let kode = extra.kode ? extra.kode.trim() : '';
+    if (!kode) kode = toSlug(nama);
+    kode = uniqueSlug(kode, existingKodes);
+    existingKodes.add(kode);
+    existingNama.add(nama.toLowerCase());
+
+    // Normalize Indonesian phone: leading '0' → country code '62'
+    let noHp = String(extra.no_hp || '').replace(/\D/g, '');
+    if (noHp.startsWith('0')) noHp = '62' + noHp.slice(1);
+
+    guests.push({
+      id: uid(),
+      nama,
+      kode,
+      noHp,
+      kategori:   extra.kategori    || '',
+      jumlahTamu: extra.jumlah_tamu || 1,
+      createdAt:  new Date().toISOString(),
+    });
+    added++;
+  }
+
+  // Process manual names
+  manualLines.forEach(nama => addGuest(nama, {}));
+
+  // Process confirmed import
+  confirmedImport.forEach(row => addGuest(row.nama, row));
+
+  saveGuests(guests);
+
+  // Clear inputs
+  ta.value = '';
+  confirmedImport = [];
+  importedRows    = [];
+  document.getElementById('importPreviewWrap').style.display = 'none';
+  document.getElementById('confirmImportBtn').textContent = '✅ Konfirmasi Import';
+  document.getElementById('confirmImportBtn').disabled = false;
+
+  renderGuestTable();
+
+  if (added && skipped) {
+    showToast(`✅ ${added} tamu ditambahkan, ${skipped} dilewati (duplikat)`, 'success');
+  } else if (added) {
+    showToast(`✅ ${added} tamu berhasil disimpan`, 'success');
+  } else {
+    showToast(`ℹ️ Semua tamu sudah ada di daftar (${skipped} dilewati)`, '');
+  }
+}
+
+/* ════════════════════════════════════════════════════════
+   GUEST TABLE
+════════════════════════════════════════════════════════ */
+function applyFilter() {
+  const q   = document.getElementById('searchInput').value.toLowerCase().trim();
+  const cat = document.getElementById('catFilter').value;
+  const all = loadGuests();
+  filteredGuests = all.filter(g => {
+    const matchQ   = !q || g.nama.toLowerCase().includes(q) || g.kode.toLowerCase().includes(q);
+    const matchCat = !cat || (g.kategori || '') === cat;
+    return matchQ && matchCat;
+  });
+  currentPage = 1;
+  renderGuestTable();
+}
+
+function renderGuestTable() {
+  const all     = loadGuests();
+  const q       = document.getElementById('searchInput').value.toLowerCase().trim();
+  const cat     = document.getElementById('catFilter').value;
+  filteredGuests = all.filter(g => {
+    const matchQ   = !q || g.nama.toLowerCase().includes(q) || g.kode.toLowerCase().includes(q);
+    const matchCat = !cat || (g.kategori || '') === cat;
+    return matchQ && matchCat;
+  });
+
+  // Update badge
+  document.getElementById('guestCountBadge').textContent = all.length;
+
+  // Populate category filter
+  populateCatFilter(all);
+
+  // Show/hide
+  const empty = document.getElementById('emptyState');
+  const tblC  = document.getElementById('tableContainer');
+  const deleteAllBtn = document.getElementById('deleteAllBtn');
+
+  if (!all.length) {
+    empty.style.display = '';
+    tblC.style.display  = 'none';
+    deleteAllBtn.style.display = 'none';
+    document.getElementById('globalActions').style.display = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  tblC.style.display  = '';
+  deleteAllBtn.style.display = '';
+  document.getElementById('globalActions').style.display = '';
+  document.getElementById('guestSummaryText').textContent =
+    `Menampilkan ${filteredGuests.length} dari ${all.length} tamu`;
+
+  // Paginate
+  const total  = filteredGuests.length;
+  const pages  = Math.ceil(total / PAGE_SIZE) || 1;
+  if (currentPage > pages) currentPage = pages;
+  const start  = (currentPage - 1) * PAGE_SIZE;
+  const paged  = filteredGuests.slice(start, start + PAGE_SIZE);
+
+  const tbody  = document.getElementById('guestTbody');
+  tbody.innerHTML = '';
+
+  paged.forEach((guest, idx) => {
+    const link  = buildLink(guest.kode);
+    const num   = start + idx + 1;
+    const tr    = document.createElement('tr');
+    tr.dataset.id = guest.id;
+
+    let actionsHtml =
+      `<div class="act-row">` +
+      `<button class="btn btn-outline btn-xs" onclick="copyLink('${esc(guest.id)}')">📋 Salin Link</button>` +
+      `<button class="btn btn-ghost btn-xs" onclick="copyFilledText('${esc(guest.id)}')">📝 Salin Teks</button>`;
+    if (guest.noHp) {
+      actionsHtml += `<button class="btn btn-wa btn-xs" onclick="sendWA('${esc(guest.id)}')">📱 Kirim WA</button>`;
+    }
+    actionsHtml +=
+      `<button class="btn btn-outline btn-xs" onclick="previewGuest('${esc(guest.kode)}')">👁️ Preview</button>` +
+      `<button class="btn btn-danger btn-xs" onclick="deleteGuest('${esc(guest.id)}')">🗑️</button>` +
+      `</div>`;
+
+    tr.innerHTML =
+      `<td class="col-no">${num}</td>` +
+      `<td><strong>${esc(guest.nama)}</strong>` +
+      (guest.kategori ? `<br><span class="text-muted">${esc(guest.kategori)}</span>` : '') +
+      `</td>` +
+      `<td><span class="kode-chip">${esc(guest.kode)}</span></td>` +
+      `<td><a class="link-text" href="${esc(link)}" target="_blank" rel="noopener" title="${esc(link)}">${esc(link)}</a></td>` +
+      `<td class="col-actions">${actionsHtml}</td>`;
+
+    tbody.appendChild(tr);
+  });
+
+  renderPagination(total, pages);
+}
+
+function populateCatFilter(guests) {
+  const cats = [...new Set(guests.map(g => g.kategori || '').filter(Boolean))].sort();
+  const sel  = document.getElementById('catFilter');
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Semua Kategori</option>';
+  cats.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    sel.appendChild(opt);
+  });
+  if (prev && cats.includes(prev)) sel.value = prev;
+}
+
+function renderPagination(total, pages) {
+  const info = document.getElementById('paginationInfo');
+  const btns = document.getElementById('paginationBtns');
+  const start = (currentPage - 1) * PAGE_SIZE + 1;
+  const end   = Math.min(currentPage * PAGE_SIZE, total);
+  info.textContent = total ? `${start}–${end} dari ${total} tamu` : '';
+
+  btns.innerHTML = '';
+  if (pages <= 1) return;
+
+  const prev = document.createElement('button');
+  prev.className = 'pg-btn'; prev.textContent = '‹';
+  prev.disabled = currentPage === 1;
+  prev.onclick  = () => { currentPage--; renderGuestTable(); };
+  btns.appendChild(prev);
+
+  // Show max 5 page buttons
+  let s = Math.max(1, currentPage - 2);
+  let e = Math.min(pages, s + 4);
+  s = Math.max(1, e - 4);
+
+  for (let i = s; i <= e; i++) {
+    const b = document.createElement('button');
+    b.className = 'pg-btn' + (i === currentPage ? ' active' : '');
+    b.textContent = i;
+    const pg = i;
+    b.onclick = () => { currentPage = pg; renderGuestTable(); };
+    btns.appendChild(b);
+  }
+
+  const next = document.createElement('button');
+  next.className = 'pg-btn'; next.textContent = '›';
+  next.disabled  = currentPage === pages;
+  next.onclick   = () => { currentPage++; renderGuestTable(); };
+  btns.appendChild(next);
+}
+
+/* ════════════════════════════════════════════════════════
+   ROW ACTIONS
+════════════════════════════════════════════════════════ */
+function getGuestById(id) {
+  return loadGuests().find(g => g.id === id) || null;
+}
+
+function copyLink(id) {
+  const g = getGuestById(id);
+  if (!g) return;
+  copyText(buildLink(g.kode), 'Link undangan disalin');
+}
+
+function copyFilledText(id) {
+  const g = getGuestById(id);
+  if (!g) return;
+  const link = buildLink(g.kode);
+  const msg  = fillTemplate(getTemplate(), g, link);
+  copyText(msg, 'Teks pesan disalin');
+}
+
+function sendWA(id) {
+  const g = getGuestById(id);
+  if (!g || !g.noHp) return;
+  const link = buildLink(g.kode);
+  const msg  = fillTemplate(getTemplate(), g, link);
+  const url  = 'https://wa.me/' + g.noHp + '?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank', 'noopener');
+}
+
+function previewGuest(kode) {
+  window.open('index.html?draft=1&to=' + encodeURIComponent(kode), '_blank', 'noopener');
+}
+
+function deleteGuest(id) {
+  const g = getGuestById(id);
+  if (!g) return;
+  pendingDeleteId   = id;
+  pendingDeleteAll  = false;
+  document.getElementById('confirmTitle').textContent = 'Hapus Tamu';
+  document.getElementById('confirmBody').textContent  =
+    `Yakin ingin menghapus "${g.nama}"? Tindakan ini tidak dapat dibatalkan.`;
+  document.getElementById('confirmOkBtn').textContent = '🗑️ Hapus';
+  document.getElementById('confirmOkBtn').className   = 'btn btn-danger';
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+function deleteAllGuests() {
+  const all = loadGuests();
+  if (!all.length) return;
+  pendingDeleteAll = true;
+  pendingDeleteId  = null;
+  document.getElementById('confirmTitle').textContent = 'Hapus Semua Tamu';
+  document.getElementById('confirmBody').textContent  =
+    `Yakin ingin menghapus semua ${all.length} tamu? Tindakan ini tidak dapat dibatalkan.`;
+  document.getElementById('confirmOkBtn').textContent = '🗑️ Hapus Semua';
+  document.getElementById('confirmOkBtn').className   = 'btn btn-danger';
+  document.getElementById('confirmModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('confirmModal').classList.remove('open');
+  pendingDeleteId  = null;
+  pendingDeleteAll = false;
+}
+
+document.getElementById('confirmOkBtn').addEventListener('click', function() {
+  if (pendingDeleteAll) {
+    saveGuests([]);
+    showToast('🗑️ Semua tamu dihapus', 'success');
+  } else if (pendingDeleteId) {
+    const guests = loadGuests().filter(g => g.id !== pendingDeleteId);
+    saveGuests(guests);
+    showToast('🗑️ Tamu dihapus', 'success');
+  }
+  closeModal();
+  renderGuestTable();
+});
+
+document.getElementById('confirmModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+/* ════════════════════════════════════════════════════════
+   GLOBAL ACTIONS
+════════════════════════════════════════════════════════ */
+function copyAllLinks() {
+  const guests = loadGuests();
+  if (!guests.length) { showToast('Belum ada tamu', 'error'); return; }
+  const lines = guests.map(g => g.nama + ': ' + buildLink(g.kode));
+  copyText(lines.join('\n'), `${guests.length} link disalin`);
+}
+
+function exportCSV() {
+  const guests = loadGuests();
+  if (!guests.length) { showToast('Belum ada tamu untuk diexport', 'error'); return; }
+
+  const header = ['nama', 'kode', 'link', 'no_hp', 'kategori', 'jumlah_tamu'];
+  const rows   = guests.map(g => [
+    csvEscape(g.nama),
+    csvEscape(g.kode),
+    csvEscape(buildLink(g.kode)),
+    csvEscape(g.noHp || ''),
+    csvEscape(g.kategori || ''),
+    g.jumlahTamu || 1,
+  ]);
+
+  const csv  = [header, ...rows].map(r => r.join(',')).join('\r\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'daftar-tamu-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast(`⬇️ CSV dengan ${guests.length} tamu diunduh`, 'success');
+}
+
+function csvEscape(val) {
+  const s = String(val == null ? '' : val);
+  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+/* ════════════════════════════════════════════════════════
+   PREVIEW
+════════════════════════════════════════════════════════ */
+function openPreview() {
+  window.open('index.html?draft=1', '_blank', 'noopener');
+}
+
+/* ════════════════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+  initTemplate();
+  renderGuestTable();
+});
+</script>
+</body>
+</html>
