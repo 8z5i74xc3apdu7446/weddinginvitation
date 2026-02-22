@@ -358,7 +358,7 @@ input[type="color"] { width: 42px; height: 34px; border: 1.5px solid #e5e7eb; bo
     <div class="section" id="section-12">
       <div class="section-header"><div class="section-title">&#128279; Pengaturan Link</div><span class="badge-optional">opsional</span></div>
       <div class="card">
-        <div class="form-group"><label class="label">Base URL</label><input type="url" id="baseUrl" value="https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/" oninput="debounceSave();updateLinkPreview()"></div>
+        <div class="form-group"><label class="label">Base URL</label><input type="url" id="baseUrl" oninput="debounceSave();updateLinkPreview()"></div>
         <div class="form-group"><label class="label">Format Query Parameter</label><div class="radio-group"><label class="radio-option"><input type="radio" name="paramFormat" value="?to=" checked onchange="debounceSave();updateLinkPreview()"> ?to=</label><label class="radio-option"><input type="radio" name="paramFormat" value="?nama=" onchange="debounceSave();updateLinkPreview()"> ?nama=</label><label class="radio-option"><input type="radio" name="paramFormat" value="?u=" onchange="debounceSave();updateLinkPreview()"> ?u=</label></div></div>
         <div class="form-group"><label class="label">Preview Link</label><div id="linkPreview" style="background:#f8fafc;border-radius:10px;padding:12px;font-size:12.5px;color:var(--green-mid);font-family:monospace;word-break:break-all;border:1px solid #e5e7eb;"></div></div>
         <button class="btn btn-outline" onclick="testLink()">&#128269; Test Link</button>

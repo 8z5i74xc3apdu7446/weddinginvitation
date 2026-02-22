@@ -485,6 +485,7 @@
    ════════════════════════════════════════════ */
 const LS_GUESTS   = 'wedding_guests';
 const LS_CONFIG   = 'wedding_config';
+const DEFAULT_BASE_URL = 'https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/';
 const DEFAULT_TPL =
 `Assalamu'alaikum Wr. Wb.
 
@@ -521,7 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function getConfig() {
   const cfg = lsGet(LS_CONFIG) || {};
   return {
-    baseUrl    : (cfg.baseUrl || 'https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/').replace(/\/?$/, '/'),
+    baseUrl    : (cfg.baseUrl || DEFAULT_BASE_URL).replace(/\/?$/, '/'),
     queryParam : cfg.queryParam  || 'to',
     title      : cfg.weddingTitle || 'Acara Pernikahan',
     groom      : (cfg.groom  && (cfg.groom.nickname  || cfg.groom.fullName))  || 'Mempelai Pria',
