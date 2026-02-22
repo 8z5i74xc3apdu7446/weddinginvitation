@@ -1312,6 +1312,7 @@ function downloadCSV() {
 function kirimWA(i) {
   const row = generatedRows[i];
   if (!row.no_hp) return;
+  // Normalize to Indonesian international format (+62)
   const hp = row.no_hp.replace(/[^0-9]/g,'').replace(/^0/,'62');
   const teks = encodeURIComponent(row.teks);
   window.open(`https://wa.me/${hp}?text=${teks}`, '_blank');
