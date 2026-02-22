@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bagikan Undangan</title>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --green-dark: #075e54;
+      --green-mid: #128c7e;
+      --green-light: #25d366;
+      --bg: #f0f2f5;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, var(--green-dark), var(--green-mid));
+      color: #fff;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    }
+
+    header h1 { font-size: 1.35rem; font-weight: 700; }
+
+    .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border-radius: 12px;
+      font-size: .875rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all .2s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(.97); }
+
+    .btn-primary {
+      background: var(--green-light);
+      color: #fff;
+      border-color: var(--green-light);
+    }
+    .btn-primary:hover { background: #1db954; border-color: #1db954; }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--green-dark);
+      border-color: var(--green-light);
+    }
+    .btn-secondary:hover { background: #e8f5e9; }
+
+    .btn-outline-white {
+      background: transparent;
+      color: #fff;
+      border-color: rgba(255,255,255,.6);
+    }
+    .btn-outline-white:hover { background: rgba(255,255,255,.15); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--green-dark);
+      border-color: transparent;
+      padding: 7px 12px;
+    }
+    .btn-ghost:hover { background: #e8f5e9; }
+
+    .btn-lg { padding: 13px 28px; font-size: 1rem; }
+
+    .btn-danger {
+      background: #ef4444;
+      color: #fff;
+      border-color: #ef4444;
+    }
+    .btn-danger:hover { background: #dc2626; border-color: #dc2626; }
+
+    /* ── Layout ── */
+    main { max-width: 960px; margin: 0 auto; padding: 28px 16px 80px; display: flex; flex-direction: column; gap: 24px; }
+
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.07);
+    }
+
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--green-dark);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    label.field-label {
+      display: block;
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    label.field-label-lg {
+      display: block;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      border: 2px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: .95rem;
+      font-family: inherit;
+      resize: vertical;
+      transition: border-color .2s;
+      color: var(--text);
+      background: #fafafa;
+    }
+    textarea:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: var(--green-light);
+      background: #fff;
+    }
+
+    .field-note {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ── Upload area ── */
+    .upload-area {
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      padding: 28px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .2s;
+      background: #fafafa;
+    }
+    .upload-area:hover, .upload-area.dragover {
+      border-color: var(--green-light);
+      background: #e8f5e9;
+    }
+    .upload-area input[type="file"] { display: none; }
+    .upload-area .upload-icon { font-size: 2rem; margin-bottom: 8px; }
+    .upload-area p { color: var(--muted); font-size: .9rem; }
+    .upload-area strong { color: var(--green-dark); }
+
+    /* ── Import preview table ── */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+      margin-top: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .875rem;
+    }
+    thead th {
+      background: var(--green-dark);
+      color: #fff;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    tbody tr:nth-child(even) { background: #f9fafb; }
+    tbody tr:hover { background: #e8f5e9; }
+    tbody td {
+      padding: 9px 14px;
+      border-bottom: 1px solid #f3f4f6;
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .link-cell {
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--green-mid);
+      font-size: .8rem;
+    }
+
+    /* ── Variable badges ── */
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .var-badge {
+      background: #e8f5e9;
+      color: var(--green-dark);
+      border: 1px solid #a5d6a7;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: .8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      font-family: 'Courier New', monospace;
+    }
+    .var-badge:hover {
+      background: var(--green-light);
+      color: #fff;
+      border-color: var(--green-light);
+    }
+
+    /* ── Action icon buttons ── */
+    .actions-cell { display: flex; gap: 4px; flex-wrap: nowrap; }
+
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      cursor: pointer;
+      font-size: .9rem;
+      transition: all .15s;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .icon-btn:hover { background: #e8f5e9; border-color: var(--green-light); }
+    .icon-btn.wa { color: #25d366; }
+    .icon-btn.wa:hover { background: #dcfce7; }
+
+    /* ── Global action bar ── */
+    .global-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding-top: 16px;
+      border-top: 1px solid #f3f4f6;
+      margin-top: 16px;
+    }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .stat-pill {
+      background: #e8f5e9;
+      color: var(--green-dark);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: .82rem;
+      font-weight: 600;
+    }
+
+    /* ── Toast ── */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .toast {
+      background: #1f2937;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: .875rem;
+      font-weight: 500;
+      box-shadow: 0 4px 16px rgba(0,0,0,.25);
+      animation: slideUp .3s ease forwards;
+      max-width: 320px;
+    }
+    .toast.success { background: var(--green-dark); }
+    .toast.error { background: #dc2626; }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to   { opacity: 0; transform: translateY(-8px); }
+    }
+
+    /* ── Misc ── */
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      padding: 32px 20px;
+      font-size: .95rem;
+    }
+    .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+    .badge-count {
+      background: var(--green-light);
+      color: #fff;
+      border-radius: 20px;
+      font-size: .7rem;
+      padding: 2px 8px;
+      margin-left: 4px;
+      font-weight: 700;
+    }
+
+    .import-clear-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.1rem; }
+      .card { padding: 16px; }
+      .btn-lg { padding: 11px 20px; font-size: .95rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <h1>🎁 Bagikan Undangan</h1>
+  <div class="header-actions">
+    <a href="admin.html" class="btn btn-outline-white">← Kembali ke Admin</a>
+    <button class="btn btn-primary" onclick="openPreview()">👁 Tampilkan Undangan</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── Section A: Manual Input ── -->
+  <div class="card" id="section-manual">
+    <div class="section-title">✏️ A — Input Nama Tamu Manual</div>
+    <label class="field-label-lg" for="guestInput">Silakan Masukkan Nama Tamu</label>
+    <textarea id="guestInput" rows="6"
+      placeholder="Bapak Ahmad&#10;Ibu Siti &amp; Keluarga&#10;Rekan Kantor - Tim Finance"></textarea>
+    <p class="field-note">💡 Gunakan baris baru untuk memisahkan nama</p>
+  </div>
+
+  <!-- ── Section B: Import Excel/CSV ── -->
+  <div class="card" id="section-import">
+    <div class="section-title">📊 B — Import Excel / CSV</div>
+    <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()"
+         ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+      <input type="file" id="fileInput" accept=".xlsx,.csv,.xls" onchange="handleFile(event)" />
+      <div class="upload-icon">📁</div>
+      <p><strong>Klik untuk upload</strong> atau seret file ke sini</p>
+      <p style="margin-top:4px">Format: <strong>.xlsx</strong>, <strong>.xls</strong>, <strong>.csv</strong></p>
+    </div>
+    <p class="field-note" style="margin-top:10px">
+      Kolom yang didukung: <code>nama</code> (wajib), <code>kategori</code>, <code>no_hp</code>,
+      <code>jumlah_tamu</code>, <code>kode</code>
+    </p>
+
+    <div id="importPreview" style="display:none">
+      <div class="import-clear-row">
+        <span id="importCount" class="stat-pill"></span>
+        <button class="btn btn-danger" style="padding:6px 14px;font-size:.8rem" onclick="clearImport()">🗑 Hapus Import</button>
+      </div>
+      <div class="table-wrapper">
+        <table id="importTable">
+          <thead>
+            <tr>
+              <th>#</th><th>Nama</th><th>Kategori</th><th>No HP</th><th>Jumlah Tamu</th><th>Kode</th>
+            </tr>
+          </thead>
+          <tbody id="importBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Section C: Template ── -->
+  <div class="card" id="section-template">
+    <div class="section-title">📝 C — Template Teks Pengantar</div>
+    <div class="badge-row" id="varBadges">
+      <span class="var-badge" onclick="insertVar('[nama]')">[nama]</span>
+      <span class="var-badge" onclick="insertVar('[judul-undangan]')">[judul-undangan]</span>
+      <span class="var-badge" onclick="insertVar('[link-undangan]')">[link-undangan]</span>
+      <span class="var-badge" onclick="insertVar('[mempelai-wanita]')">[mempelai-wanita]</span>
+      <span class="var-badge" onclick="insertVar('[mempelai-pria]')">[mempelai-pria]</span>
+      <span class="var-badge" onclick="insertVar('[yang-mengundang]')">[yang-mengundang]</span>
+    </div>
+    <textarea id="templateInput" rows="14" spellcheck="false"></textarea>
+    <p class="field-note">💡 Klik badge variabel di atas untuk menyisipkan ke posisi kursor</p>
+    <div style="margin-top:12px">
+      <button class="btn btn-secondary" onclick="resetTemplate()">↩ Reset Template Default</button>
+    </div>
+  </div>
+
+  <!-- ── Section D: Generate ── -->
+  <div class="card" id="section-generate" style="text-align:center">
+    <div class="section-title" style="justify-content:center">⚡ D — Generate Link Undangan</div>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:20px">
+      Gabungkan semua nama tamu dari input manual &amp; import, lalu buat link undangan untuk setiap tamu.
+    </p>
+    <button class="btn btn-primary btn-lg" onclick="generateLinks()">⚡ Generate Link</button>
+    <button class="btn btn-secondary" style="margin-left:10px" onclick="clearAll()">🗑 Hapus Semua</button>
+  </div>
+
+  <!-- ── Section E: Results ── -->
+  <div class="card" id="section-results" style="display:none">
+    <div class="section-title">
+      📋 E — Hasil Undangan
+      <span class="badge-count" id="resultCount">0</span>
+    </div>
+
+    <div class="stats-bar" id="statsBar"></div>
+
+    <div class="table-wrapper">
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th style="width:40px">#</th>
+            <th>Nama Tamu</th>
+            <th>Kode / Slug</th>
+            <th>Link Undangan</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+
+    <div class="global-actions">
+      <button class="btn btn-primary" onclick="copyAllTexts()">📋 Salin Semua Teks</button>
+      <button class="btn btn-secondary" onclick="downloadCSV()">⬇ Download CSV</button>
+
+    </div>
+  </div>
+
+</main>
+
+<!-- ── Toast container ── -->
+<div id="toast-container"></div>
+
+<script>
+/* ════════════════════════════════════════════
+   STATE
+   ════════════════════════════════════════════ */
+const LS_GUESTS   = 'wedding_guests';
+const LS_CONFIG   = 'wedding_config';
+const DEFAULT_BASE_URL = 'https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/';
+const DEFAULT_TPL =
+`Assalamu'alaikum Wr. Wb.
+
+Yth. [nama]
+Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri [judul-undangan] putra-putri kami:
+
+[mempelai-pria] & [mempelai-wanita]
+
+Link undangan:
+[link-undangan]
+
+Hormat kami,
+[yang-mengundang]`;
+
+let importedRows  = [];   // rows from Excel/CSV
+let guests        = [];   // final guest list with slugs / links
+
+/* ════════════════════════════════════════════
+   INIT
+   ════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('templateInput').value = DEFAULT_TPL;
+
+  const saved = lsGet(LS_GUESTS);
+  if (saved && saved.length) {
+    guests = saved;
+    renderResults();
+  }
+});
+
+/* ════════════════════════════════════════════
+   CONFIG HELPERS
+   ════════════════════════════════════════════ */
+function getConfig() {
+  const cfg = lsGet(LS_CONFIG) || {};
+  return {
+    baseUrl    : (cfg.baseUrl || DEFAULT_BASE_URL).replace(/\/?$/, '/'),
+    queryParam : cfg.queryParam  || 'to',
+    title      : cfg.weddingTitle || 'Acara Pernikahan',
+    groom      : (cfg.groom  && (cfg.groom.nickname  || cfg.groom.fullName))  || 'Mempelai Pria',
+    bride      : (cfg.bride  && (cfg.bride.nickname  || cfg.bride.fullName))  || 'Mempelai Wanita',
+    invitedBy  : cfg.invitedBy   || 'Keluarga Kami',
+  };
+}
+
+function buildLink(slug) {
+  const { baseUrl, queryParam } = getConfig();
+  return `${baseUrl}?${queryParam}=${encodeURIComponent(slug)}`;
+}
+
+/* ════════════════════════════════════════════
+   TEMPLATE
+   ════════════════════════════════════════════ */
+function resetTemplate() {
+  document.getElementById('templateInput').value = DEFAULT_TPL;
+  toast('Template direset ke default', 'success');
+}
+
+function insertVar(variable) {
+  const ta  = document.getElementById('templateInput');
+  const s   = ta.selectionStart;
+  const e   = ta.selectionEnd;
+  const val = ta.value;
+  ta.value  = val.substring(0, s) + variable + val.substring(e);
+  ta.selectionStart = ta.selectionEnd = s + variable.length;
+  ta.focus();
+}
+
+function fillTemplate(template, guest) {
+  const cfg = getConfig();
+  return template
+    .replace(/\[nama\]/g,            guest.nama)
+    .replace(/\[judul-undangan\]/g,  cfg.title)
+    .replace(/\[link-undangan\]/g,   guest.link)
+    .replace(/\[mempelai-wanita\]/g, cfg.bride)
+    .replace(/\[mempelai-pria\]/g,   cfg.groom)
+    .replace(/\[yang-mengundang\]/g, cfg.invitedBy);
+}
+
+/* ════════════════════════════════════════════
+   SLUG
+   ════════════════════════════════════════════ */
+function toSlug(name) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/[\s_]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function deduplicateSlugs(list) {
+  const seen = {};
+  return list.map(g => {
+    const base = g.kode || toSlug(g.nama) || 'tamu';
+    if (!seen[base]) {
+      seen[base] = 0;
+      return { ...g, slug: base };
+    }
+    seen[base]++;
+    return { ...g, slug: `${base}-${String(seen[base]).padStart(3, '0')}` };
+  });
+}
+
+/* ════════════════════════════════════════════
+   GENERATE
+   ════════════════════════════════════════════ */
+function generateLinks() {
+  const manualLines = document.getElementById('guestInput').value
+    .split('\n')
+    .map(l => l.trim())
+    .filter(Boolean)
+    .map(l => ({ nama: l, kategori: '', no_hp: '', jumlah_tamu: '', kode: '' }));
+
+  const combined = [...manualLines, ...importedRows];
+
+  if (!combined.length) {
+    toast('Masukkan nama tamu terlebih dahulu!', 'error');
+    return;
+  }
+
+  const withSlugs = deduplicateSlugs(combined);
+  guests = withSlugs.map(g => ({
+    ...g,
+    slug : g.slug,
+    link : buildLink(g.slug),
+  }));
+
+  lsSet(LS_GUESTS, guests);
+  renderResults();
+  document.getElementById('section-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  toast(`✅ ${guests.length} link undangan berhasil dibuat!`, 'success');
+}
+
+/* ════════════════════════════════════════════
+   RENDER RESULTS
+   ════════════════════════════════════════════ */
+function renderResults() {
+  const section = document.getElementById('section-results');
+  const tbody   = document.getElementById('resultsBody');
+  const tpl     = document.getElementById('templateInput').value;
+
+  section.style.display = 'block';
+  document.getElementById('resultCount').textContent = guests.length;
+
+  // stats
+  const withHP  = guests.filter(g => g.no_hp && g.no_hp.trim()).length;
+  document.getElementById('statsBar').innerHTML =
+    `<span class="stat-pill">👥 Total: ${guests.length}</span>` +
+    `<span class="stat-pill">💬 Ada No HP: ${withHP}</span>` +
+    `<span class="stat-pill">📭 Tanpa No HP: ${guests.length - withHP}</span>`;
+
+  tbody.innerHTML = guests.map((g, i) => {
+    const msg      = fillTemplate(tpl, g);
+    const encoded  = encodeURIComponent(msg);
+    const waNum    = normalizePhone(g.no_hp || '');
+    const waBtn    = waNum
+      ? `<a href="https://wa.me/${waNum}?text=${encoded}" target="_blank" rel="noopener noreferrer"
+            class="icon-btn wa" title="Kirim WA">💬</a>`
+      : `<span class="icon-btn" style="opacity:.3;cursor:default" title="Tidak ada no HP">💬</span>`;
+
+    return `<tr>
+      <td style="color:var(--muted);font-size:.8rem">${i + 1}</td>
+      <td><strong>${escHtml(g.nama)}</strong>${g.kategori ? `<br><span style="font-size:.75rem;color:var(--muted)">${escHtml(g.kategori)}</span>` : ''}</td>
+      <td><code style="font-size:.8rem;color:var(--green-dark)">${escHtml(g.slug)}</code></td>
+      <td>
+        <div class="link-cell" title="${escHtml(g.link)}">${escHtml(g.link)}</div>
+      </td>
+      <td>
+        <div class="actions-cell">
+          <button class="icon-btn" onclick="copyLink(${i})" title="Salin Link">📋</button>
+          <button class="icon-btn" onclick="copyText(${i})" title="Salin Teks Undangan">📄</button>
+          ${waBtn}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+/* ════════════════════════════════════════════
+   COPY / WA ACTIONS
+   ════════════════════════════════════════════ */
+function copyLink(i) {
+  copyToClipboard(guests[i].link, `Link untuk "${guests[i].nama}" disalin!`);
+}
+
+function copyText(i) {
+  const tpl = document.getElementById('templateInput').value;
+  const msg = fillTemplate(tpl, guests[i]);
+  copyToClipboard(msg, `Teks untuk "${guests[i].nama}" disalin!`);
+}
+
+function copyAllTexts() {
+  if (!guests.length) { toast('Belum ada tamu!', 'error'); return; }
+  const tpl  = document.getElementById('templateInput').value;
+  const all  = guests.map(g => fillTemplate(tpl, g)).join('\n---\n');
+  copyToClipboard(all, `Semua ${guests.length} teks undangan disalin!`);
+}
+
+/* ════════════════════════════════════════════
+   DOWNLOAD CSV
+   ════════════════════════════════════════════ */
+function downloadCSV() {
+  if (!guests.length) { toast('Belum ada tamu!', 'error'); return; }
+  const header = ['Nama', 'Slug', 'Link', 'No HP'];
+  const rows   = guests.map(g => [
+    csvCell(g.nama),
+    csvCell(g.slug),
+    csvCell(g.link),
+    csvCell(g.no_hp || ''),
+  ]);
+  const csv    = [header, ...rows].map(r => r.join(',')).join('\r\n');
+  downloadFile(csv, 'undangan-tamu.csv', 'text/csv');
+  toast('⬇ CSV berhasil diunduh!', 'success');
+}
+
+/* ════════════════════════════════════════════
+   CLEAR
+   ════════════════════════════════════════════ */
+function clearAll() {
+  if (!confirm('Hapus semua data tamu?')) return;
+  guests = [];
+  importedRows = [];
+  lsSet(LS_GUESTS, []);
+  document.getElementById('guestInput').value = '';
+  clearImport();
+  document.getElementById('section-results').style.display = 'none';
+  toast('Semua data tamu dihapus', 'success');
+}
+
+function clearImport() {
+  importedRows = [];
+  document.getElementById('importPreview').style.display = 'none';
+  document.getElementById('importBody').innerHTML  = '';
+  document.getElementById('fileInput').value       = '';
+}
+
+/* ════════════════════════════════════════════
+   FILE IMPORT (SheetJS)
+   ════════════════════════════════════════════ */
+function handleFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  readFile(file);
+}
+
+function onDragOver(e)  { e.preventDefault(); document.getElementById('uploadArea').classList.add('dragover'); }
+function onDragLeave()  { document.getElementById('uploadArea').classList.remove('dragover'); }
+function onDrop(e) {
+  e.preventDefault();
+  onDragLeave();
+  const file = e.dataTransfer.files[0];
+  if (file) readFile(file);
+}
+
+function readFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data  = new Uint8Array(ev.target.result);
+      const wb    = XLSX.read(data, { type: 'array' });
+      const ws    = wb.Sheets[wb.SheetNames[0]];
+      const raw   = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      processRows(raw);
+    } catch (err) {
+      toast('Gagal membaca file: ' + err.message, 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function processRows(raw) {
+  if (!raw.length) { toast('File kosong atau tidak ada data!', 'error'); return; }
+
+  // normalize column names (case-insensitive, trim)
+  const normalized = raw.map(row => {
+    const n = {};
+    Object.keys(row).forEach(k => { n[k.toLowerCase().trim()] = row[k]; });
+    return n;
+  });
+
+  const valid = normalized.filter(r => (r.nama || '').toString().trim());
+  if (!valid.length) { toast('Kolom "nama" tidak ditemukan atau semua kosong!', 'error'); return; }
+
+  importedRows = valid.map(r => ({
+    nama        : (r.nama        || '').toString().trim(),
+    kategori    : (r.kategori    || '').toString().trim(),
+    no_hp       : (r.no_hp       || '').toString().trim(),
+    jumlah_tamu : (r.jumlah_tamu || '').toString().trim(),
+    kode        : (r.kode        || '').toString().trim(),
+  }));
+
+  renderImportPreview();
+  toast(`✅ ${importedRows.length} baris berhasil diimpor`, 'success');
+}
+
+function renderImportPreview() {
+  const tbody = document.getElementById('importBody');
+  tbody.innerHTML = importedRows.map((r, i) => `<tr>
+    <td style="color:var(--muted)">${i + 1}</td>
+    <td>${escHtml(r.nama)}</td>
+    <td>${escHtml(r.kategori)}</td>
+    <td>${escHtml(r.no_hp)}</td>
+    <td>${escHtml(r.jumlah_tamu)}</td>
+    <td><code style="font-size:.78rem">${escHtml(r.kode || '—')}</code></td>
+  </tr>`).join('');
+  document.getElementById('importCount').textContent = `${importedRows.length} baris diimpor`;
+  document.getElementById('importPreview').style.display = 'block';
+}
+
+/* ════════════════════════════════════════════
+   PREVIEW
+   ════════════════════════════════════════════ */
+function openPreview() {
+  window.open('index.html?preview=1', '_blank');
+}
+
+/* ════════════════════════════════════════════
+   UTILITIES
+   ════════════════════════════════════════════ */
+function normalizePhone(raw) {
+  let p = raw.toString().trim();
+  if (p.startsWith('+')) p = p.slice(1);
+  p = p.replace(/\D/g, '');
+  if (p.startsWith('0')) p = '62' + p.slice(1);
+  return p;
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function csvCell(val) {
+  const s = String(val).replace(/"/g, '""');
+  return /[,"\r\n]/.test(s) ? `"${s}"` : s;
+}
+
+function downloadFile(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+function copyToClipboard(text, successMsg) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text)
+      .then(() => toast(successMsg || 'Disalin!', 'success'))
+      .catch(() => fallbackCopy(text, successMsg));
+  } else {
+    fallbackCopy(text, successMsg);
+  }
+}
+
+function fallbackCopy(text, msg) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;top:-9999px;opacity:0';
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand('copy');
+    toast(msg || 'Disalin!', 'success');
+  } catch {
+    toast('Gagal menyalin teks', 'error');
+  }
+  document.body.removeChild(ta);
+}
+
+function toast(msg, type = '') {
+  const container = document.getElementById('toast-container');
+  const el        = document.createElement('div');
+  el.className    = `toast${type ? ' ' + type : ''}`;
+  el.textContent  = msg;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.animation = 'fadeOut .3s ease forwards';
+    setTimeout(() => el.remove(), 320);
+  }, 3000);
+}
+
+function lsGet(key) {
+  try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
+}
+function lsSet(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+}
+
+
+</script>
+</body>
+</html>
