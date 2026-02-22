@@ -701,13 +701,41 @@
   </div>
 
   <div class="toast" id="toast"></div>
+
+  <!-- ADMIN BACK BUTTON (only visible in draft/preview mode) -->
+  <div id="adminBackBtn" style="display:none;position:absolute;bottom:70px;right:12px;z-index:50">
+    <a href="admin.html" style="background:#075e54;color:#fff;padding:8px 12px;border-radius:20px;font-size:12px;text-decoration:none;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.2)">⚙️ Admin</a>
+  </div>
 </div>
 </div>
 
 <script>
 // ══════════════════════════════════════════════════════
+// ADMIN STORAGE HELPERS
+// ══════════════════════════════════════════════════════
+function loadAdminConfig() {
+  try { return JSON.parse(localStorage.getItem('wedding_config') || 'null'); } catch(e) { return null; }
+}
+function loadGuestBySlug(slug) {
+  try {
+    const guests = JSON.parse(localStorage.getItem('wedding_guests') || '[]');
+    return guests.find(g => g.kode === slug) || null;
+  } catch(e) { return null; }
+}
+function saveRsvpToStorage(data) {
+  try {
+    const list = JSON.parse(localStorage.getItem('wedding_rsvp') || '[]');
+    const idx = list.findIndex(r => r.kodeTamu === data.kodeTamu);
+    const entry = { ...data, createdAt: new Date().toISOString() };
+    if (idx >= 0) list[idx] = entry; else list.push(entry);
+    localStorage.setItem('wedding_rsvp', JSON.stringify(list));
+  } catch(e) {}
+}
+const _cfg = loadAdminConfig();
+
+// ══════════════════════════════════════════════════════
 // CONFIG
-// ═══════════════════════════════��══════════════════════
+// ══════════════════════════════════════════════════════
 const CONFIG = {
   groupName:"Warga Desa Penari",
   groupDesc:"Pengumuman Resmi & Silaturahmi Warga",
@@ -750,6 +778,25 @@ const CONFIG = {
     {name:"Anda",role:"Tamu Undangan",emoji:"🙂"}
   ]
 };
+
+// ══════════════════════════════════════════════════════
+// ADMIN CONFIG OVERRIDES
+// ══════════════════════════════════════════════════════
+if (_cfg) {
+  if (_cfg.groupName) CONFIG.groupName = _cfg.groupName;
+  if (_cfg.groupDesc) CONFIG.groupDesc = _cfg.groupDesc;
+  if (_cfg.bride?.nickname || _cfg.bride?.fullName) CONFIG.couple.brideName = _cfg.bride.nickname || _cfg.bride.fullName;
+  if (_cfg.groom?.nickname || _cfg.groom?.fullName) CONFIG.couple.groomName = _cfg.groom.nickname || _cfg.groom.fullName;
+  if (_cfg.akad?.mapsUrl) CONFIG.locationUrl = _cfg.akad.mapsUrl;
+  if (_cfg.akad?.date) CONFIG.eventDateLabel = _cfg.akad.date;
+  if (_cfg.akad?.locationName) CONFIG.eventPlace = _cfg.akad.locationName;
+  if (_cfg.photos?.gallery?.length) CONFIG.allPhotos = _cfg.photos.gallery;
+  if (_cfg.photos?.preview?.length >= 3) CONFIG.photos = _cfg.photos.preview.slice(0,3);
+  if (_cfg.instagram?.bride) CONFIG.instagram = CONFIG.instagram || {};
+  if (_cfg.instagram?.bride) CONFIG.instagram.nana = _cfg.instagram.bride;
+  if (_cfg.instagram?.groom) CONFIG.instagram = CONFIG.instagram || {};
+  if (_cfg.instagram?.groom) CONFIG.instagram.bowo = _cfg.instagram.groom;
+}
 
 // ══════════════════════════════════════════════════════
 // HELPERS
@@ -1253,6 +1300,14 @@ $("#sendRSVP").onclick=async()=>{
   const count=($("#rsvpCount").value||"1").trim();
   if(!name){ toast("Nama belum diisi"); return; }
   if(!attend){ toast("Pilih kehadiran dulu"); return; }
+  const toParam = qs("to") || qs("nama") || qs("u") || "";
+  saveRsvpToStorage({
+    kodeTamu: toParam,
+    namaTamu: name,
+    status: attend === "Hadir" ? "hadir" : attend === "Tidak Hadir" ? "tidak" : "ragu",
+    jumlahHadir: parseInt(count) || 1,
+    pesan: wish
+  });
   const text=`✅ RSVP\nNama: ${name}\n${wish?`Ucapan: ${wish}\n`:""}Kehadiran: ${attend}\nJumlah: ${count} orang`;
   _lastSender="";
   await sendMsg({dir:"out",text,typing:false});
@@ -1320,10 +1375,15 @@ $("#goLocation").onclick=()=>window.open(CONFIG.locationUrl,"_blank","noopener")
 // SPLASH → START
 // ══════════════════════════════════════════════════════
 async function splashSequence(){
-  const name=qs("name")||"";
+  const toParam = qs("to") || qs("nama") || qs("u") || "";
+  const name = toParam || qs("name") || "";
   await wait(300);
-  if(name){ $("#guestNameDisplay").textContent=escapeHtml(name); }
-  else { $("#guestNameDisplay").style.display="none"; }
+  if(name && name !== "preview"){
+    const guest = toParam ? loadGuestBySlug(toParam) : null;
+    const guestName = guest ? guest.nama : (toParam ? toParam.replace(/-\d+$/, '').replace(/-/g, ' ') : name);
+    if(guestName){ $("#guestNameDisplay").textContent=escapeHtml(guestName); }
+    else { $("#guestNameDisplay").style.display="none"; }
+  } else { $("#guestNameDisplay").style.display="none"; }
 }
 
 function enableMain(){
@@ -1368,6 +1428,8 @@ $("#openInviteBtn").addEventListener("click", startApp);
   document.getElementById("musicIconOn").style.display  = "none";
   document.getElementById("musicIconOff").style.display = "";
   splashSequence();
+  // Show admin back button in draft/preview mode
+  if(qs("draft")==="1"||qs("preview")==="1") document.getElementById("adminBackBtn").style.display="block";
 })();
 </script>
 </body>

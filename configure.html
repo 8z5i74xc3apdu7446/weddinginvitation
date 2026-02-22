@@ -1,0 +1,1770 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Konfigurasi Undangan Digital</title>
+<style>
+:root{--green-dark:#075e54;--green-mid:#128c7e;--green-light:#25d366;--bg:#f0f2f5;--card:#ffffff;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--red:#ef4444;--red-bg:#fee2e2;--sidebar-w:240px;--r:8px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+/* ── Sidebar ── */
+.sidebar{width:var(--sidebar-w);background:var(--green-dark);color:#fff;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:100;transition:transform .25s;display:flex;flex-direction:column}
+.sb-head{padding:16px;border-bottom:1px solid rgba(255,255,255,.12);flex-shrink:0}
+.sb-logo{font-size:13px;font-weight:700;color:var(--green-light);letter-spacing:.4px;text-transform:uppercase}
+.sb-sub{font-size:11px;color:rgba(255,255,255,.5);margin-top:3px}
+.sb-prog{padding:11px 16px;border-bottom:1px solid rgba(255,255,255,.1);flex-shrink:0}
+.sb-prog-label{font-size:11px;color:rgba(255,255,255,.65);margin-bottom:5px}
+.prog-bar{height:4px;background:rgba(255,255,255,.15);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--green-light);border-radius:2px;transition:width .35s ease}
+.nav-list{list-style:none;padding:6px 0;flex:1}
+.nav-item a{display:flex;align-items:center;gap:8px;padding:9px 14px;color:rgba(255,255,255,.72);text-decoration:none;font-size:12.5px;cursor:pointer;transition:background .12s,color .12s}
+.nav-item a:hover,.nav-item a.active{background:rgba(255,255,255,.09);color:#fff}
+.nav-chk{width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(255,255,255,.28);flex-shrink:0;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:9px}
+.nav-chk.ok{background:var(--green-light);border-color:var(--green-light);color:#fff}
+.nav-lbl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nb-r{font-size:9px;padding:1px 5px;border-radius:10px;background:rgba(239,68,68,.25);color:#fca5a5}
+.nb-o{font-size:9px;padding:1px 5px;border-radius:10px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.5)}
+/* ── Main ── */
+.main{margin-left:var(--sidebar-w);display:flex;flex-direction:column;min-height:100vh}
+/* ── Header ── */
+.header{background:#fff;border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;gap:10px}
+.h-left{display:flex;align-items:center;gap:10px}
+.hamburger{display:none;background:none;border:none;font-size:20px;cursor:pointer;color:var(--green-dark);padding:4px}
+.h-title{font-size:15px;font-weight:600;color:var(--green-dark)}
+.h-actions{display:flex;gap:6px;flex-wrap:nowrap;align-items:center}
+.btn{padding:7px 12px;border-radius:var(--r);font-size:12.5px;font-weight:500;cursor:pointer;border:none;transition:opacity .12s,transform .1s;display:inline-flex;align-items:center;gap:5px;text-decoration:none;white-space:nowrap;line-height:1.4;font-family:inherit}
+.btn:hover{opacity:.88}.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--green-light);color:#fff}
+.btn-secondary{background:var(--green-mid);color:#fff}
+.btn-outline{background:#fff;border:1.5px solid var(--border);color:var(--text)}
+.btn-ghost{background:var(--bg);color:var(--muted);border:1px solid var(--border)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-sm{padding:5px 9px;font-size:12px}
+/* ── Content ── */
+.content{padding:24px;max-width:920px}
+/* ── Section Cards ── */
+.section-card{background:var(--card);border-radius:12px;border:1px solid var(--border);margin-bottom:20px}
+.sec-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;gap:8px}
+.sec-head.collapsed{border-bottom:none;border-radius:12px}
+.sec-title{font-size:14px;font-weight:600;color:var(--green-dark);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sec-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:var(--green-light);color:#fff;border-radius:50%;font-size:11px;font-weight:700;flex-shrink:0}
+.chevron{color:var(--muted);font-size:12px;transition:transform .2s;flex-shrink:0}
+.chevron.open{transform:rotate(180deg)}
+.sec-body{padding:18px}
+.sec-body.hide{display:none}
+/* ── Subsections ── */
+.subsec{background:#f8fbfa;border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:14px}
+.subsec-title{font-size:11.5px;font-weight:700;color:var(--green-mid);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+/* ── Form ── */
+.fg{margin-bottom:14px}.fg:last-child{margin-bottom:0}
+.flbl{display:block;font-size:12.5px;font-weight:500;color:var(--text);margin-bottom:5px}
+.finp,.fsel,.ftxt{width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--r);font-size:13.5px;color:var(--text);background:#fff;transition:border-color .15s,box-shadow .15s;outline:none;font-family:inherit}
+.finp:focus,.fsel:focus,.ftxt:focus{border-color:var(--green-light);box-shadow:0 0 0 3px rgba(37,211,102,.1)}
+.ftxt{resize:vertical;min-height:72px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.frow3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.fhint{font-size:11px;color:var(--muted);margin-top:3px}
+.fdiv{border:none;border-top:1px solid var(--border);margin:16px 0}
+/* ── Badges ── */
+.bwajib{font-style:italic;font-size:10.5px;color:var(--red);background:var(--red-bg);padding:1px 6px;border-radius:4px;margin-left:3px}
+.bopt{font-style:italic;font-size:10.5px;color:var(--muted);background:#f3f4f6;padding:1px 6px;border-radius:4px;margin-left:3px}
+/* ── Image Upload ── */
+.img-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:7px}
+.img-prev{width:130px;height:130px;border-radius:var(--r);object-fit:cover;border:2px solid var(--border);display:none}
+.img-ph{width:130px;height:130px;border-radius:var(--r);border:2px dashed var(--border);background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--muted);font-size:11.5px;cursor:pointer;transition:border-color .15s}
+.img-ph:hover{border-color:var(--green-light);color:var(--green-mid)}
+.img-ph-icon{font-size:26px}
+.img-btns{display:flex;gap:5px}
+/* ── Gallery ── */
+.gal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.gal-item{position:relative;aspect-ratio:1;border-radius:var(--r);overflow:hidden;background:var(--bg)}
+.gal-item img{width:100%;height:100%;object-fit:cover}
+.gal-del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.gal-up{border:2px dashed var(--border);border-radius:var(--r);padding:14px;text-align:center;color:var(--muted);cursor:pointer;font-size:13px;transition:border-color .15s}
+.gal-up:hover{border-color:var(--green-light)}
+.gal-ctr{font-size:12px;color:var(--muted);margin-bottom:8px}
+/* ── Toggle ── */
+.tog-grp{display:inline-flex;border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden}
+.tog-btn{padding:7px 14px;font-size:13px;cursor:pointer;background:#fff;border:none;color:var(--muted);transition:background .12s,color .12s;border-right:1px solid var(--border);font-family:inherit}
+.tog-btn:last-child{border-right:none}
+.tog-btn.active{background:var(--green-light);color:#fff}
+/* ── Countdown preview ── */
+.cd-prev{background:var(--green-dark);border-radius:var(--r);padding:16px;margin-top:10px;color:#fff;text-align:center;display:none}
+.cd-lbl{font-size:12px;color:rgba(255,255,255,.65);margin-bottom:10px}
+.cd-units{display:flex;gap:16px;justify-content:center}
+.cd-unit{text-align:center}
+.cd-num{display:block;font-size:30px;font-weight:800;color:var(--green-light);line-height:1}
+.cd-u{font-size:10px;color:rgba(255,255,255,.6);text-transform:uppercase;margin-top:2px}
+/* ── Timeline preview ── */
+.tl-wrap{background:#f8fbfa;border-radius:var(--r);padding:14px;border:1px solid var(--border);min-height:80px}
+.tl-empty{text-align:center;color:var(--muted);font-size:13px;padding:16px}
+.tl-list{border-left:2px solid var(--green-light);padding-left:14px}
+.tl-item{margin-bottom:14px;position:relative}
+.tl-item:last-child{margin-bottom:0}
+.tl-item::before{content:'';position:absolute;left:-19px;top:5px;width:9px;height:9px;border-radius:50%;background:var(--green-light);border:2px solid #fff}
+.tl-year{font-size:10.5px;font-weight:700;color:var(--green-mid);text-transform:uppercase;margin-bottom:1px}
+.tl-t{font-size:13px;font-weight:600}
+.tl-d{font-size:12px;color:var(--muted);margin-top:1px;line-height:1.45}
+/* ── Dynamic items ── */
+.dyn-item{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:8px;position:relative;padding-right:36px}
+.dyn-rm{position:absolute;top:8px;right:8px;background:var(--red-bg);color:var(--red);border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s;font-family:inherit}
+.dyn-rm:hover{background:var(--red);color:#fff}
+.dyn-empty{text-align:center;color:var(--muted);font-size:13px;padding:14px;border:1.5px dashed var(--border);border-radius:var(--r)}
+/* ── YT thumb ── */
+.yt-thumb{width:100%;max-width:300px;aspect-ratio:16/9;border-radius:var(--r);object-fit:cover;margin-top:8px;display:none;border:1px solid var(--border)}
+/* ── Audio player ── */
+.audio-pw{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:var(--r);padding:10px 12px;margin-top:8px;border:1px solid var(--border)}
+audio{flex:1;height:32px}
+/* ── Sidebar overlay ── */
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99}
+.sb-overlay.open{display:block}
+/* ── Autosave badge ── */
+#as-badge{position:fixed;bottom:18px;right:20px;background:var(--green-dark);color:#fff;padding:7px 14px;border-radius:20px;font-size:12.5px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+/* ── Toast notification ── */
+#toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%) translateY(12px);background:#1f2937;color:#fff;padding:9px 18px;border-radius:20px;font-size:13px;z-index:1000;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* ── Modals ── */
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:16px}
+.modal-ov.open{display:flex}
+.modal-box{background:#fff;border-radius:12px;width:100%;max-width:460px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-h{font-size:17px;font-weight:700;color:var(--green-dark);margin-bottom:8px}
+.modal-p{font-size:13.5px;color:var(--muted);margin-bottom:18px;line-height:1.6}
+.modal-acts{display:flex;gap:8px;justify-content:flex-end}
+/* ── Bottom nav ── */
+.bot-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);z-index:100;padding:6px 0 max(6px,env(safe-area-inset-bottom))}
+.bot-nav-inner{display:flex;justify-content:space-around}
+.bot-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--muted);font-size:10px;padding:3px 8px;cursor:pointer;background:none;border:none;font-family:inherit}
+.bot-nav-item span:first-child{font-size:18px}
+/* ── Radio group ── */
+.radio-grp{display:flex;gap:14px;flex-wrap:wrap}
+.radio-grp label{display:flex;align-items:center;gap:5px;font-size:13.5px;cursor:pointer}
+/* ── Responsive ── */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .hamburger{display:block}
+  .content{padding:14px;padding-bottom:72px}
+  .bot-nav{display:block}
+  .frow,.frow3{grid-template-columns:1fr}
+  .gal-grid{grid-template-columns:repeat(2,1fr)}
+  .h-actions .btn-text{display:none}
+  .h-actions .btn{padding:7px 9px}
+}
+@media(max-width:480px){.h-title{font-size:13px}}
+/* ── Two-col for love story section ── */
+.ls-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:768px){.ls-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- Sidebar Overlay -->
+<div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-head">
+    <div class="sb-logo">💒 Desa Penari</div>
+    <div class="sb-sub">Konfigurasi Undangan Digital</div>
+  </div>
+  <div class="sb-prog">
+    <div class="sb-prog-label" id="progLabel">0 dari 12 seksi terisi</div>
+    <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+  </div>
+  <nav>
+    <ul class="nav-list" id="navList"></ul>
+  </nav>
+</aside>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="h-left">
+      <button class="hamburger" onclick="toggleSidebar()">☰</button>
+      <span class="h-title">⚙️ Konfigurasi Undangan</span>
+    </div>
+    <div class="h-actions">
+      <a href="admin.html" class="btn btn-ghost">← <span class="btn-text">Dashboard</span></a>
+      <button class="btn btn-outline" onclick="saveDraft()">💾 <span class="btn-text">Simpan Draft</span></button>
+      <button class="btn btn-ghost" onclick="showPreviewModal()">👁️ <span class="btn-text">Tampilkan</span></button>
+      <a href="share.html" class="btn btn-ghost">🎁 <span class="btn-text">Bagikan</span></a>
+      <button class="btn btn-primary" onclick="showPublishModal()">✅ <span class="btn-text">Publish</span></button>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- ═══════════════════════════════════════
+         SECTION 1 — DATA PENGANTIN (WAJIB)
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="sec1">
+      <div class="sec-head" onclick="toggleSec('sec1')">
+        <div class="sec-title"><span class="sec-num">1</span> Data Pengantin <span class="bwajib">WAJIB</span></div>
+        <span class="chevron open" id="chev-sec1">▼</span>
+      </div>
+      <div class="sec-body" id="body-sec1">
+
+        <!-- Mempelai Pria -->
+        <div class="subsec">
+          <div class="subsec-title">🤵 Mempelai Pria</div>
+          <div class="frow">
+            <div class="fg">
+              <label class="flbl">Nama Lengkap <span class="bwajib">WAJIB</span></label>
+              <input id="groomFullName" type="text" class="finp" placeholder="Nama lengkap mempelai pria">
+            </div>
+            <div class="fg">
+              <label class="flbl">Nama Panggilan <span class="bopt">Opsional</span></label>
+              <input id="groomNickname" type="text" class="finp" placeholder="Panggilan sehari-hari">
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="flbl">Nama Ayah <span class="bwajib">WAJIB</span></label>
+              <input id="groomFatherName" type="text" class="finp" placeholder="Nama ayah kandung">
+            </div>
+            <div class="fg">
+              <label class="flbl">Nama Ibu <span class="bwajib">WAJIB</span></label>
+              <input id="groomMotherName" type="text" class="finp" placeholder="Nama ibu kandung">
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="flbl">Urutan Anak <span class="bopt">Opsional</span></label>
+              <select id="groomChildOrder" class="fsel">
+                <option value="">-- Pilih --</option>
+                <option value="1">Anak ke-1</option><option value="2">Anak ke-2</option>
+                <option value="3">Anak ke-3</option><option value="4">Anak ke-4</option>
+                <option value="5">Anak ke-5</option><option value="6">Anak ke-6</option>
+                <option value="7">Anak ke-7</option><option value="8">Anak ke-8</option>
+                <option value="9">Anak ke-9</option><option value="10">Anak ke-10</option>
+                <option value="putra-satu">Putra Satu-satunya</option>
+                <option value="putri-satu">Putri Satu-satunya</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="flbl">Instagram <span class="bopt">Opsional</span></label>
+              <input id="groomInstagram" type="text" class="finp" placeholder="@username">
+            </div>
+          </div>
+          <div class="fg">
+            <label class="flbl">Alamat <span class="bopt">Opsional</span></label>
+            <input id="groomAddress" type="text" class="finp" placeholder="Alamat mempelai pria">
+          </div>
+          <div class="fg">
+            <label class="flbl">Foto <span class="bopt">Opsional</span></label>
+            <input type="file" id="groomPhotoInput" accept="image/*" style="display:none"
+              onchange="handlePhotoUpload(this,'groomPhoto','groomPhotoPreview','groomPhotoPlaceholder','groomPhotoHapus')">
+            <div class="img-wrap">
+              <img id="groomPhotoPreview" class="img-prev" alt="Foto Mempelai Pria">
+              <div id="groomPhotoPlaceholder" class="img-ph" onclick="document.getElementById('groomPhotoInput').click()">
+                <span class="img-ph-icon">👤</span><span>Pilih Foto</span>
+              </div>
+              <div class="img-btns">
+                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('groomPhotoInput').click()">📁 Pilih</button>
+                <button class="btn btn-ghost btn-sm" id="groomPhotoHapus" style="display:none"
+                  onclick="clearPhoto('groomPhoto','groomPhotoPreview','groomPhotoPlaceholder','groomPhotoHapus')">✕ Hapus</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mempelai Wanita -->
+        <div class="subsec">
+          <div class="subsec-title">👰 Mempelai Wanita</div>
+          <div class="frow">
+            <div class="fg">
+              <label class="flbl">Nama Lengkap <span class="bwajib">WAJIB</span></label>
+              <input id="brideFullName" type="text" class="finp" placeholder="Nama lengkap mempelai wanita">
+            </div>
+            <div class="fg">
+              <label class="flbl">Nama Panggilan <span class="bopt">Opsional</span></label>
+              <input id="brideNickname" type="text" class="finp" placeholder="Panggilan sehari-hari">
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="flbl">Nama Ayah <span class="bwajib">WAJIB</span></label>
+              <input id="brideFatherName" type="text" class="finp" placeholder="Nama ayah kandung">
+            </div>
+            <div class="fg">
+              <label class="flbl">Nama Ibu <span class="bwajib">WAJIB</span></label>
+              <input id="brideMotherName" type="text" class="finp" placeholder="Nama ibu kandung">
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="flbl">Urutan Anak <span class="bopt">Opsional</span></label>
+              <select id="brideChildOrder" class="fsel">
+                <option value="">-- Pilih --</option>
+                <option value="1">Anak ke-1</option><option value="2">Anak ke-2</option>
+                <option value="3">Anak ke-3</option><option value="4">Anak ke-4</option>
+                <option value="5">Anak ke-5</option><option value="6">Anak ke-6</option>
+                <option value="7">Anak ke-7</option><option value="8">Anak ke-8</option>
+                <option value="9">Anak ke-9</option><option value="10">Anak ke-10</option>
+                <option value="putra-satu">Putra Satu-satunya</option>
+                <option value="putri-satu">Putri Satu-satunya</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="flbl">Instagram <span class="bopt">Opsional</span></label>
+              <input id="brideInstagram" type="text" class="finp" placeholder="@username">
+            </div>
+          </div>
+          <div class="fg">
+            <label class="flbl">Alamat <span class="bopt">Opsional</span></label>
+            <input id="brideAddress" type="text" class="finp" placeholder="Alamat mempelai wanita">
+          </div>
+          <div class="fg">
+            <label class="flbl">Foto <span class="bopt">Opsional</span></label>
+            <input type="file" id="bridePhotoInput" accept="image/*" style="display:none"
+              onchange="handlePhotoUpload(this,'bridePhoto','bridePhotoPreview','bridePhotoPlaceholder','bridePhotoHapus')">
+            <div class="img-wrap">
+              <img id="bridePhotoPreview" class="img-prev" alt="Foto Mempelai Wanita">
+              <div id="bridePhotoPlaceholder" class="img-ph" onclick="document.getElementById('bridePhotoInput').click()">
+                <span class="img-ph-icon">👤</span><span>Pilih Foto</span>
+              </div>
+              <div class="img-btns">
+                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('bridePhotoInput').click()">📁 Pilih</button>
+                <button class="btn btn-ghost btn-sm" id="bridePhotoHapus" style="display:none"
+                  onclick="clearPhoto('bridePhoto','bridePhotoPreview','bridePhotoPlaceholder','bridePhotoHapus')">✕ Hapus</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Umum -->
+        <div class="subsec">
+          <div class="subsec-title">📋 Info Umum</div>
+          <div class="fg">
+            <label class="flbl">Judul Undangan <span class="bwajib">WAJIB</span></label>
+            <input id="titleInput" type="text" class="finp" placeholder="Contoh: Pernikahan Budi & Ani">
+          </div>
+          <div class="fg">
+            <label class="flbl">Yang Mengundang <span class="bwajib">WAJIB</span></label>
+            <textarea id="whoInvitesInput" class="ftxt" rows="3"
+              placeholder="Contoh: Bapak H. Suharto & Ibu Hj. Sumiati&#10;beserta&#10;Bapak Drs. Widodo & Ibu Siti Rahma"></textarea>
+            <div class="fhint">Nama orang tua / keluarga yang mengundang</div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="flbl">Nama Grup <span class="bopt">Opsional</span></label>
+              <input id="groupNameInput" type="text" class="finp" placeholder="Contoh: Wedding Budi & Ani">
+            </div>
+            <div class="fg">
+              <label class="flbl">Deskripsi Grup <span class="bopt">Opsional</span></label>
+              <input id="groupDescInput" type="text" class="finp" placeholder="Tagline singkat">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         SECTION 2 — TEMA (Opsional)
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="sec2">
+      <div class="sec-head" onclick="toggleSec('sec2')">
+        <div class="sec-title"><span class="sec-num">2</span> Tema <span class="bopt">Opsional</span></div>
+        <span class="chevron open" id="chev-sec2">▼</span>
+      </div>
+      <div class="sec-body" id="body-sec2">
+        <div class="frow">
+          <div class="fg">
+            <label class="flbl">Tema Warna</label>
+            <select id="themeColor" class="fsel">
+              <option value="">-- Pilih Tema Warna --</option>
+              <option value="whatsapp-green">🌿 WhatsApp Green</option>
+              <option value="dusty-rose">🌸 Dusty Rose</option>
+              <option value="navy-gold">🌊 Navy Gold</option>
+              <option value="sage-white">🍃 Sage White</option>
+              <option value="midnight-black">🌙 Midnight Black</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="flbl">Konsep</label>
+            <select id="themeConcept" class="fsel">
+              <option value="">-- Pilih Konsep --</option>
+              <option value="modern">✨ Modern</option>
+              <option value="rustic">🌾 Rustic</option>
+              <option value="garden">🌺 Garden</option>
+              <option value="minimalist">◻️ Minimalist</option>
+              <option value="luxurious">💎 Luxurious</option>
+            </select>
+          </div>
+        </div>
+        <div class="frow">
+          <div class="fg">
+            <label class="flbl">Background</label>
+            <select id="themeBackground" class="fsel">
+              <option value="">-- Pilih Background --</option>
+              <option value="pattern">🔲 Pattern</option>
+              <option value="solid">⬜ Solid</option>
+              <option value="image">🖼️ Image</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="flbl">Font</label>
+            <select id="themeFont" class="fsel">
+              <option value="">-- Pilih Font --</option>
+              <option value="system">🖥️ System</option>
+              <option value="serif">📜 Serif</option>
+              <option value="sans-serif">🔤 Sans Serif</option>
+              <option value="monospace">💻 Monospace</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="flbl">Catatan Tema <span class="bopt">Opsional</span></label>
+          <textarea id="themeNotes" class="ftxt" rows="3" placeholder="Catatan khusus untuk desainer atau tim teknis..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         SECTION 3 — DETAIL ACARA (WAJIB)
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="sec3">
+      <div class="sec-head" onclick="toggleSec('sec3')">
+        <div class="sec-title"><span class="sec-num">3</span> Detail Acara <span class="bwajib">WAJIB</span></div>
+        <span class="chevron open" id="chev-sec3">▼</span>
+      </div>
+      <div class="sec-body" id="body-sec3">
+
+        <!-- Akad -->
+        <div class="subsec">
+          <div class="subsec-title">🕌 Akad Nikah</div>
+          <div class="frow3">
+            <div class="fg">
+              <label class="flbl">Tanggal <span class="bwajib">WAJIB</span></label>
+              <input id="akadDate" type="date" class="finp">
+            </div>
+            <div class="fg">
+              <label class="flbl">Jam Mulai <span class="bwajib">WAJIB</span></label>
+              <input id="akadTimeStart" type="time" class="finp">
+            </div>
+            <div class="fg">
+              <label class="flbl">Jam Selesai <span class="bopt">Opsional</span></label>
+              <input id="akadTimeEnd" type="time" class="finp">
+            </div>
+          </div>
+          <div class="fg">
+            <label class="flbl">Nama Lokasi <span class="bwajib">WAJIB</span></label>
+            <input id="akadLocationName" type="text" class="finp" placeholder="Contoh: Masjid Al-Hidayah">
+          </div>
+          <div class="fg">
+            <label class="flbl">Alamat Lokasi <span class="bwajib">WAJIB</span></label>
+            <textarea id="akadAddress" class="ftxt" rows="2" placeholder="Alamat lengkap tempat akad nikah"></textarea>
+          </div>
+          <div class="fg">
+            <label class="flbl">Google Maps URL <span class="bwajib">WAJIB</span></label>
+            <input id="akadMapsUrl" type="url" class="finp" placeholder="https://maps.google.com/?q=...">
+          </div>
+        </div>
+
+        <!-- Resepsi -->
+        <div class="subsec">
+          <div class="subsec-title">🎊 Resepsi</div>
+          <div class="fg">
+            <label class="flbl">Tanggal <span class="bwajib">WAJIB</span></label>
+            <input id="resepsiDate" type="date" class="finp" style="max-width:220px">
+          </div>
+          <div style="margin-bottom:12px">
+            <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px">Sesi 1</div>
+            <div class="frow">
+              <div class="fg">
+                <label class="flbl">Jam Mulai <span class="bwajib">WAJIB</span></label>
+                <input id="resepsiSesi1Start" type="time" class="finp">
+              </div>
+              <div class="fg">
+                <label class="flbl">Jam Selesai <span class="bopt">Opsional</span></label>
+                <input id="resepsiSesi1End" type="time" class="finp">
+              </div>
+            </div>
+          </div>
+          <div style="margin-bottom:12px">
+            <div style="font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px">Sesi 2 <span class="bopt">Opsional</span></div>
+            <div class="frow">
+              <div class="fg">
+                <label class="flbl">Jam Mulai</label>
+                <input id="resepsiSesi2Start" type="time" class="finp">
+              </div>
+              <div class="fg">
+                <label class="flbl">Jam Selesai</label>
+                <input id="resepsiSesi2End" type="time" class="finp">
+              </div>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="flbl">Nama Lokasi <span class="bwajib">WAJIB</span></label>
+            <input id="resepsiLocationName" type="text" class="finp" placeholder="Contoh: Gedung Serbaguna Bahagia">
+          </div>
+          <div class="fg">
+            <label class="flbl">Alamat Lokasi <span class="bwajib">WAJIB</span></label>
+            <textarea id="resepsiAddress" class="ftxt" rows="2" placeholder="Alamat lengkap tempat resepsi"></textarea>
+          </div>
+          <div class="fg">
+            <label class="flbl">Google Maps URL <span class="bwajib">WAJIB</span></label>
+            <input id="resepsiMapsUrl" type="url" class="finp" placeholder="https://maps.google.com/?q=...">
+          </div>
+          <div class="fg">
+            <label class="flbl">Dresscode <span class="bopt">Opsional</span></label>
+            <input id="resepsiDresscode" type="text" class="finp" placeholder="Contoh: Formal — Hijau Tosca & Putih">
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         SECTION 4 — COUNTDOWN (Opsional)
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="sec4">
+      <div class="sec-head" onclick="toggleSec('sec4')">
+        <div class="sec-title"><span class="sec-num">4</span> Countdown <span class="bopt">Opsional</span></div>
+        <span class="chevron open" id="chev-sec4">▼</span>
+      </div>
+      <div class="sec-body" id="body-sec4">
+        <div class="frow">
+          <div class="fg">
+            <label class="flbl">Tanggal & Waktu Target</label>
+            <input id="countdownTarget" type="datetime-local" class="finp" oninput="updateCountdown()">
+          </div>
+          <div class="fg">
+            <label class="flbl">Label Countdown</label>
+            <input id="countdownLabel" type="text" class="finp" placeholder="Contoh: Hari Pernikahan Kami" oninput="updateCountdown()">
+          </div>
+        </div>
+        <div class="cd-prev" id="cdPreview">
+          <div class="cd-lbl" id="cdLabel">Hari Pernikahan</div>
+          <div class="cd-units" id="cdUnits">
+            <div class="cd-unit"><span class="cd-num" id="cdDays">00</span><span class="cd-u">Hari</span></div>
+            <div class="cd-unit"><span class="cd-num" id="cdHours">00</span><span class="cd-u">Jam</span></div>
+            <div class="cd-unit"><span class="cd-num" id="cdMins">00</span><span class="cd-u">Menit</span></div>
+            <div class="cd-unit"><span class="cd-num" id="cdSecs">00</span><span class="cd-u">Detik</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         SECTION 5 — FOTO UTAMA (Opsional)
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="sec5">
+      <div class="sec-head" onclick="toggleSec('sec5')">
+        <div class="sec-title"><span class="sec-num">5</span> Foto Utama <span class="bopt">Opsional</span></div>
+        <span class="chevron open" id="chev-sec5">▼</span>
+      </div>
+      <div class="sec-body" id="body-sec5">
+        <div class="frow" style="align-items:start">
+          <!-- Cover -->
+          <div class="fg">
+            <label class="flbl">📸 Foto Cover</label>
+            <input type="file" id="coverInput" accept="image/*" style="display:none"
+              onchange="handlePhotoUpload(this,'cover','coverPreview','coverPlaceholder','coverHapus')">
+            <div class="img-wrap">
+              <img id="coverPreview" class="img-prev" style="width:200px;height:130px;object-fit:cover" alt="Cover">
+              <div id="coverPlaceholder" class="img-ph" style="width:200px;height:130px" onclick="document.getElementById('coverInput').click()">
+                <span class="img-ph-icon">🖼️</span><span>Foto Cover</span>
+              </div>
+              <div class="img-btns">
+                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('coverInput').click()">📁 Pilih</button>
+                <button class="btn btn-ghost btn-sm" id="coverHapus" style="display:none"
+                  onclick="clearPhoto('cover','coverPreview','coverPlaceholder','coverHapus')">✕ Hapus</button>
+              </div>
+            </div>
+          </div>
+          <!-- Together -->
+          <div class="fg">
+            <label class="flbl">💑 Foto Bersama</label>
+            <input type="file" id="togetherInput" accept="image/*" style="display:none"
+              onchange="handlePhotoUpload(this,'together','togetherPreview','togetherPlaceholder','togetherHapus')">
+            <div class="img-wrap">
+              <img id="togetherPreview" class="img-prev" style="width:200px;height:130px;object-fit:cover" alt="Foto Bersama">
+              <div id="togetherPlaceholder" class="img-ph" style="width:200px;height:130px" onclick="document.getElementById('togetherInput').click()">
+                <span class="img-ph-icon">💑</span><span>Foto Bersama</span>
+              </div>
+              <div class="img-btns">
+                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('togetherInput').click()">📁 Pilih</button>
+                <button class="btn btn-ghost btn-sm" id="togetherHapus" style="display:none"
+                  onclick="clearPhoto('together','togetherPreview','togetherPlaceholder','togetherHapus')">✕ Hapus</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <hr class="fdiv">
+        <div class="frow" style="align-items:start">
+          <!-- Groom Portrait -->
+          <div class="fg">
+            <label class="flbl">🤵 Portrait Mempelai Pria</label>
+            <input type="file" id="groomPortraitInput" accept="image/*" style="display:none"
+              onchange="handlePhotoUpload(this,'groomPortrait','groomPortraitPreview','groomPortraitPlaceholder','groomPortraitHapus')">
+            <div class="img-wrap">
+              <img id="groomPortraitPreview" class="img-prev" alt="Portrait Pria">
+              <div id="groomPortraitPlaceholder" class="img-ph" onclick="document.getElementById('groomPortraitInput').click()">
+                <span class="img-ph-icon">🤵</span><span>Portrait Pria</span>
+              </div>
+              <div class="img-btns">
+                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('groomPortraitInput').click()">📁 Pilih</button>
+                <button class="btn btn-ghost btn-sm" id="groomPortraitHapus" style="display:none"
+                  onclick="clearPhoto('groomPortrait','groomPortraitPreview','groomPortraitPlaceholder','groomPortraitHapus')">✕ Hapus</button>
+              </div>
+            </div>
+          </div>
+          <!-- Bride Portrait -->
+          <div class="fg">
+            <label class="flbl">👰 Portrait Mempelai Wanita</label>
+            <input type="file" id="bridePortraitInput" accept="image/*" style="display:none"
+              onchange="handlePhotoUpload(this,'bridePortrait','bridePortraitPreview','bridePortraitPlaceholder','bridePortraitHapus')">
+            <div class="img-wrap">
+              <img id="bridePortraitPreview" class="img-prev" alt="Portrait Wanita">
+              <div id="bridePortraitPlaceholder" class="img-ph" onclick="document.getElementById('bridePortraitInput').click()">
+                <span class="img-ph-icon">👰</span><span>Portrait Wanita</span>
+              </div>
+              <div class="img-btns">
+                <button class="btn btn-ghost btn-sm" onclick="document.getElementById('bridePortraitInput').click()">📁 Pilih</button>
+                <button class="btn btn-ghost btn-sm" id="bridePortraitHapus" style="display:none"
+                  onclick="clearPhoto('bridePortrait','bridePortraitPreview','bridePortraitPlaceholder','bridePortraitHapus')">✕ Hapus</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         SECTION 6 — GALERI (Opsional)
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="sec6">
+      <div class="sec-head" onclick="toggleSec('sec6')">
+        <div class="sec-title"><span class="sec-num">6</span> Galeri Foto <span class="bopt">Opsional</span></div>
+        <span class="chevron open" id="chev-sec6">▼</span>
+      </div>
+      <div class="sec-body" id="body-sec6">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span class="gal-ctr" id="galCounter">0/15 foto</span>
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('galInput').click()">+ Tambah Foto</button>
+        </div>
+        <input type="file" id="galInput" accept="image/*" multiple style="display:none" onchange="handleGalleryUpload(this)">
+        <div class="gal-grid" id="galGrid"></div>
+        <div class="gal-up" id="galUpArea" onclick="document.getElementById('galInput').click()">
+          📷 Klik atau seret foto ke sini &nbsp;•&nbsp; Maks. 15 foto
+        </div>
+        <div class="fhint" style="margin-top:8px">Format: JPG, PNG, WEBP. Ukuran disarankan minimal 800×800px.</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         SECTION 7 — VIDEO (Opsional)
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="sec7">
+      <div class="sec-head" onclick="toggleSec('sec7')">
+        <div class="sec-title"><span class="sec-num">7</span> Video <span class="bopt">Opsional</span></div>
+        <span class="chevron open" id="chev-sec7">▼</span>
+      </div>
+      <div class="sec-body" id="body-sec7">
+        <div class="subsec">
+          <div class="subsec-title">🎬 Video Utama</div>
+          <div style="margin-bottom:12px">
+            <label class="flbl" style="margin-bottom:8px">Sumber Video</label>
+            <div class="tog-grp">
+              <button class="tog-btn active" data-vtype="youtube" onclick="setVideoType('youtube')">▶️ YouTube</button>
+              <button class="tog-btn" data-vtype="file" onclick="setVideoType('file')">📁 Upload File</button>
+            </div>
+          </div>
+          <!-- YouTube section -->
+          <div id="videoYtSection">
+            <div class="fg">
+              <label class="flbl">URL YouTube</label>
+              <input id="videoMainSrc" type="url" class="finp" placeholder="https://www.youtube.com/watch?v=..."
+                oninput="updateYTThumb(this.value)">
+            </div>
+            <img id="videoYtThumb" class="yt-thumb" alt="YouTube thumbnail">
+          </div>
+          <!-- File section -->
+          <div id="videoFileSection" style="display:none">
+            <input type="file" id="videoFileInput" accept="video/*" style="display:none" onchange="handleVideoFile(this)">
+            <div class="fg">
+              <label class="flbl">Upload File Video</label>
+              <button class="btn btn-ghost" onclick="document.getElementById('videoFileInput').click()">📁 Pilih File Video</button>
+              <div class="fhint" id="videoFileName">Belum ada file dipilih</div>
+            </div>
+          </div>
+        </div>
+        <div class="frow">
+          <div class="fg">
+            <label class="flbl">Video Teaser URL <span class="bopt">Opsional</span></label>
+            <input id="videoTeaser" type="url" class="finp" placeholder="https://youtube.com/watch?v=...">
+          </div>
+          <div class="fg">
+            <label class="flbl">Video Story URL <span class="bopt">Opsional</span></label>
+            <input id="videoStory" type="url" class="finp" placeholder="https://youtube.com/watch?v=...">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         SECTION 8 — AUDIO (Opsional)
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="sec8">
+      <div class="sec-head" onclick="toggleSec('sec8')">
+        <div class="sec-title"><span class="sec-num">8</span> Audio / Musik Latar <span class="bopt">Opsional</span></div>
+        <span class="chevron open" id="chev-sec8">▼</span>
+      </div>
+      <div class="sec-body" id="body-sec8">
+        <div style="margin-bottom:12px">
+          <label class="flbl" style="margin-bottom:8px">Sumber Audio</label>
+          <div class="tog-grp">
+            <button class="tog-btn active" data-atype="upload" onclick="setAudioType('upload')">📁 Upload File</button>
+            <button class="tog-btn" data-atype="url" onclick="setAudioType('url')">🔗 URL</button>
+          </div>
+        </div>
+        <!-- Upload section -->
+        <div id="audioUploadSection">
+          <input type="file" id="audioFileInput" accept="audio/*" style="display:none" onchange="handleAudioUpload(this)">
+          <div class="fg">
+            <button class="btn btn-ghost" onclick="document.getElementById('audioFileInput').click()">🎵 Pilih File Audio</button>
+            <div class="fhint" id="audioFileName">Belum ada file dipilih</div>
+          </div>
+          <div class="audio-pw" id="audioPlayerWrap" style="display:none">
+            <span>🎵</span>
+            <audio id="audioPlayer" controls></audio>
+          </div>
+          <div class="fhint" style="margin-top:8px">⚠️ Maksimal ukuran file: 5MB. Format: MP3, AAC, OGG.</div>
+        </div>
+        <!-- URL section -->
+        <div id="audioUrlSection" style="display:none">
+          <div class="fg">
+            <label class="flbl">URL Audio</label>
+            <input id="audioUrl" type="url" class="finp" placeholder="https://example.com/music.mp3">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         SECTION 9 — LOVE STORY (Opsional)
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="sec9">
+      <div class="sec-head" onclick="toggleSec('sec9')">
+        <div class="sec-title"><span class="sec-num">9</span> Love Story <span class="bopt">Opsional</span></div>
+        <span class="chevron open" id="chev-sec9">▼</span>
+      </div>
+      <div class="sec-body" id="body-sec9">
+        <div class="ls-grid">
+          <!-- List Editor -->
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+              <span style="font-size:13px;font-weight:600;color:var(--muted)">Cerita Cinta</span>
+              <button class="btn btn-outline btn-sm" onclick="addLoveStoryItem()">+ Tambah Cerita</button>
+            </div>
+            <div id="loveStoryList">
+              <div class="dyn-empty">Belum ada cerita. Klik "+ Tambah Cerita" untuk memulai.</div>
+            </div>
+          </div>
+          <!-- Timeline Preview -->
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:10px">Preview Timeline</div>
+            <div class="tl-wrap" id="timelinePreview">
+              <div class="tl-empty">Timeline akan tampil di sini</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         SECTION 10 — KADO DIGITAL (Opsional)
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="sec10">
+      <div class="sec-head" onclick="toggleSec('sec10')">
+        <div class="sec-title"><span class="sec-num">10</span> Kado Digital <span class="bopt">Opsional</span></div>
+        <span class="chevron open" id="chev-sec10">▼</span>
+      </div>
+      <div class="sec-body" id="body-sec10">
+
+        <!-- Bank Accounts -->
+        <div class="subsec">
+          <div class="subsec-title">🏦 Rekening Bank</div>
+          <div id="bankList"></div>
+          <button class="btn btn-outline btn-sm" onclick="addBankItem()" style="margin-top:4px">+ Tambah Rekening</button>
+        </div>
+
+        <!-- E-Wallets -->
+        <div class="subsec">
+          <div class="subsec-title">📱 E-Wallet</div>
+          <div id="ewalletList"></div>
+          <button class="btn btn-outline btn-sm" onclick="addEwalletItem()" style="margin-top:4px">+ Tambah E-Wallet</button>
+        </div>
+
+        <!-- QRIS -->
+        <div class="subsec">
+          <div class="subsec-title">📲 QRIS</div>
+          <input type="file" id="qrisInput" accept="image/*" style="display:none"
+            onchange="handlePhotoUpload(this,'qris','qrisPreview','qrisPlaceholder','qrisHapus')">
+          <div class="img-wrap">
+            <img id="qrisPreview" class="img-prev" style="width:180px;height:180px" alt="QRIS">
+            <div id="qrisPlaceholder" class="img-ph" style="width:180px;height:180px" onclick="document.getElementById('qrisInput').click()">
+              <span class="img-ph-icon">📲</span><span>Upload QRIS</span>
+            </div>
+            <div class="img-btns">
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('qrisInput').click()">📁 Pilih</button>
+              <button class="btn btn-ghost btn-sm" id="qrisHapus" style="display:none"
+                onclick="clearPhoto('qris','qrisPreview','qrisPlaceholder','qrisHapus')">✕ Hapus</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Physical Address -->
+        <div class="subsec">
+          <div class="subsec-title">📦 Alamat Pengiriman Fisik</div>
+          <div class="fg">
+            <label class="flbl">Alamat <span class="bopt">Opsional</span></label>
+            <textarea id="physicalAddress" class="ftxt" rows="3" placeholder="Alamat lengkap untuk pengiriman hadiah fisik..."></textarea>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         SECTION 11 — LIVE STREAMING (Opsional)
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="sec11">
+      <div class="sec-head" onclick="toggleSec('sec11')">
+        <div class="sec-title"><span class="sec-num">11</span> Live Streaming <span class="bopt">Opsional</span></div>
+        <span class="chevron open" id="chev-sec11">▼</span>
+      </div>
+      <div class="sec-body" id="body-sec11">
+        <div class="fg">
+          <label class="flbl">Link Streaming <span class="bopt">Opsional</span></label>
+          <input id="livestreamLink" type="url" class="finp" placeholder="https://youtube.com/live/...">
+        </div>
+        <div class="frow">
+          <div class="fg">
+            <label class="flbl">Zoom Meeting ID <span class="bopt">Opsional</span></label>
+            <input id="zoomId" type="text" class="finp" placeholder="123 456 7890">
+          </div>
+          <div class="fg">
+            <label class="flbl">Zoom Password <span class="bopt">Opsional</span></label>
+            <input id="zoomPass" type="text" class="finp" placeholder="password">
+          </div>
+        </div>
+        <div class="fg">
+          <label class="flbl">Jadwal Siaran <span class="bopt">Opsional</span></label>
+          <input id="livestreamSchedule" type="datetime-local" class="finp" style="max-width:280px">
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         SECTION 12 — PENGATURAN LINK
+    ═══════════════════════════════════════ -->
+    <div class="section-card" id="sec12">
+      <div class="sec-head" onclick="toggleSec('sec12')">
+        <div class="sec-title"><span class="sec-num">12</span> Pengaturan Link <span class="bopt">Opsional</span></div>
+        <span class="chevron open" id="chev-sec12">▼</span>
+      </div>
+      <div class="sec-body" id="body-sec12">
+        <div class="fg">
+          <label class="flbl">Base URL</label>
+          <input id="baseUrl" type="url" class="finp" placeholder="https://namadomain.com">
+          <div class="fhint">Contoh: https://undangan.budidam.com</div>
+        </div>
+        <div class="fg">
+          <label class="flbl">Format Parameter Tamu</label>
+          <div class="radio-grp" style="margin-top:8px">
+            <label>
+              <input type="radio" name="paramFormat" value="to" checked>
+              <span>?to=NamaTamu</span>
+            </label>
+            <label>
+              <input type="radio" name="paramFormat" value="nama">
+              <span>?nama=NamaTamu</span>
+            </label>
+            <label>
+              <input type="radio" name="paramFormat" value="u">
+              <span>?u=NamaTamu</span>
+            </label>
+          </div>
+          <div class="fhint" style="margin-top:8px" id="urlPreview">Preview: <code id="urlPreviewCode"></code></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom spacer -->
+    <div style="height:40px"></div>
+
+  </div><!-- end .content -->
+</div><!-- end .main -->
+
+<!-- Bottom Nav (Mobile) -->
+<nav class="bot-nav">
+  <div class="bot-nav-inner">
+    <a href="admin.html" class="bot-nav-item"><span>🏠</span><span>Dashboard</span></a>
+    <button class="bot-nav-item" onclick="saveDraft()"><span>💾</span><span>Simpan</span></button>
+    <button class="bot-nav-item" onclick="showPreviewModal()"><span>👁️</span><span>Preview</span></button>
+    <a href="share.html" class="bot-nav-item"><span>🎁</span><span>Bagikan</span></a>
+    <button class="bot-nav-item" onclick="showPublishModal()"><span>✅</span><span>Publish</span></button>
+  </div>
+</nav>
+
+<!-- ── Publish Confirmation Modal ── -->
+<div class="modal-ov" id="publishModal">
+  <div class="modal-box">
+    <div class="modal-h">✅ Publish Undangan?</div>
+    <p class="modal-p">Undangan akan dipublikasikan dan dapat diakses oleh tamu undangan. Pastikan semua informasi sudah lengkap dan benar sebelum melanjutkan.</p>
+    <div class="modal-acts">
+      <button class="btn btn-ghost" onclick="closeModal('publishModal')">Batal</button>
+      <button class="btn btn-primary" onclick="doPublish()">Ya, Publish Sekarang</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Preview Modal ── -->
+<div class="modal-ov" id="previewModal">
+  <div class="modal-box" style="max-width:500px">
+    <div class="modal-h">👁️ Preview Undangan</div>
+    <p class="modal-p">Pilih cara menampilkan preview undangan:</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+      <button class="btn btn-outline" onclick="previewGeneral()" style="justify-content:flex-start;text-align:left;padding:12px 14px">
+        🌐 Preview Umum <span style="color:var(--muted);font-weight:400;font-size:12px;margin-left:6px">— tanpa nama tamu</span>
+      </button>
+      <div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:6px">Preview dengan nama tamu:</div>
+        <div style="display:flex;gap:8px">
+          <input type="text" class="finp" id="previewGuestName" placeholder="Masukkan nama tamu..." style="flex:1">
+          <button class="btn btn-primary" onclick="previewWithGuest()">Preview</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-acts">
+      <button class="btn btn-ghost" onclick="closeModal('previewModal')">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Autosave Badge -->
+<div id="as-badge">💾 Tersimpan</div>
+<!-- Toast notification -->
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+var galleryImages  = [];
+var loveStoryItems = [];
+var bankItems      = [];
+var ewalletItems   = [];
+var photoState = {
+  groomPhoto:'', bridePhoto:'',
+  cover:'', groomPortrait:'', bridePortrait:'', together:'',
+  qris:''
+};
+var videoState = { type: 'youtube' };
+var audioState = { type: 'upload', src: '' };
+var autosaveTimer  = null;
+var countdownTimer = null;
+
+/* ═══════════════════════════════════════════════════
+   NAV DEFINITIONS
+═══════════════════════════════════════════════════ */
+var NAV_ITEMS = [
+  { id:'sec1',  label:'Data Pengantin',  req:true  },
+  { id:'sec2',  label:'Tema',            req:false },
+  { id:'sec3',  label:'Detail Acara',    req:true  },
+  { id:'sec4',  label:'Countdown',       req:false },
+  { id:'sec5',  label:'Foto Utama',      req:false },
+  { id:'sec6',  label:'Galeri Foto',     req:false },
+  { id:'sec7',  label:'Video',           req:false },
+  { id:'sec8',  label:'Audio',           req:false },
+  { id:'sec9',  label:'Love Story',      req:false },
+  { id:'sec10', label:'Kado Digital',    req:false },
+  { id:'sec11', label:'Live Streaming',  req:false },
+  { id:'sec12', label:'Pengaturan Link', req:false }
+];
+
+/* ═══════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════ */
+function val(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+function setVal(id,v){ var el=document.getElementById(id); if(el) el.value=v||''; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function getRadio(name){ var el=document.querySelector('input[name="'+name+'"]:checked'); return el?el.value:''; }
+function setRadio(name,v){ var el=document.querySelector('input[name="'+name+'"][value="'+v+'"]'); if(el) el.checked=true; }
+
+function showToast(msg,dur){
+  dur=dur||2500;
+  var t=document.getElementById('toast');
+  if(!t) return;
+  t.textContent=msg;
+  t.classList.add('show');
+  clearTimeout(showToast._timer);
+  showToast._timer=setTimeout(function(){ t.classList.remove('show'); },dur);
+}
+function pad2(n){ return String(n).padStart(2,'0'); }
+
+/* ═══════════════════════════════════════════════════
+   COLLECT DATA
+═══════════════════════════════════════════════════ */
+function collectData(status){
+  status = status||'draft';
+  return {
+    status: status,
+    updatedAt: new Date().toISOString(),
+    title: val('titleInput'),
+    groupName: val('groupNameInput'),
+    groupDesc: val('groupDescInput'),
+    whoInvites: val('whoInvitesInput'),
+    groom:{
+      fullName:  val('groomFullName'),
+      nickname:  val('groomNickname'),
+      fatherName:val('groomFatherName'),
+      motherName:val('groomMotherName'),
+      childOrder:val('groomChildOrder'),
+      address:   val('groomAddress'),
+      instagram: val('groomInstagram'),
+      photo:     photoState.groomPhoto
+    },
+    bride:{
+      fullName:  val('brideFullName'),
+      nickname:  val('brideNickname'),
+      fatherName:val('brideFatherName'),
+      motherName:val('brideMotherName'),
+      childOrder:val('brideChildOrder'),
+      address:   val('brideAddress'),
+      instagram: val('brideInstagram'),
+      photo:     photoState.bridePhoto
+    },
+    akad:{
+      date:         val('akadDate'),
+      timeStart:    val('akadTimeStart'),
+      timeEnd:      val('akadTimeEnd'),
+      locationName: val('akadLocationName'),
+      address:      val('akadAddress'),
+      mapsUrl:      val('akadMapsUrl')
+    },
+    resepsi:{
+      date:         val('resepsiDate'),
+      session1Start:val('resepsiSesi1Start'),
+      session1End:  val('resepsiSesi1End'),
+      session2Start:val('resepsiSesi2Start'),
+      session2End:  val('resepsiSesi2End'),
+      locationName: val('resepsiLocationName'),
+      address:      val('resepsiAddress'),
+      mapsUrl:      val('resepsiMapsUrl'),
+      dresscode:    val('resepsiDresscode')
+    },
+    countdown:{
+      target: val('countdownTarget'),
+      label:  val('countdownLabel')
+    },
+    photos:{
+      cover:        photoState.cover,
+      groomPortrait:photoState.groomPortrait,
+      bridePortrait:photoState.bridePortrait,
+      together:     photoState.together,
+      gallery:      galleryImages.slice(),
+      preview:      []
+    },
+    video:{
+      main:{ type: videoState.type, src: val('videoMainSrc') },
+      teaser: val('videoTeaser'),
+      story:  val('videoStory')
+    },
+    audio:{
+      type: audioState.type,
+      src:  audioState.type==='upload' ? audioState.src : val('audioUrl')
+    },
+    loveStory: JSON.parse(JSON.stringify(loveStoryItems)),
+    gifts:{
+      banks:          JSON.parse(JSON.stringify(bankItems)),
+      ewallets:       JSON.parse(JSON.stringify(ewalletItems)),
+      qris:           photoState.qris,
+      physicalAddress:val('physicalAddress')
+    },
+    livestream:{
+      link:     val('livestreamLink'),
+      zoomId:   val('zoomId'),
+      zoomPass: val('zoomPass'),
+      schedule: val('livestreamSchedule')
+    },
+    linkSettings:{
+      baseUrl:     val('baseUrl'),
+      paramFormat: getRadio('paramFormat')||'to'
+    },
+    instagram:{
+      groom: val('groomInstagram'),
+      bride: val('brideInstagram')
+    },
+    theme:{
+      color:      val('themeColor'),
+      concept:    val('themeConcept'),
+      background: val('themeBackground'),
+      font:       val('themeFont'),
+      notes:      val('themeNotes')
+    }
+  };
+}
+
+/* ═══════════════════════════════════════════════════
+   POPULATE FORM
+═══════════════════════════════════════════════════ */
+function populateForm(d){
+  if(!d) return;
+
+  setVal('titleInput',    d.title);
+  setVal('groupNameInput',d.groupName);
+  setVal('groupDescInput',d.groupDesc);
+  setVal('whoInvitesInput',d.whoInvites);
+
+  if(d.groom){
+    setVal('groomFullName',  d.groom.fullName);
+    setVal('groomNickname',  d.groom.nickname);
+    setVal('groomFatherName',d.groom.fatherName);
+    setVal('groomMotherName',d.groom.motherName);
+    setVal('groomChildOrder',d.groom.childOrder);
+    setVal('groomAddress',   d.groom.address);
+    setVal('groomInstagram', d.groom.instagram);
+    if(d.groom.photo){ photoState.groomPhoto=d.groom.photo; showImg('groomPhotoPreview','groomPhotoPlaceholder','groomPhotoHapus',d.groom.photo); }
+  }
+  if(d.bride){
+    setVal('brideFullName',  d.bride.fullName);
+    setVal('brideNickname',  d.bride.nickname);
+    setVal('brideFatherName',d.bride.fatherName);
+    setVal('brideMotherName',d.bride.motherName);
+    setVal('brideChildOrder',d.bride.childOrder);
+    setVal('brideAddress',   d.bride.address);
+    setVal('brideInstagram', d.bride.instagram);
+    if(d.bride.photo){ photoState.bridePhoto=d.bride.photo; showImg('bridePhotoPreview','bridePhotoPlaceholder','bridePhotoHapus',d.bride.photo); }
+  }
+  if(d.akad){
+    setVal('akadDate',         d.akad.date);
+    setVal('akadTimeStart',    d.akad.timeStart);
+    setVal('akadTimeEnd',      d.akad.timeEnd);
+    setVal('akadLocationName', d.akad.locationName);
+    setVal('akadAddress',      d.akad.address);
+    setVal('akadMapsUrl',      d.akad.mapsUrl);
+  }
+  if(d.resepsi){
+    setVal('resepsiDate',         d.resepsi.date);
+    setVal('resepsiSesi1Start',   d.resepsi.session1Start);
+    setVal('resepsiSesi1End',     d.resepsi.session1End);
+    setVal('resepsiSesi2Start',   d.resepsi.session2Start);
+    setVal('resepsiSesi2End',     d.resepsi.session2End);
+    setVal('resepsiLocationName', d.resepsi.locationName);
+    setVal('resepsiAddress',      d.resepsi.address);
+    setVal('resepsiMapsUrl',      d.resepsi.mapsUrl);
+    setVal('resepsiDresscode',    d.resepsi.dresscode);
+  }
+  if(d.countdown){
+    setVal('countdownTarget',d.countdown.target);
+    setVal('countdownLabel', d.countdown.label);
+    updateCountdown();
+  }
+  if(d.photos){
+    if(d.photos.cover)        { photoState.cover=d.photos.cover; showImg('coverPreview','coverPlaceholder','coverHapus',d.photos.cover); }
+    if(d.photos.groomPortrait){ photoState.groomPortrait=d.photos.groomPortrait; showImg('groomPortraitPreview','groomPortraitPlaceholder','groomPortraitHapus',d.photos.groomPortrait); }
+    if(d.photos.bridePortrait){ photoState.bridePortrait=d.photos.bridePortrait; showImg('bridePortraitPreview','bridePortraitPlaceholder','bridePortraitHapus',d.photos.bridePortrait); }
+    if(d.photos.together)     { photoState.together=d.photos.together; showImg('togetherPreview','togetherPlaceholder','togetherHapus',d.photos.together); }
+    if(d.photos.gallery && d.photos.gallery.length){ galleryImages=d.photos.gallery.slice(); renderGallery(); }
+  }
+  if(d.video){
+    setVideoType(d.video.main&&d.video.main.type?d.video.main.type:'youtube');
+    setVal('videoMainSrc',d.video.main?d.video.main.src:'');
+    setVal('videoTeaser', d.video.teaser);
+    setVal('videoStory',  d.video.story);
+    if(d.video.main&&d.video.main.src) updateYTThumb(d.video.main.src);
+  }
+  if(d.audio){
+    setAudioType(d.audio.type||'upload');
+    if(d.audio.type==='url') setVal('audioUrl',d.audio.src);
+    else if(d.audio.src){ audioState.src=d.audio.src; var ap=document.getElementById('audioPlayer'); if(ap){ap.src=d.audio.src;} var pw=document.getElementById('audioPlayerWrap'); if(pw) pw.style.display='flex'; }
+  }
+  if(d.loveStory&&d.loveStory.length){ loveStoryItems=JSON.parse(JSON.stringify(d.loveStory)); renderLoveStory(); }
+  if(d.gifts){
+    if(d.gifts.banks&&d.gifts.banks.length){ bankItems=JSON.parse(JSON.stringify(d.gifts.banks)); renderBanks(); }
+    if(d.gifts.ewallets&&d.gifts.ewallets.length){ ewalletItems=JSON.parse(JSON.stringify(d.gifts.ewallets)); renderEwallets(); }
+    if(d.gifts.qris){ photoState.qris=d.gifts.qris; showImg('qrisPreview','qrisPlaceholder','qrisHapus',d.gifts.qris); }
+    setVal('physicalAddress',d.gifts.physicalAddress);
+  }
+  if(d.livestream){
+    setVal('livestreamLink',    d.livestream.link);
+    setVal('zoomId',            d.livestream.zoomId);
+    setVal('zoomPass',          d.livestream.zoomPass);
+    setVal('livestreamSchedule',d.livestream.schedule);
+  }
+  if(d.linkSettings){
+    setVal('baseUrl',d.linkSettings.baseUrl);
+    setRadio('paramFormat',d.linkSettings.paramFormat||'to');
+    updateUrlPreview();
+  }
+  if(d.theme){
+    setVal('themeColor',     d.theme.color);
+    setVal('themeConcept',   d.theme.concept);
+    setVal('themeBackground',d.theme.background);
+    setVal('themeFont',      d.theme.font);
+    setVal('themeNotes',     d.theme.notes);
+  }
+  updateProgress();
+}
+
+/* ═══════════════════════════════════════════════════
+   LOAD / SAVE
+═══════════════════════════════════════════════════ */
+function loadConfig(){
+  try{
+    var raw=localStorage.getItem('wedding_config');
+    if(raw) populateForm(JSON.parse(raw));
+  }catch(e){ console.warn('Config load error',e); }
+}
+
+function saveDraft(){
+  var data=collectData('draft');
+  localStorage.setItem('wedding_config',JSON.stringify(data));
+  showBadge('💾 Draft Tersimpan');
+  updateProgress();
+}
+
+function doPublish(){
+  var data=collectData('published');
+  localStorage.setItem('wedding_config',JSON.stringify(data));
+  closeModal('publishModal');
+  showBadge('✅ Berhasil Dipublish!', 3000);
+  updateProgress();
+}
+
+/* ═══════════════════════════════════════════════════
+   AUTO-SAVE
+═══════════════════════════════════════════════════ */
+function triggerAutosave(){
+  clearTimeout(autosaveTimer);
+  autosaveTimer=setTimeout(function(){
+    var data=collectData('draft');
+    localStorage.setItem('wedding_config',JSON.stringify(data));
+    showBadge('💾 Tersimpan');
+    updateProgress();
+  },800);
+}
+
+function showBadge(msg, dur){
+  dur=dur||2000;
+  var b=document.getElementById('as-badge');
+  b.textContent=msg;
+  b.style.opacity='1';
+  setTimeout(function(){ b.style.opacity='0'; },dur);
+}
+
+/* ═══════════════════════════════════════════════════
+   PROGRESS
+═══════════════════════════════════════════════════ */
+function isSectionFilled(n){
+  var d=collectData();
+  switch(n){
+    case 1: return !!(d.groom.fullName&&d.bride.fullName&&d.title&&d.whoInvites);
+    case 2: return !!(d.theme.color||d.theme.concept||d.theme.background||d.theme.font);
+    case 3: return !!(d.akad.date&&d.akad.locationName&&d.resepsi.date&&d.resepsi.locationName);
+    case 4: return !!(d.countdown.target);
+    case 5: return !!(d.photos.cover||d.photos.groomPortrait||d.photos.bridePortrait||d.photos.together);
+    case 6: return d.photos.gallery.length>0;
+    case 7: return !!(d.video.main.src||d.video.teaser||d.video.story);
+    case 8: return !!(d.audio.src);
+    case 9: return d.loveStory.length>0;
+    case 10:return !!(d.gifts.banks.length||d.gifts.ewallets.length||d.gifts.qris||d.gifts.physicalAddress);
+    case 11:return !!(d.livestream.link||d.livestream.zoomId);
+    case 12:return !!(d.linkSettings.baseUrl);
+    default:return false;
+  }
+}
+
+function updateProgress(){
+  var filled=0;
+  for(var i=1;i<=12;i++){
+    var ok=isSectionFilled(i);
+    if(ok) filled++;
+    var chk=document.getElementById('navChk'+i);
+    var lnk=document.getElementById('navLink'+i);
+    if(chk){ chk.className=ok?'nav-chk ok':'nav-chk'; chk.textContent=ok?'✓':''; }
+    if(lnk){ lnk.classList.toggle('filled',ok); }
+  }
+  document.getElementById('progLabel').textContent=filled+' dari 12 seksi terisi';
+  document.getElementById('progFill').style.width=((filled/12)*100)+'%';
+}
+
+/* ═══════════════════════════════════════════════════
+   SIDEBAR NAV — BUILD
+═══════════════════════════════════════════════════ */
+function buildNav(){
+  var ul=document.getElementById('navList');
+  ul.innerHTML=NAV_ITEMS.map(function(item,idx){
+    var n=idx+1;
+    var badge=item.req?'<span class="nb-r">WAJIB</span>':'<span class="nb-o">opt</span>';
+    return '<li class="nav-item"><a id="navLink'+n+'" href="#'+item.id+'" data-sec="'+item.id+'" onclick="scrollToSec(\''+item.id+'\');return false;">'+
+      '<span class="nav-chk" id="navChk'+n+'"></span>'+
+      '<span class="nav-lbl">'+n+'. '+item.label+'</span>'+
+      badge+'</a></li>';
+  }).join('');
+}
+
+function scrollToSec(id){
+  var el=document.getElementById(id);
+  if(el){ el.scrollIntoView({behavior:'smooth',block:'start'}); }
+  closeSidebar();
+}
+
+/* ═══════════════════════════════════════════════════
+   SECTION COLLAPSE
+═══════════════════════════════════════════════════ */
+function toggleSec(id){
+  var body=document.getElementById('body-'+id);
+  var chev=document.getElementById('chev-'+id);
+  var head=body&&body.previousElementSibling;
+  if(!body) return;
+  var collapsed=body.classList.toggle('hide');
+  if(chev) chev.classList.toggle('open',!collapsed);
+  if(head) head.classList.toggle('collapsed',collapsed);
+}
+
+/* ═══════════════════════════════════════════════════
+   SIDEBAR MOBILE
+═══════════════════════════════════════════════════ */
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sbOverlay').classList.toggle('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sbOverlay').classList.remove('open');
+}
+
+/* ═══════════════════════════════════════════════════
+   MODALS
+═══════════════════════════════════════════════════ */
+function showPublishModal(){ document.getElementById('publishModal').classList.add('open'); }
+function showPreviewModal(){ document.getElementById('previewModal').classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+
+function previewGeneral(){
+  var data=collectData(); var fmt=data.linkSettings.paramFormat||'to';
+  window.open('index.html','_blank');
+  closeModal('previewModal');
+}
+function previewWithGuest(){
+  var name=document.getElementById('previewGuestName').value.trim();
+  if(!name){ showToast('⚠️ Masukkan nama tamu terlebih dahulu.'); return; }
+  var data=collectData(); var fmt=data.linkSettings.paramFormat||'to';
+  window.open('index.html?'+fmt+'='+encodeURIComponent(name),'_blank');
+  closeModal('previewModal');
+}
+
+/* ═══════════════════════════════════════════════════
+   IMAGE UPLOAD
+═══════════════════════════════════════════════════ */
+function handlePhotoUpload(input,stateKey,prevId,phId,hapusId){
+  var file=input.files[0];
+  if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    photoState[stateKey]=e.target.result;
+    showImg(prevId,phId,hapusId,e.target.result);
+    triggerAutosave();
+    updateProgress();
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+
+function showImg(prevId,phId,hapusId,src){
+  var p=document.getElementById(prevId);
+  var ph=document.getElementById(phId);
+  var h=document.getElementById(hapusId);
+  if(p){p.src=src;p.style.display='block';}
+  if(ph) ph.style.display='none';
+  if(h)  h.style.display='';
+}
+
+function clearPhoto(stateKey,prevId,phId,hapusId){
+  photoState[stateKey]='';
+  var p=document.getElementById(prevId);
+  var ph=document.getElementById(phId);
+  var h=document.getElementById(hapusId);
+  if(p){p.src='';p.style.display='none';}
+  if(ph) ph.style.display='';
+  if(h)  h.style.display='none';
+  triggerAutosave();
+  updateProgress();
+}
+
+/* ═══════════════════════════════════════════════════
+   GALLERY
+═══════════════════════════════════════════════════ */
+function handleGalleryUpload(input){
+  var files=Array.from(input.files);
+  var remaining=15-galleryImages.length;
+  if(remaining<=0){ showToast('⚠️ Galeri sudah penuh. Maksimal 15 foto.'); input.value=''; return; }
+  if(files.length>remaining) showToast('ℹ️ Hanya '+remaining+' foto pertama yang akan ditambahkan (batas 15 foto).');
+  var toProcess=files.slice(0,remaining);
+  var done=0;
+  toProcess.forEach(function(file){
+    var reader=new FileReader();
+    reader.onload=function(e){
+      galleryImages.push(e.target.result);
+      done++;
+      if(done===toProcess.length){ renderGallery(); triggerAutosave(); updateProgress(); }
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value='';
+}
+
+function removeGalleryPhoto(idx){
+  galleryImages.splice(idx,1);
+  renderGallery();
+  triggerAutosave();
+  updateProgress();
+}
+
+function renderGallery(){
+  var grid=document.getElementById('galGrid');
+  var ctr=document.getElementById('galCounter');
+  var upArea=document.getElementById('galUpArea');
+  if(!grid) return;
+  if(ctr) ctr.textContent=galleryImages.length+'/15 foto';
+  if(upArea) upArea.style.display=galleryImages.length>=15?'none':'';
+  grid.innerHTML=galleryImages.map(function(src,i){
+    return '<div class="gal-item"><img src="'+src+'" alt="Foto '+(i+1)+'"><button class="gal-del" onclick="removeGalleryPhoto('+i+')" title="Hapus foto">✕</button></div>';
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════════
+   VIDEO
+═══════════════════════════════════════════════════ */
+function setVideoType(type){
+  videoState.type=type;
+  document.querySelectorAll('[data-vtype]').forEach(function(b){ b.classList.toggle('active',b.dataset.vtype===type); });
+  var yt=document.getElementById('videoYtSection');
+  var fi=document.getElementById('videoFileSection');
+  if(yt) yt.style.display=type==='youtube'?'':'none';
+  if(fi) fi.style.display=type==='file'?'':'none';
+  triggerAutosave();
+}
+
+function getYouTubeId(url){
+  var m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/);
+  return m?m[1]:null;
+}
+
+function updateYTThumb(url){
+  var thumb=document.getElementById('videoYtThumb');
+  if(!thumb) return;
+  var id=getYouTubeId(url);
+  if(id){ thumb.src='https://img.youtube.com/vi/'+id+'/hqdefault.jpg'; thumb.style.display='block'; }
+  else   { thumb.style.display='none'; }
+}
+
+function handleVideoFile(input){
+  var file=input.files[0];
+  if(!file) return;
+  var fn=document.getElementById('videoFileName');
+  if(fn) fn.textContent=file.name+' ('+Math.round(file.size/1024)+'KB)';
+  triggerAutosave();
+}
+
+/* ═══════════════════════════════════════════════════
+   AUDIO
+═══════════════════════════════════════════════════ */
+function setAudioType(type){
+  audioState.type=type;
+  document.querySelectorAll('[data-atype]').forEach(function(b){ b.classList.toggle('active',b.dataset.atype===type); });
+  var up=document.getElementById('audioUploadSection');
+  var ur=document.getElementById('audioUrlSection');
+  if(up) up.style.display=type==='upload'?'':'none';
+  if(ur) ur.style.display=type==='url'?'':'none';
+  triggerAutosave();
+}
+
+function handleAudioUpload(input){
+  var file=input.files[0];
+  if(!file) return;
+  if(file.size>5*1024*1024){ showToast('⚠️ File terlalu besar. Maksimal 5MB.'); input.value=''; return; }
+  var fn=document.getElementById('audioFileName');
+  if(fn) fn.textContent=file.name+' ('+Math.round(file.size/1024)+'KB)';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    audioState.src=e.target.result;
+    var ap=document.getElementById('audioPlayer');
+    var pw=document.getElementById('audioPlayerWrap');
+    if(ap){ ap.src=e.target.result; }
+    if(pw) pw.style.display='flex';
+    triggerAutosave();
+    updateProgress();
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+
+/* ═══════════════════════════════════════════════════
+   COUNTDOWN
+═══════════════════════════════════════════════════ */
+function updateCountdown(){
+  var target=val('countdownTarget');
+  var label=val('countdownLabel')||'Hari Pernikahan';
+  var prev=document.getElementById('cdPreview');
+  var lbl=document.getElementById('cdLabel');
+  if(!prev) return;
+  if(lbl) lbl.textContent=label;
+  if(!target){ prev.style.display='none'; return; }
+  prev.style.display='block';
+  var now=new Date();
+  var end=new Date(target);
+  var diff=end-now;
+  if(diff<=0){
+    document.getElementById('cdDays').textContent='00';
+    document.getElementById('cdHours').textContent='00';
+    document.getElementById('cdMins').textContent='00';
+    document.getElementById('cdSecs').textContent='00';
+    return;
+  }
+  var d=Math.floor(diff/(1000*60*60*24));
+  var h=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+  var m=Math.floor((diff%(1000*60*60))/(1000*60));
+  var s=Math.floor((diff%(1000*60))/1000);
+  document.getElementById('cdDays').textContent=pad2(d);
+  document.getElementById('cdHours').textContent=pad2(h);
+  document.getElementById('cdMins').textContent=pad2(m);
+  document.getElementById('cdSecs').textContent=pad2(s);
+}
+
+/* ═══════════════════════════════════════════════════
+   LOVE STORY
+═══════════════════════════════════════════════════ */
+function addLoveStoryItem(year,title,desc){
+  loveStoryItems.push({ year:year||'', title:title||'', desc:desc||'' });
+  renderLoveStory();
+}
+
+function removeLoveStoryItem(idx){
+  loveStoryItems.splice(idx,1);
+  renderLoveStory();
+  triggerAutosave();
+  updateProgress();
+}
+
+function updateLS(idx,key,value){
+  loveStoryItems[idx][key]=value;
+  updateTimelinePreview();
+  triggerAutosave();
+}
+
+function renderLoveStory(){
+  var list=document.getElementById('loveStoryList');
+  if(!list) return;
+  if(loveStoryItems.length===0){
+    list.innerHTML='<div class="dyn-empty">Belum ada cerita. Klik "+ Tambah Cerita" untuk memulai.</div>';
+    updateTimelinePreview();
+    return;
+  }
+  list.innerHTML=loveStoryItems.map(function(item,i){
+    return '<div class="dyn-item">'+
+      '<button class="dyn-rm" onclick="removeLoveStoryItem('+i+')" title="Hapus">✕</button>'+
+      '<div class="frow" style="margin-bottom:10px">'+
+        '<div class="fg"><label class="flbl">Tahun</label>'+
+          '<input type="number" class="finp" value="'+esc(item.year)+'" placeholder="2020"'+
+          ' oninput="updateLS('+i+',\'year\',this.value)"></div>'+
+        '<div class="fg"><label class="flbl">Judul</label>'+
+          '<input type="text" class="finp" value="'+esc(item.title)+'" placeholder="Pertama Bertemu"'+
+          ' oninput="updateLS('+i+',\'title\',this.value)"></div>'+
+      '</div>'+
+      '<div class="fg"><label class="flbl">Deskripsi</label>'+
+        '<textarea class="ftxt" rows="2" placeholder="Ceritakan momen ini..."'+
+        ' oninput="updateLS('+i+',\'desc\',this.value)">'+esc(item.desc)+'</textarea></div>'+
+    '</div>';
+  }).join('');
+  updateTimelinePreview();
+}
+
+function updateTimelinePreview(){
+  var prev=document.getElementById('timelinePreview');
+  if(!prev) return;
+  if(loveStoryItems.length===0){
+    prev.innerHTML='<div class="tl-empty">Timeline akan tampil di sini</div>';
+    return;
+  }
+  var sorted=loveStoryItems.slice().sort(function(a,b){ return (parseInt(a.year)||0)-(parseInt(b.year)||0); });
+  prev.innerHTML='<div class="tl-list">'+sorted.map(function(item){
+    return '<div class="tl-item">'+
+      '<div class="tl-year">'+(item.year||'—')+'</div>'+
+      '<div class="tl-t">'+(item.title||'<em style="color:var(--muted)">Tanpa judul</em>')+'</div>'+
+      (item.desc?'<div class="tl-d">'+esc(item.desc)+'</div>':'')+
+    '</div>';
+  }).join('')+'</div>';
+}
+
+/* ═══════════════════════════════════════════════════
+   BANKS
+═══════════════════════════════════════════════════ */
+function addBankItem(){
+  bankItems.push({ bankName:'', owner:'', accountNum:'' });
+  renderBanks();
+}
+function removeBankItem(idx){
+  bankItems.splice(idx,1);
+  renderBanks();
+  triggerAutosave();
+  updateProgress();
+}
+function updateBank(idx,key,value){
+  bankItems[idx][key]=value;
+  triggerAutosave();
+  updateProgress();
+}
+function renderBanks(){
+  var list=document.getElementById('bankList');
+  if(!list) return;
+  if(bankItems.length===0){
+    list.innerHTML='<div class="dyn-empty">Belum ada rekening bank. Klik "+ Tambah Rekening".</div>';
+    return;
+  }
+  list.innerHTML=bankItems.map(function(item,i){
+    return '<div class="dyn-item">'+
+      '<button class="dyn-rm" onclick="removeBankItem('+i+')" title="Hapus">✕</button>'+
+      '<div class="frow">'+
+        '<div class="fg"><label class="flbl">Nama Bank</label>'+
+          '<input type="text" class="finp" value="'+esc(item.bankName)+'" placeholder="BCA, Mandiri, BNI, dll"'+
+          ' oninput="updateBank('+i+',\'bankName\',this.value)"></div>'+
+        '<div class="fg"><label class="flbl">Pemilik Rekening</label>'+
+          '<input type="text" class="finp" value="'+esc(item.owner)+'" placeholder="Nama lengkap"'+
+          ' oninput="updateBank('+i+',\'owner\',this.value)"></div>'+
+      '</div>'+
+      '<div class="fg"><label class="flbl">Nomor Rekening</label>'+
+        '<input type="text" class="finp" value="'+esc(item.accountNum)+'" placeholder="1234567890"'+
+        ' oninput="updateBank('+i+',\'accountNum\',this.value)"></div>'+
+    '</div>';
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════════
+   E-WALLETS
+═══════════════════════════════════════════════════ */
+function addEwalletItem(){
+  ewalletItems.push({ type:'', number:'' });
+  renderEwallets();
+}
+function removeEwalletItem(idx){
+  ewalletItems.splice(idx,1);
+  renderEwallets();
+  triggerAutosave();
+  updateProgress();
+}
+function updateEwallet(idx,key,value){
+  ewalletItems[idx][key]=value;
+  triggerAutosave();
+  updateProgress();
+}
+function renderEwallets(){
+  var list=document.getElementById('ewalletList');
+  if(!list) return;
+  if(ewalletItems.length===0){
+    list.innerHTML='<div class="dyn-empty">Belum ada e-wallet. Klik "+ Tambah E-Wallet".</div>';
+    return;
+  }
+  list.innerHTML=ewalletItems.map(function(item,i){
+    var opts=['','GoPay','OVO','Dana','ShopeePay','LinkAja','Jenius','Lainnya'];
+    var selOpts=opts.map(function(o){ return '<option value="'+o+'"'+(item.type===o?' selected':'')+'>'+( o||'-- Pilih --')+'</option>'; }).join('');
+    return '<div class="dyn-item">'+
+      '<button class="dyn-rm" onclick="removeEwalletItem('+i+')" title="Hapus">✕</button>'+
+      '<div class="frow">'+
+        '<div class="fg"><label class="flbl">Jenis E-Wallet</label>'+
+          '<select class="fsel" onchange="updateEwallet('+i+',\'type\',this.value)">'+selOpts+'</select></div>'+
+        '<div class="fg"><label class="flbl">Nomor / ID</label>'+
+          '<input type="text" class="finp" value="'+esc(item.number)+'" placeholder="08xxxxxxxxxx"'+
+          ' oninput="updateEwallet('+i+',\'number\',this.value)"></div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════════
+   URL PREVIEW (Section 12)
+═══════════════════════════════════════════════════ */
+function updateUrlPreview(){
+  var base=val('baseUrl')||'https://example.com';
+  var fmt=getRadio('paramFormat')||'to';
+  var el=document.getElementById('urlPreviewCode');
+  if(el) el.textContent=base+'?'+fmt+'=NamaTamu';
+}
+
+/* ═══════════════════════════════════════════════════
+   SCROLL SPY
+═══════════════════════════════════════════════════ */
+function initScrollSpy(){
+  if(!window.IntersectionObserver) return;
+  var sections=document.querySelectorAll('.section-card[id]');
+  var obs=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        var id=e.target.id;
+        document.querySelectorAll('.nav-item a[data-sec]').forEach(function(a){
+          a.classList.toggle('active', a.dataset.sec===id);
+        });
+      }
+    });
+  },{rootMargin:'-20% 0px -70% 0px',threshold:0});
+  sections.forEach(function(s){ obs.observe(s); });
+}
+
+/* ═══════════════════════════════════════════════════
+   SETUP AUTOSAVE ON ALL INPUTS
+═══════════════════════════════════════════════════ */
+function setupInputListeners(){
+  document.addEventListener('input',function(e){
+    if(e.target.matches('input:not([type="file"]),textarea,select')){
+      triggerAutosave();
+      if(e.target.id==='countdownTarget'||e.target.id==='countdownLabel') updateCountdown();
+      if(e.target.id==='videoMainSrc') updateYTThumb(e.target.value);
+      if(e.target.id==='baseUrl'||e.target.name==='paramFormat') updateUrlPreview();
+    }
+  });
+  document.addEventListener('change',function(e){
+    if(e.target.matches('input[type="radio"],select')){
+      triggerAutosave();
+      if(e.target.name==='paramFormat') updateUrlPreview();
+    }
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded',function(){
+  buildNav();
+  loadConfig();
+  renderBanks();
+  renderEwallets();
+  renderGallery();
+  updateTimelinePreview();
+  updateCountdown();
+  updateUrlPreview();
+  setupInputListeners();
+  initScrollSpy();
+  // Countdown live tick
+  setInterval(updateCountdown,1000);
+  // Close modals on overlay click
+  document.querySelectorAll('.modal-ov').forEach(function(ov){
+    ov.addEventListener('click',function(e){ if(e.target===ov) ov.classList.remove('open'); });
+  });
+  // Close sidebar on resize to desktop
+  window.addEventListener('resize',function(){
+    if(window.innerWidth>768) closeSidebar();
+  });
+});
+</script>
+</body>
+</html>

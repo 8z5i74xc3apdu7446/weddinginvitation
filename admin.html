@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — Undangan Digital</title>
+  <style>
+    /* ── Reset & Variables ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green-dark:  #075e54;
+      --green-mid:   #128c7e;
+      --green-light: #25d366;
+      --green-pale:  #dcf8c6;
+      --bg:          #f0f2f5;
+      --card:        #ffffff;
+      --text:        #111b21;
+      --muted:       #667781;
+      --border:      #e9edef;
+      --red:         #e53935;
+      --yellow:      #f9a825;
+      --sidebar-w:   240px;
+      --radius:      12px;
+      --shadow:      0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.08);
+      --shadow-lg:   0 4px 16px rgba(0,0,0,.14);
+    }
+
+    html { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body  { background: var(--bg); color: var(--text); min-height: 100vh; display: flex; overflow-x: hidden; }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    /* ════════════════════════════
+       SIDEBAR
+    ════════════════════════════ */
+    .sidebar {
+      position: fixed; top: 0; left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--green-dark);
+      display: flex; flex-direction: column;
+      z-index: 100;
+      transition: transform .25s ease;
+    }
+
+    .sidebar-brand {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .sidebar-brand .logo { font-size: 22px; font-weight: 700; color: #fff; line-height: 1.2; }
+    .sidebar-brand .tagline { font-size: 11px; color: rgba(255,255,255,.55); margin-top: 2px; }
+
+    .sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 11px 20px;
+      color: rgba(255,255,255,.72);
+      text-decoration: none;
+      font-size: 14px; font-weight: 500;
+      border-radius: 0;
+      transition: background .15s, color .15s;
+      cursor: pointer;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.08); color: #fff; }
+    .nav-item.active { background: rgba(255,255,255,.14); color: #fff; }
+    .nav-item .nav-icon { font-size: 18px; width: 24px; text-align: center; flex-shrink: 0; }
+
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,.1);
+      font-size: 11px; color: rgba(255,255,255,.4);
+    }
+
+    /* ════════════════════════════
+       MAIN LAYOUT
+    ════════════════════════════ */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── Top Header ── */
+    .topbar {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+      box-shadow: var(--shadow);
+    }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .hamburger {
+      display: none;
+      background: none; border: none; cursor: pointer;
+      padding: 6px; border-radius: 8px;
+      color: var(--text);
+      font-size: 20px;
+    }
+    .topbar-title h1 { font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.2; }
+    .topbar-title .sub { font-size: 12px; color: var(--muted); }
+
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase;
+    }
+    .badge-draft     { background: #fff8e1; color: #f57f17; border: 1px solid #ffe082; }
+    .badge-published { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    /* ── Page Content ── */
+    .content { padding: 28px 24px 80px; flex: 1; }
+
+    .section-title {
+      font-size: 13px; font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase; letter-spacing: .8px;
+      margin-bottom: 14px; margin-top: 32px;
+    }
+    .section-title:first-child { margin-top: 0; }
+
+    /* ════════════════════════════
+       STAT CARDS
+    ════════════════════════════ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .stat-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: flex; flex-direction: column; gap: 8px;
+      border-left: 4px solid transparent;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .stat-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-1px); }
+    .stat-card:nth-child(1) { border-left-color: var(--green-mid); }
+    .stat-card:nth-child(2) { border-left-color: #1976d2; }
+    .stat-card:nth-child(3) { border-left-color: var(--yellow); }
+    .stat-card:nth-child(4) { border-left-color: #8e24aa; }
+
+    .stat-icon { font-size: 24px; line-height: 1; }
+    .stat-label { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .stat-value { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1; }
+    .stat-sub { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* ════════════════════════════
+       RSVP BREAKDOWN
+    ════════════════════════════ */
+    .two-col { display: grid; grid-template-columns: 1fr 1.6fr; gap: 16px; align-items: start; }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+    .card-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+    /* Bar chart */
+    .chart-bars { display: flex; flex-direction: column; gap: 14px; }
+    .bar-row { display: flex; flex-direction: column; gap: 5px; }
+    .bar-meta { display: flex; justify-content: space-between; align-items: center; }
+    .bar-label { font-size: 13px; color: var(--text); font-weight: 500; }
+    .bar-count { font-size: 13px; color: var(--muted); font-weight: 600; }
+    .bar-track {
+      height: 10px; background: var(--bg);
+      border-radius: 99px; overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%; border-radius: 99px;
+      transition: width .6s cubic-bezier(.4,0,.2,1);
+    }
+    .bar-hadir  { background: var(--green-light); }
+    .bar-tidak  { background: var(--red); }
+    .bar-ragu   { background: var(--yellow); }
+
+    /* ════════════════════════════
+       TABLE
+    ════════════════════════════ */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { border-bottom: 2px solid var(--border); }
+    th {
+      padding: 10px 12px; text-align: left;
+      font-size: 11px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .6px;
+      white-space: nowrap;
+    }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--bg); }
+
+    .pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 9px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+    }
+    .pill-hadir  { background: #e8f5e9; color: #2e7d32; }
+    .pill-tidak  { background: #ffebee; color: #c62828; }
+    .pill-ragu   { background: #fff8e1; color: #f57f17; }
+
+    .td-msg { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+    .td-time { white-space: nowrap; color: var(--muted); font-size: 12px; }
+    .td-num  { text-align: center; font-weight: 600; }
+
+    .empty-row td { text-align: center; padding: 32px; color: var(--muted); font-style: italic; }
+
+    /* ════════════════════════════
+       ACTION BUTTONS
+    ════════════════════════════ */
+    .actions-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .action-btn {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      text-decoration: none; cursor: pointer;
+      transition: border-color .2s, box-shadow .2s, transform .2s;
+      box-shadow: var(--shadow);
+    }
+    .action-btn:hover {
+      border-color: var(--green-mid);
+      box-shadow: 0 4px 20px rgba(18,140,126,.18);
+      transform: translateY(-2px);
+    }
+    .action-btn .btn-icon { font-size: 36px; line-height: 1; }
+    .action-btn .btn-label { font-size: 14px; font-weight: 700; color: var(--text); text-align: center; }
+    .action-btn .btn-desc  { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.4; }
+
+    /* ════════════════════════════
+       MODAL
+    ════════════════════════════ */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 200;
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .2s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: var(--card);
+      border-radius: 16px;
+      width: 100%; max-width: 440px;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(16px) scale(.97);
+      transition: transform .2s;
+      overflow: hidden;
+    }
+    .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+
+    .modal-header {
+      background: var(--green-dark);
+      padding: 18px 20px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-header h2 { font-size: 16px; font-weight: 700; color: #fff; }
+    .modal-close {
+      background: rgba(255,255,255,.15); border: none; cursor: pointer;
+      color: #fff; font-size: 18px; width: 30px; height: 30px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    .modal-close:hover { background: rgba(255,255,255,.28); }
+
+    .modal-body { padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; }
+
+    .preview-option {
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex; flex-direction: column; gap: 12px;
+      transition: border-color .15s;
+    }
+    .preview-option:hover { border-color: var(--green-mid); }
+    .preview-option-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .preview-option-desc  { font-size: 12px; color: var(--muted); }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      border: none; cursor: pointer; text-decoration: none;
+      transition: background .15s, box-shadow .15s;
+    }
+    .btn-primary {
+      background: var(--green-mid); color: #fff;
+    }
+    .btn-primary:hover { background: var(--green-dark); box-shadow: 0 2px 8px rgba(18,140,126,.35); }
+    .btn-outline {
+      background: transparent; color: var(--green-mid);
+      border: 2px solid var(--green-mid);
+    }
+    .btn-outline:hover { background: #e8f5e9; }
+
+    select.form-select {
+      width: 100%; padding: 9px 12px; border-radius: 8px;
+      border: 1.5px solid var(--border); font-size: 13px;
+      background: var(--bg); color: var(--text);
+      outline: none; transition: border-color .15s;
+    }
+    select.form-select:focus { border-color: var(--green-mid); }
+
+    .preview-guest-row { display: flex; gap: 8px; }
+    .preview-guest-row select { flex: 1; }
+
+    /* ════════════════════════════
+       MOBILE BOTTOM NAV
+    ════════════════════════════ */
+    .bottom-nav {
+      display: none;
+      position: fixed; bottom: 0; left: 0; right: 0; height: 60px;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      box-shadow: 0 -2px 10px rgba(0,0,0,.08);
+      z-index: 100;
+    }
+    .bottom-nav-inner {
+      display: flex; align-items: stretch; height: 100%;
+    }
+    .bnav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 3px;
+      text-decoration: none; color: var(--muted);
+      font-size: 10px; font-weight: 600;
+      border: none; background: none; cursor: pointer;
+      transition: color .15s;
+    }
+    .bnav-item .bnav-icon { font-size: 20px; }
+    .bnav-item.active { color: var(--green-mid); }
+
+    /* Sidebar overlay (mobile) */
+    .sidebar-overlay {
+      display: none;
+      position: fixed; inset: 0; background: rgba(0,0,0,.45);
+      z-index: 99;
+    }
+    .sidebar-overlay.open { display: block; }
+
+    /* ════════════════════════════
+       RESPONSIVE
+    ════════════════════════════ */
+    @media (max-width: 1024px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .two-col    { grid-template-columns: 1fr; }
+      .actions-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(calc(-1 * var(--sidebar-w)));
+      }
+      .sidebar.open {
+        transform: translateX(0);
+        box-shadow: var(--shadow-lg);
+      }
+      .main { margin-left: 0; }
+      .hamburger { display: flex; }
+      .bottom-nav { display: flex; }
+      .content { padding: 20px 16px 76px; }
+      .topbar { padding: 0 16px; }
+      .actions-grid { grid-template-columns: 1fr; }
+      .action-btn { flex-direction: row; align-items: center; padding: 16px 18px; text-align: left; }
+      .action-btn .btn-icon { font-size: 28px; }
+      .action-btn .btn-label, .action-btn .btn-desc { text-align: left; }
+    }
+
+    @media (max-width: 480px) {
+      .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .stat-value { font-size: 22px; }
+    }
+
+    /* ── Utility ── */
+    .flex-row { display: flex; align-items: center; gap: 8px; }
+    .mt-auto { margin-top: auto; }
+    .text-muted { color: var(--muted); }
+    .fw-600 { font-weight: 600; }
+
+    /* ── Skeleton placeholder ── */
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #e9edef 25%, #f6f7f8 50%, #e9edef 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════
+     SIDEBAR OVERLAY (mobile)
+════════════════════════════ -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- ════════════════════════════
+     SIDEBAR
+════════════════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="logo">💍 Undangan Digital</div>
+    <div class="tagline">Admin Dashboard</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a class="nav-item active" href="admin.html">
+      <span class="nav-icon">📊</span> Dashboard
+    </a>
+    <a class="nav-item" href="configure.html">
+      <span class="nav-icon">⚙️</span> Konfigurasi
+    </a>
+    <a class="nav-item" href="share.html">
+      <span class="nav-icon">🎁</span> Bagikan
+    </a>
+    <a class="nav-item" href="index.html" target="_blank" rel="noopener">
+      <span class="nav-icon">👁️</span> Lihat Undangan
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    Undangan Digital &copy; <span id="sidebarYear"></span>
+  </div>
+</aside>
+
+<!-- ════════════════════════════
+     MAIN AREA
+════════════════════════════ -->
+<div class="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Toggle menu">
+        ☰
+      </button>
+      <div class="topbar-title">
+        <h1>💍 Admin Panel Undangan Digital</h1>
+        <div class="sub" id="topbarSub">Memuat data…</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="badge badge-draft" id="statusBadge">
+        <span class="badge-dot"></span> DRAFT
+      </span>
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="content">
+
+    <!-- ── Stat Cards ── -->
+    <p class="section-title">Ringkasan</p>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-icon">👥</span>
+        <span class="stat-label">Total Tamu</span>
+        <span class="stat-value" id="statGuests">—</span>
+        <span class="stat-sub" id="statGuestsSub">Dari daftar undangan</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">📨</span>
+        <span class="stat-label">RSVP Masuk</span>
+        <span class="stat-value" id="statRsvp">—</span>
+        <span class="stat-sub" id="statRsvpSub">Respons diterima</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">💬</span>
+        <span class="stat-label">Ucapan Masuk</span>
+        <span class="stat-value" id="statMsg">—</span>
+        <span class="stat-sub" id="statMsgSub">Dengan pesan</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🕐</span>
+        <span class="stat-label">RSVP Terakhir</span>
+        <span class="stat-value" style="font-size:14px;line-height:1.4" id="statLastName">—</span>
+        <span class="stat-sub" id="statLastTime">Belum ada RSVP</span>
+      </div>
+    </div>
+
+    <!-- ── Breakdown + Table ── -->
+    <p class="section-title">Detail RSVP</p>
+    <div class="two-col">
+
+      <!-- Bar Chart -->
+      <div class="card">
+        <div class="card-title">📊 Breakdown Kehadiran</div>
+        <div class="chart-bars">
+          <div class="bar-row">
+            <div class="bar-meta">
+              <span class="bar-label">✅ Hadir</span>
+              <span class="bar-count" id="barCountHadir">0</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill bar-hadir" id="barHadir" style="width:0%"></div>
+            </div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-meta">
+              <span class="bar-label">❌ Tidak Hadir</span>
+              <span class="bar-count" id="barCountTidak">0</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill bar-tidak" id="barTidak" style="width:0%"></div>
+            </div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-meta">
+              <span class="bar-label">🤔 Ragu-ragu</span>
+              <span class="bar-count" id="barCountRagu">0</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill bar-ragu" id="barRagu" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Mini summary -->
+        <div style="margin-top:20px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap">
+          <div style="flex:1;min-width:60px;text-align:center">
+            <div style="font-size:20px;font-weight:800;color:var(--green-light)" id="sumHadir">0</div>
+            <div style="font-size:11px;color:var(--muted)">Hadir</div>
+          </div>
+          <div style="flex:1;min-width:60px;text-align:center">
+            <div style="font-size:20px;font-weight:800;color:var(--red)" id="sumTidak">0</div>
+            <div style="font-size:11px;color:var(--muted)">Tidak</div>
+          </div>
+          <div style="flex:1;min-width:60px;text-align:center">
+            <div style="font-size:20px;font-weight:800;color:var(--yellow)" id="sumRagu">0</div>
+            <div style="font-size:11px;color:var(--muted)">Ragu</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RSVP Table -->
+      <div class="card">
+        <div class="card-title">📋 5 RSVP Terbaru</div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nama Tamu</th>
+                <th>Status</th>
+                <th style="text-align:center">Jml</th>
+                <th>Pesan</th>
+                <th>Waktu</th>
+              </tr>
+            </thead>
+            <tbody id="rsvpTableBody">
+              <tr class="empty-row"><td colspan="5">Belum ada data RSVP</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Action Buttons ── -->
+    <p class="section-title">Kelola Undangan</p>
+    <div class="actions-grid">
+      <a class="action-btn" href="configure.html">
+        <span class="btn-icon">⚙️</span>
+        <div>
+          <div class="btn-label">Konfigurasi Undangan</div>
+          <div class="btn-desc">Edit nama, tanggal, lokasi, dan detail acara</div>
+        </div>
+      </a>
+      <a class="action-btn" href="share.html">
+        <span class="btn-icon">🎁</span>
+        <div>
+          <div class="btn-label">Bagikan Undangan</div>
+          <div class="btn-desc">Kirim link undangan ke tamu via WhatsApp</div>
+        </div>
+      </a>
+      <button class="action-btn" onclick="openPreviewModal()">
+        <span class="btn-icon">👁️</span>
+        <div>
+          <div class="btn-label">Tampilkan Undangan</div>
+          <div class="btn-desc">Preview undangan sebagai umum atau tamu tertentu</div>
+        </div>
+      </button>
+    </div>
+
+  </main>
+</div><!-- /.main -->
+
+<!-- ════════════════════════════
+     BOTTOM NAV (mobile)
+════════════════════════════ -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a class="bnav-item active" href="admin.html">
+      <span class="bnav-icon">📊</span>
+      Dashboard
+    </a>
+    <a class="bnav-item" href="configure.html">
+      <span class="bnav-icon">⚙️</span>
+      Konfigurasi
+    </a>
+    <a class="bnav-item" href="share.html">
+      <span class="bnav-icon">🎁</span>
+      Bagikan
+    </a>
+    <button class="bnav-item" onclick="openPreviewModal()">
+      <span class="bnav-icon">👁️</span>
+      Preview
+    </button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════
+     PREVIEW MODAL
+════════════════════════════ -->
+<div class="modal-overlay" id="previewModal" onclick="handleModalOverlayClick(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-header">
+      <h2 id="modalTitle">👁️ Pilih Mode Preview</h2>
+      <button class="modal-close" onclick="closePreviewModal()" aria-label="Tutup modal">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Option A: Preview Umum -->
+      <div class="preview-option">
+        <div>
+          <div class="preview-option-title">🌐 Preview Umum</div>
+          <div class="preview-option-desc">Lihat undangan tanpa identitas tamu (mode publik)</div>
+        </div>
+        <button class="btn btn-primary" onclick="openGeneralPreview()">
+          Buka Preview Umum ↗
+        </button>
+      </div>
+
+      <!-- Option B: Preview sebagai Tamu -->
+      <div class="preview-option">
+        <div>
+          <div class="preview-option-title">👤 Preview sebagai Tamu</div>
+          <div class="preview-option-desc">Pilih tamu dari daftar untuk melihat undangan personal mereka</div>
+        </div>
+        <div class="preview-guest-row">
+          <select class="form-select" id="guestSelect">
+            <option value="">— Pilih tamu —</option>
+          </select>
+          <button class="btn btn-outline" onclick="openGuestPreview()">Buka ↗</button>
+        </div>
+        <div id="guestSelectEmpty" style="font-size:12px;color:var(--muted);display:none">
+          ⚠️ Belum ada data tamu. Tambahkan tamu di halaman Konfigurasi.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════
+     JAVASCRIPT
+════════════════════════════ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ── localStorage helpers ── */
+  function ls(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  /* ── Relative time (Bahasa Indonesia) ── */
+  function relativeTime(dateStr) {
+    if (!dateStr) return '—';
+    const then = new Date(dateStr);
+    if (isNaN(then)) return '—';
+    const diff = Math.floor((Date.now() - then) / 1000);
+
+    if (diff < 60)           return 'Baru saja';
+    if (diff < 3600)         return Math.floor(diff / 60) + ' menit lalu';
+    if (diff < 86400)        return Math.floor(diff / 3600) + ' jam lalu';
+    if (diff < 86400 * 2)    return 'Kemarin';
+    if (diff < 86400 * 7)    return Math.floor(diff / 86400) + ' hari lalu';
+    if (diff < 86400 * 30)   return Math.floor(diff / 86400 / 7) + ' minggu lalu';
+    if (diff < 86400 * 365)  return Math.floor(diff / 86400 / 30) + ' bulan lalu';
+    return Math.floor(diff / 86400 / 365) + ' tahun lalu';
+  }
+
+  /* ── Escape HTML ── */
+  function esc(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /* ── Load & render all data ── */
+  function loadData() {
+    const config = ls('wedding_config', {});
+    const guests = ls('wedding_guests', []);
+    const rsvp   = ls('wedding_rsvp',   []);
+
+    renderHeader(config);
+    renderStats(guests, rsvp);
+    renderBars(rsvp);
+    renderTable(rsvp);
+    renderGuestSelect(guests);
+  }
+
+  /* ── Header ── */
+  function renderHeader(config) {
+    const title  = config.title || 'Belum dikonfigurasi';
+    const status = (config.status || 'draft').toLowerCase();
+
+    document.getElementById('topbarSub').textContent = title;
+
+    const badge = document.getElementById('statusBadge');
+    if (status === 'published') {
+      badge.className = 'badge badge-published';
+      badge.innerHTML = '<span class="badge-dot"></span> PUBLISHED';
+    } else {
+      badge.className = 'badge badge-draft';
+      badge.innerHTML = '<span class="badge-dot"></span> DRAFT';
+    }
+  }
+
+  /* ── Stat Cards ── */
+  function renderStats(guests, rsvp) {
+    document.getElementById('statGuests').textContent = guests.length;
+    document.getElementById('statGuestsSub').textContent =
+      guests.length === 0 ? 'Belum ada tamu' :
+      guests.length + ' orang terdaftar';
+
+    document.getElementById('statRsvp').textContent = rsvp.length;
+    const pct = guests.length > 0
+      ? Math.round(rsvp.length / guests.length * 100) + '% dari tamu'
+      : 'Respons diterima';
+    document.getElementById('statRsvpSub').textContent = pct;
+
+    const msgs = rsvp.filter(r => r.pesan && r.pesan.trim() !== '').length;
+    document.getElementById('statMsg').textContent = msgs;
+    document.getElementById('statMsgSub').textContent =
+      msgs === 0 ? 'Belum ada ucapan' : msgs + ' ucapan masuk';
+
+    // Latest RSVP
+    const sorted = [...rsvp].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+    const last = sorted[0];
+    if (last) {
+      document.getElementById('statLastName').textContent = last.namaTamu || last.kodeTamu || '—';
+      document.getElementById('statLastTime').textContent = relativeTime(last.createdAt);
+    } else {
+      document.getElementById('statLastName').textContent = '—';
+      document.getElementById('statLastTime').textContent = 'Belum ada RSVP';
+    }
+  }
+
+  /* ── Bar Chart ── */
+  function renderBars(rsvp) {
+    const counts = { hadir: 0, tidak: 0, ragu: 0 };
+    rsvp.forEach(r => {
+      const s = (r.status || '').toLowerCase();
+      if (s === 'hadir')       counts.hadir++;
+      else if (s === 'tidak')  counts.tidak++;
+      else if (s === 'ragu')   counts.ragu++;
+    });
+
+    const total = rsvp.length || 1; // avoid /0
+
+    ['hadir', 'tidak', 'ragu'].forEach(key => {
+      const pct = Math.round(counts[key] / total * 100);
+      document.getElementById('barCount' + key.charAt(0).toUpperCase() + key.slice(1)).textContent = counts[key];
+      document.getElementById('bar' + key.charAt(0).toUpperCase() + key.slice(1)).style.width = pct + '%';
+      document.getElementById('sum'  + key.charAt(0).toUpperCase() + key.slice(1)).textContent = counts[key];
+    });
+  }
+
+  /* ── RSVP Table ── */
+  function renderTable(rsvp) {
+    const tbody = document.getElementById('rsvpTableBody');
+    const sorted = [...rsvp].sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    ).slice(0, 5);
+
+    if (sorted.length === 0) {
+      tbody.innerHTML =
+        '<tr class="empty-row"><td colspan="5">📭 Belum ada RSVP masuk</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = sorted.map(r => {
+      const status = (r.status || '').toLowerCase();
+      const pillClass =
+        status === 'hadir' ? 'pill-hadir' :
+        status === 'tidak' ? 'pill-tidak' : 'pill-ragu';
+      const pillLabel =
+        status === 'hadir' ? '✅ Hadir' :
+        status === 'tidak' ? '❌ Tidak' : '🤔 Ragu';
+
+      return `<tr>
+        <td><strong>${esc(r.namaTamu || r.kodeTamu || '—')}</strong></td>
+        <td><span class="pill ${pillClass}">${pillLabel}</span></td>
+        <td class="td-num">${esc(r.jumlahHadir != null ? r.jumlahHadir : '—')}</td>
+        <td class="td-msg" title="${esc(r.pesan)}">${r.pesan && r.pesan.trim() ? esc(r.pesan) : '<span style="color:var(--border)">—</span>'}</td>
+        <td class="td-time">${relativeTime(r.createdAt)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  /* ── Guest select (modal) ── */
+  function renderGuestSelect(guests) {
+    const sel   = document.getElementById('guestSelect');
+    const empty = document.getElementById('guestSelectEmpty');
+
+    sel.innerHTML = '<option value="">— Pilih tamu —</option>';
+
+    if (guests.length === 0) {
+      sel.style.display   = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+    sel.style.display   = '';
+    empty.style.display = 'none';
+
+    guests.forEach(g => {
+      const opt = document.createElement('option');
+      opt.value       = g.kode;
+      opt.textContent = g.nama + (g.kode ? ' (' + g.kode + ')' : '');
+      sel.appendChild(opt);
+    });
+  }
+
+  /* ── Sidebar ── */
+  window.toggleSidebar = function () {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('open');
+  };
+  window.closeSidebar = function () {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
+  };
+
+  /* ── Modal ── */
+  window.openPreviewModal = function () {
+    document.getElementById('previewModal').classList.add('open');
+  };
+  window.closePreviewModal = function () {
+    document.getElementById('previewModal').classList.remove('open');
+  };
+  window.handleModalOverlayClick = function (e) {
+    if (e.target === document.getElementById('previewModal')) closePreviewModal();
+  };
+
+  window.openGeneralPreview = function () {
+    window.open('index.html?draft=1', '_blank', 'noopener');
+  };
+  window.openGuestPreview = function () {
+    const kode = document.getElementById('guestSelect').value;
+    if (!kode) {
+      alert('Pilih tamu terlebih dahulu.');
+      return;
+    }
+    window.open('index.html?draft=1&to=' + encodeURIComponent(kode), '_blank', 'noopener');
+  };
+
+  /* ── Keyboard: Esc closes modal ── */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closePreviewModal();
+  });
+
+  /* ── Init ── */
+  document.getElementById('sidebarYear').textContent = new Date().getFullYear();
+  loadData();
+
+  /* Re-render on storage changes (cross-tab) */
+  window.addEventListener('storage', loadData);
+
+  /* Refresh relative times every 60 s */
+  setInterval(loadData, 60000);
+})();
+</script>
+</body>
+</html>
