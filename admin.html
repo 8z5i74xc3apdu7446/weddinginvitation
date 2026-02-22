@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Admin Panel · Undangan Digital</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:70px}
+:root{--green-dark:#075e54;--green-mid:#128c7e;--green-light:#25d366;--bg:#f0f2f5;--card:#fff;--text:#111827;--muted:#6b7280;--red:#ef4444;--red-bg:#fee2e2;--yellow:#f59e0b;--yellow-bg:#fef3c7;--border:#e5e7eb;--shadow:0 2px 8px rgba(0,0,0,.08)}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:inherit}
+.wrap{max-width:960px;margin:0 auto;padding:16px}
+
+/* HEADER */
+.header{background:var(--green-dark);color:#fff;padding:16px;position:sticky;top:0;z-index:20}
+.header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.header h1{font-size:18px;font-weight:800;white-space:nowrap}
+.header .sub{font-size:12px;opacity:.8;margin-top:2px}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-draft{background:var(--yellow-bg);color:#92400e}
+.badge-pub{background:#d1fae5;color:#065f46}
+
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}
+@media(min-width:600px){.stat-grid{grid-template-columns:repeat(4,1fr)}}
+.stat-card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px;text-align:center}
+.stat-card .icon{font-size:24px;margin-bottom:6px}
+.stat-card .label{font-size:11px;color:var(--muted);margin-bottom:4px}
+.stat-card .value{font-size:28px;font-weight:800;color:var(--text);line-height:1}
+.stat-card .sub-value{font-size:11px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ACTION BUTTONS */
+.action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:500px){.action-grid{grid-template-columns:1fr}}
+.action-btn{background:var(--green-light);color:#fff;border:none;border-radius:12px;padding:16px 12px;font-size:14px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:6px;transition:opacity .15s}
+.action-btn:active{opacity:.8}
+.action-btn .icon{font-size:24px}
+.action-btn.secondary{background:var(--card);color:var(--green-dark);border:1px solid var(--green-mid)}
+
+/* CARDS */
+.card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+.card h3{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text)}
+.section-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px}
+
+/* BAR CHART */
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.bar-label{font-size:12px;color:var(--muted);width:90px;flex-shrink:0}
+.bar-track{flex:1;background:#f3f4f6;border-radius:4px;height:12px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .4s ease}
+.bar-count{font-size:12px;font-weight:700;color:var(--text);width:50px;text-align:right;flex-shrink:0}
+
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 10px;background:#f9fafb;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.status-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.status-hadir{background:#d1fae5;color:#065f46}
+.status-tidak{background:var(--red-bg);color:var(--red)}
+.status-ragu{background:var(--yellow-bg);color:#92400e}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+@media(min-width:600px){.modal-overlay{align-items:center}}
+.modal-sheet{background:var(--card);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto}
+@media(min-width:600px){.modal-sheet{border-radius:20px}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-header h2{font-size:16px;font-weight:800}
+.modal-close{background:none;border:none;font-size:20px;color:var(--muted);padding:4px;line-height:1}
+.modal-section{margin-bottom:20px}
+.modal-section h4{font-size:13px;font-weight:700;margin-bottom:8px;color:var(--text)}
+.modal-btn{width:100%;padding:12px;border-radius:10px;border:none;font-size:14px;font-weight:700;margin-top:8px;transition:opacity .15s}
+.modal-btn:active{opacity:.8}
+.modal-btn.primary{background:var(--green-light);color:#fff}
+.modal-btn.secondary{background:var(--card);color:var(--green-dark);border:1px solid var(--green-mid)}
+select.modal-select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;background:var(--card);color:var(--text);font-family:inherit}
+select.modal-select:focus{outline:none;border-color:var(--green-light)}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;height:60px;z-index:19}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;color:var(--muted);border:none;background:none;cursor:pointer;transition:color .15s}
+.nav-item.active{color:var(--green-mid);font-weight:700}
+.nav-item .nav-icon{font-size:20px;line-height:1}
+
+/* EMPTY STATE */
+.empty{text-align:center;padding:32px 16px;color:var(--muted)}
+.empty .icon{font-size:40px;margin-bottom:8px}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;right:16px;background:#1f2937;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;z-index:200;display:none;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+
+/* NO DATA */
+.no-data{color:var(--muted);font-size:13px;font-style:italic;padding:8px 0}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div>
+      <h1>💍 Admin Panel Undangan Digital</h1>
+      <div class="sub" id="weddingTitle">Memuat...</div>
+    </div>
+    <span class="badge badge-draft" id="statusBadge">DRAFT</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- STAT CARDS -->
+  <div class="stat-grid" style="margin-top:16px">
+    <div class="stat-card">
+      <div class="icon">👥</div>
+      <div class="label">Total Tamu</div>
+      <div class="value" id="statGuests">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon">✅</div>
+      <div class="label">RSVP Masuk</div>
+      <div class="value" id="statRsvp">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon">💬</div>
+      <div class="label">Ucapan Masuk</div>
+      <div class="value" id="statWishes">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="icon">🕐</div>
+      <div class="label">RSVP Terakhir</div>
+      <div class="value" style="font-size:16px;line-height:1.2" id="statLastName">—</div>
+      <div class="sub-value" id="statLastTime"></div>
+    </div>
+  </div>
+
+  <!-- ACTION BUTTONS -->
+  <div class="action-grid">
+    <button class="action-btn" onclick="location.href='configure.html'">
+      <span class="icon">⚙️</span>
+      Configure Undangan
+    </button>
+    <button class="action-btn" onclick="location.href='share.html'">
+      <span class="icon">🎁</span>
+      Bagikan Undangan
+    </button>
+    <button class="action-btn secondary" onclick="openPreviewModal()">
+      <span class="icon">👁️</span>
+      Tampilkan Undangan
+    </button>
+  </div>
+
+  <!-- RSVP BREAKDOWN -->
+  <div class="card">
+    <h3>📊 Breakdown RSVP</h3>
+    <div id="rsvpChart">
+      <div class="no-data">Belum ada data RSVP</div>
+    </div>
+  </div>
+
+  <!-- RSVP TABLE -->
+  <div class="card">
+    <h3>📋 RSVP Terbaru</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Nama Tamu</th>
+            <th>Status</th>
+            <th>Jml</th>
+            <th>Pesan</th>
+            <th>Waktu</th>
+          </tr>
+        </thead>
+        <tbody id="rsvpTableBody">
+          <tr><td colspan="5" class="no-data" style="padding:16px;text-align:center">Belum ada data RSVP</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="modal-overlay" id="previewModal" onclick="closePreviewModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h2>👁️ Tampilkan Undangan</h2>
+      <button class="modal-close" onclick="closePreviewModal()">✕</button>
+    </div>
+    <div class="modal-section">
+      <h4>A. Preview Umum (tanpa nama tamu)</h4>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Buka undangan tanpa nama tamu tertentu</p>
+      <button class="modal-btn primary" onclick="openPreviewGeneral()">🌐 Buka Preview Umum</button>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:4px 0 16px">
+    <div class="modal-section">
+      <h4>B. Preview sebagai tamu tertentu</h4>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Pilih tamu untuk melihat undangan dengan nama mereka</p>
+      <select class="modal-select" id="guestSelect">
+        <option value="">— Pilih tamu —</option>
+      </select>
+      <button class="modal-btn secondary" onclick="openPreviewGuest()">👤 Buka Preview sebagai Tamu Ini</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item active">
+    <span class="nav-icon">🏠</span>
+    Dashboard
+  </button>
+  <button class="nav-item" onclick="location.href='configure.html'">
+    <span class="nav-icon">⚙️</span>
+    Configure
+  </button>
+  <button class="nav-item" onclick="location.href='share.html'">
+    <span class="nav-icon">🎁</span>
+    Bagikan
+  </button>
+  <button class="nav-item" onclick="openPreviewModal()">
+    <span class="nav-icon">👁️</span>
+    Preview
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function getLS(key) {
+  try { return JSON.parse(localStorage.getItem(key)); } catch(e) { return null; }
+}
+
+function relTime(iso) {
+  try {
+    const diff = Date.now() - new Date(iso).getTime();
+    const s = Math.floor(diff / 1000);
+    if (s < 60) return s + ' dtk lalu';
+    const m = Math.floor(s / 60);
+    if (m < 60) return m + ' mnt lalu';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + ' jam lalu';
+    return Math.floor(h / 24) + ' hari lalu';
+  } catch(e) { return ''; }
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.style.display = 'none', 2500);
+}
+
+function escHtml(s) {
+  return (s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+
+function loadStats() {
+  const cfg = getLS('wedding_config') || {};
+  const guests = getLS('wedding_guests') || [];
+  const rsvp = getLS('wedding_rsvp') || [];
+
+  // Header
+  document.getElementById('weddingTitle').textContent = cfg.title || 'Belum dikonfigurasi';
+  const badge = document.getElementById('statusBadge');
+  if (cfg.status === 'published') {
+    badge.textContent = 'PUBLISHED';
+    badge.className = 'badge badge-pub';
+  } else {
+    badge.textContent = 'DRAFT';
+    badge.className = 'badge badge-draft';
+  }
+
+  // Stats
+  document.getElementById('statGuests').textContent = guests.length;
+  document.getElementById('statRsvp').textContent = rsvp.length;
+  const wishes = rsvp.filter(r => r.pesan && r.pesan.trim()).length;
+  document.getElementById('statWishes').textContent = wishes;
+
+  // Last RSVP
+  if (rsvp.length > 0) {
+    const sorted = [...rsvp].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const last = sorted[0];
+    document.getElementById('statLastName').textContent = last.namaTamu || '—';
+    document.getElementById('statLastTime').textContent = relTime(last.createdAt);
+  } else {
+    document.getElementById('statLastName').textContent = '—';
+    document.getElementById('statLastTime').textContent = '';
+  }
+
+  // RSVP Chart
+  renderChart(rsvp);
+
+  // RSVP Table
+  renderTable(rsvp);
+
+  // Guest select
+  renderGuestSelect(guests);
+}
+
+function renderChart(rsvp) {
+  const hadir = rsvp.filter(r => r.status === 'hadir').length;
+  const tidak = rsvp.filter(r => r.status === 'tidak').length;
+  const ragu = rsvp.filter(r => r.status === 'ragu').length;
+  const total = hadir + tidak + ragu;
+
+  const container = document.getElementById('rsvpChart');
+  if (total === 0) {
+    container.innerHTML = '<div class="no-data">Belum ada data RSVP</div>';
+    return;
+  }
+
+  const pct = (n) => total > 0 ? Math.round(n / total * 100) : 0;
+  container.innerHTML = `
+    <div class="bar-row">
+      <div class="bar-label">Hadir</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct(hadir)}%;background:var(--green-light)"></div></div>
+      <div class="bar-count">${hadir} org</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Tidak Hadir</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct(tidak)}%;background:var(--red)"></div></div>
+      <div class="bar-count">${tidak} org</div>
+    </div>
+    <div class="bar-row">
+      <div class="bar-label">Ragu-ragu</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct(ragu)}%;background:var(--yellow)"></div></div>
+      <div class="bar-count">${ragu} org</div>
+    </div>
+  `;
+}
+
+function renderTable(rsvp) {
+  const tbody = document.getElementById('rsvpTableBody');
+  if (rsvp.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="padding:16px;text-align:center;color:var(--muted);font-style:italic">Belum ada data RSVP</td></tr>';
+    return;
+  }
+  const sorted = [...rsvp].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0,5);
+  tbody.innerHTML = sorted.map(r => {
+    const statusClass = r.status === 'hadir' ? 'status-hadir' : r.status === 'tidak' ? 'status-tidak' : 'status-ragu';
+    const statusLabel = r.status === 'hadir' ? 'Hadir' : r.status === 'tidak' ? 'Tidak Hadir' : 'Ragu-ragu';
+    return `<tr>
+      <td style="font-weight:600">${escHtml(r.namaTamu)}</td>
+      <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+      <td>${r.jumlahHadir || 1}</td>
+      <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(r.pesan || '—')}</td>
+      <td style="white-space:nowrap;color:var(--muted)">${relTime(r.createdAt)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderGuestSelect(guests) {
+  const sel = document.getElementById('guestSelect');
+  sel.innerHTML = '<option value="">— Pilih tamu —</option>';
+  guests.forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g.kode;
+    opt.textContent = g.nama;
+    sel.appendChild(opt);
+  });
+}
+
+function openPreviewModal() {
+  document.getElementById('previewModal').classList.add('open');
+}
+
+function closePreviewModal(e) {
+  if (!e || e.target === document.getElementById('previewModal')) {
+    document.getElementById('previewModal').classList.remove('open');
+  }
+}
+
+function openPreviewGeneral() {
+  window.open('index.html?draft=1', '_blank', 'noopener,noreferrer');
+  closePreviewModal();
+}
+
+function openPreviewGuest() {
+  const kode = document.getElementById('guestSelect').value;
+  if (!kode) { toast('Pilih tamu terlebih dahulu'); return; }
+  window.open('index.html?draft=1&to=' + encodeURIComponent(kode), '_blank', 'noopener,noreferrer');
+  closePreviewModal();
+}
+
+// ESC key closes modal
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePreviewModal(); });
+
+// Init
+loadStats();
+</script>
+</body>
+</html>
