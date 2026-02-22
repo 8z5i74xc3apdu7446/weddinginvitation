@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel Undangan Digital</title>
+<style>
+:root {
+  --green-dark: #075e54;
+  --green-mid: #128c7e;
+  --green-light: #25d366;
+  --bg: #f0f2f5;
+  --card: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.header { position: fixed; top: 0; left: 0; right: 0; height: 64px; background: var(--green-dark); display: flex; align-items: center; padding: 0 20px; z-index: 100; gap: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.25); }
+.hamburger { display: none; background: none; border: none; cursor: pointer; color: white; font-size: 22px; padding: 4px 8px; border-radius: 6px; }
+.hamburger:hover { background: rgba(255,255,255,0.1); }
+.header-title { color: white; font-size: 17px; font-weight: 700; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.btn { padding: 8px 14px; border-radius: 12px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-family: inherit; }
+.btn-primary { background: var(--green-light); color: white; }
+.btn-primary:hover { background: #1db954; transform: translateY(-1px); box-shadow: 0 3px 10px rgba(37,211,102,0.35); }
+.btn-secondary { background: transparent; border: 1.5px solid rgba(255,255,255,0.55); color: white; }
+.btn-secondary:hover { background: rgba(255,255,255,0.12); }
+.btn-outline { background: transparent; border: 1.5px solid var(--green-light); color: var(--green-dark); }
+.btn-outline:hover { background: #f0fdf4; }
+.btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 10px; }
+.btn-danger { background: #fee2e2; color: var(--red); border: none; }
+.btn-danger:hover { background: #fecaca; }
+.layout { display: flex; padding-top: 64px; min-height: 100vh; }
+.sidebar { width: 260px; position: fixed; top: 64px; left: 0; bottom: 0; background: var(--green-dark); overflow-y: auto; z-index: 90; padding: 10px 0; }
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 2px; }
+.sidebar-item { display: flex; align-items: center; gap: 10px; padding: 11px 16px; cursor: pointer; color: rgba(255,255,255,0.78); transition: all 0.18s; border-left: 3px solid transparent; font-size: 13px; user-select: none; }
+.sidebar-item:hover { background: var(--green-mid); color: white; }
+.sidebar-item.active { background: rgba(37,211,102,0.18); border-left-color: var(--green-light); color: white; font-weight: 600; }
+.sidebar-emoji { font-size: 17px; min-width: 22px; text-align: center; }
+.sidebar-name { flex: 1; line-height: 1.35; }
+.sidebar-name small { display: block; font-size: 9.5px; font-weight: 400; opacity: 0.55; letter-spacing: 0.4px; }
+.sidebar-badge { font-size: 13px; flex-shrink: 0; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.42); z-index: 85; }
+.sidebar-overlay.show { display: block; }
+.main { margin-left: 260px; flex: 1; padding: 20px; max-width: 100%; }
+.progress-area { background: var(--card); border-radius: 16px; padding: 14px 18px; margin-bottom: 20px; box-shadow: 0 1px 5px rgba(0,0,0,0.07); display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.progress-text { font-size: 13.5px; color: var(--muted); font-weight: 500; white-space: nowrap; }
+.progress-bar-wrap { flex: 1; min-width: 160px; height: 8px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green-mid), var(--green-light)); border-radius: 99px; transition: width 0.5s ease; }
+.progress-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.section { display: none; }
+.section.active { display: block; }
+.section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+.section-title { font-size: 19px; font-weight: 700; color: var(--text); }
+.badge-wajib { background: #fee2e2; color: var(--red); font-size: 10.5px; font-weight: 700; padding: 3px 9px; border-radius: 20px; letter-spacing: 0.4px; }
+.badge-optional { color: #9ca3af; font-size: 11px; font-style: italic; }
+.card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 1px 5px rgba(0,0,0,0.07); }
+.card-title { font-size: 14.5px; font-weight: 700; color: var(--text); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+.form-group { margin-bottom: 14px; }
+.form-group:last-child { margin-bottom: 0; }
+.label { display: block; font-size: 12.5px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+.label .wajib { color: var(--red); margin-left: 2px; }
+.label .opt { color: #9ca3af; font-size: 10.5px; font-weight: 400; margin-left: 4px; }
+input[type="text"], input[type="url"], input[type="date"], input[type="time"], input[type="datetime-local"], input[type="number"], textarea, select { width: 100%; padding: 10px 13px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 13.5px; color: var(--text); background: #fff; outline: none; transition: border-color 0.2s, box-shadow 0.2s; font-family: inherit; }
+input:focus, textarea:focus, select:focus { border-color: var(--green-light); box-shadow: 0 0 0 3px rgba(37,211,102,0.12); }
+textarea { resize: vertical; min-height: 80px; }
+input[type="file"] { padding: 8px 10px; border: 1.5px dashed #d1d5db; border-radius: 10px; background: #fafafa; cursor: pointer; font-size: 13px; }
+input[type="file"]:hover { border-color: var(--green-light); background: #f0fdf4; }
+input[type="color"] { width: 42px; height: 34px; border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 2px; cursor: pointer; flex-shrink: 0; }
+.divider { border: none; border-top: 1px solid #f1f5f9; margin: 14px 0; }
+.photo-preview-round { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--green-light); margin-top: 8px; display: block; }
+.photo-preview-rect { width: 100%; max-height: 180px; border-radius: 10px; object-fit: cover; margin-top: 8px; display: block; border: 1px solid #e5e7eb; }
+.photo-hidden { display: none !important; }
+.radio-group { display: flex; gap: 18px; flex-wrap: wrap; }
+.radio-option { display: flex; align-items: center; gap: 7px; cursor: pointer; font-size: 13.5px; }
+.radio-option input[type="radio"] { width: 15px; height: 15px; padding: 0; border: none; box-shadow: none; accent-color: var(--green-light); }
+.color-row { display: flex; align-items: center; gap: 10px; }
+.galeri-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+.galeri-item { position: relative; aspect-ratio: 1; }
+.galeri-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; border: 1px solid #e5e7eb; }
+.galeri-remove { position: absolute; top: 4px; right: 4px; background: rgba(239,68,68,0.88); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.timeline { position: relative; padding-left: 26px; }
+.timeline::before { content: ''; position: absolute; left: 7px; top: 6px; bottom: 6px; width: 2px; background: #e5e7eb; }
+.timeline-item { position: relative; margin-bottom: 18px; background: #f8fafc; border-radius: 12px; padding: 13px 15px; border: 1px solid #f1f5f9; }
+.timeline-item::before { content: ''; position: absolute; left: -23px; top: 16px; width: 12px; height: 12px; border-radius: 50%; background: var(--green-light); border: 2px solid white; box-shadow: 0 0 0 2px var(--green-light); }
+.timeline-year { font-size: 11.5px; font-weight: 700; color: var(--green-mid); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+.timeline-title-text { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.timeline-desc-text { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.countdown-preview { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+.countdown-unit { text-align: center; background: var(--green-dark); color: white; border-radius: 12px; padding: 12px 14px; min-width: 72px; }
+.countdown-num { font-size: 28px; font-weight: 700; line-height: 1; }
+.countdown-lbl { font-size: 10.5px; opacity: 0.75; margin-top: 3px; }
+.entry-item { background: #f8fafc; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; border: 1px solid #f1f5f9; }
+.entry-item-row { display: flex; gap: 10px; align-items: flex-end; }
+.entry-item-row .form-group { flex: 1; margin-bottom: 0; }
+.yt-thumbnail { width: 100%; border-radius: 10px; margin-top: 8px; aspect-ratio: 16/9; object-fit: cover; background: #000; display: none; }
+.audio-info { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+.section-footer { display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 14px; }
+.saved-badge { background: #f0fdf4; color: #16a34a; font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 8px; opacity: 0; transition: opacity 0.3s; }
+.saved-badge.show { opacity: 1; }
+.toast-container { position: fixed; bottom: 22px; right: 22px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast { background: #1e293b; color: white; padding: 11px 18px; border-radius: 12px; font-size: 13.5px; font-weight: 500; box-shadow: 0 4px 18px rgba(0,0,0,0.22); animation: toastIn 0.28s ease; display: flex; align-items: center; gap: 8px; max-width: 320px; }
+.toast.error { background: #dc2626; }
+.toast.warn { background: #d97706; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes toastOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(8px); } }
+@media (max-width: 768px) {
+  .hamburger { display: block; }
+  .sidebar { transform: translateX(-260px); transition: transform 0.26s ease; }
+  .sidebar.open { transform: translateX(0); }
+  .main { margin-left: 0; padding: 12px; }
+  .form-row { grid-template-columns: 1fr; }
+  .header-title { font-size: 14px; }
+  .galeri-grid { grid-template-columns: repeat(2,1fr); }
+  .progress-actions { width: 100%; }
+}
+</style>
+</head>
+<body>
+<header class="header">
+  <button class="hamburger" onclick="toggleSidebar()">&#9776;</button>
+  <div class="header-title">&#9881;&#65039; Admin Panel Undangan Digital</div>
+  <a href="share.html" class="btn btn-primary btn-sm">&#127873; Bagikan Undangan</a>
+  <button class="btn btn-secondary btn-sm" onclick="window.open('index.html?preview=1','_blank')">&#128065; Tampilkan Undangan</button>
+</header>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main">
+    <div class="progress-area">
+      <div class="progress-text" id="progressText">0 dari 12 seksi sudah diisi</div>
+      <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressFill" style="width:0%"></div></div>
+      <div class="progress-actions">
+        <button class="btn btn-outline btn-sm" onclick="exportConfig()">&#11015;&#65039; Export Config</button>
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('importFileInput').click()">&#11014;&#65039; Import Config</button>
+        <input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importConfig(this)">
+      </div>
+    </div>
+    <!-- SECTION 1 -->
+    <div class="section active" id="section-1">
+      <div class="section-header"><div class="section-title">&#128107; Data Pengantin</div><span class="badge-wajib">&#11088; WAJIB</span></div>
+      <div class="card">
+        <div class="card-title">&#129333; Pengantin Pria</div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Nama Lengkap <span class="wajib">&#11088;</span></label><input type="text" id="groomName" placeholder="cth: Ahmad Fauzan" oninput="debounceSave()"></div>
+          <div class="form-group"><label class="label">Nama Panggilan <span class="opt">opsional</span></label><input type="text" id="groomNick" placeholder="cth: Fauzan" oninput="debounceSave()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Nama Ayah <span class="wajib">&#11088;</span></label><input type="text" id="groomFather" placeholder="cth: Bapak Ahmad Subagyo" oninput="debounceSave()"></div>
+          <div class="form-group"><label class="label">Nama Ibu <span class="wajib">&#11088;</span></label><input type="text" id="groomMother" placeholder="cth: Ibu Siti Rahayu" oninput="debounceSave()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Urutan Anak <span class="opt">opsional</span></label><input type="text" id="groomOrder" placeholder="cth: Putra pertama" oninput="debounceSave()"></div>
+          <div class="form-group"><label class="label">Alamat Domisili <span class="opt">opsional</span></label><input type="text" id="groomAddress" placeholder="cth: Jakarta Selatan" oninput="debounceSave()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Instagram URL <span class="opt">opsional</span></label><input type="url" id="groomInstagram" placeholder="https://instagram.com/username" oninput="debounceSave()"></div>
+          <div class="form-group"><label class="label">Foto Profil <span class="opt">opsional</span></label><input type="file" accept="image/*" onchange="handlePhotoUpload(this,'groomPhoto','groomPhotoPreview')"><img id="groomPhotoPreview" class="photo-preview-round photo-hidden" src="" alt="Foto Pria"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">&#128112; Pengantin Wanita</div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Nama Lengkap <span class="wajib">&#11088;</span></label><input type="text" id="brideName" placeholder="cth: Siti Rahmawati" oninput="debounceSave()"></div>
+          <div class="form-group"><label class="label">Nama Panggilan <span class="opt">opsional</span></label><input type="text" id="brideNick" placeholder="cth: Rahma" oninput="debounceSave()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Nama Ayah <span class="wajib">&#11088;</span></label><input type="text" id="brideFather" placeholder="cth: Bapak Rudi Hartono" oninput="debounceSave()"></div>
+          <div class="form-group"><label class="label">Nama Ibu <span class="wajib">&#11088;</span></label><input type="text" id="brideMother" placeholder="cth: Ibu Dewi Lestari" oninput="debounceSave()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Urutan Anak <span class="opt">opsional</span></label><input type="text" id="brideOrder" placeholder="cth: Putri kedua" oninput="debounceSave()"></div>
+          <div class="form-group"><label class="label">Alamat Domisili <span class="opt">opsional</span></label><input type="text" id="brideAddress" placeholder="cth: Surabaya" oninput="debounceSave()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Instagram URL <span class="opt">opsional</span></label><input type="url" id="brideInstagram" placeholder="https://instagram.com/username" oninput="debounceSave()"></div>
+          <div class="form-group"><label class="label">Foto Profil <span class="opt">opsional</span></label><input type="file" accept="image/*" onchange="handlePhotoUpload(this,'bridePhoto','bridePhotoPreview')"><img id="bridePhotoPreview" class="photo-preview-round photo-hidden" src="" alt="Foto Wanita"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">&#128203; Info Undangan</div>
+        <div class="form-group"><label class="label">Judul Undangan <span class="wajib">&#11088;</span></label><input type="text" id="weddingTitle" placeholder="cth: Pernikahan Ahmad &amp; Siti" oninput="debounceSave()"></div>
+        <div class="form-group"><label class="label">Yang Mengundang <span class="wajib">&#11088;</span></label><textarea id="weddingHosts" rows="2" placeholder="cth: Keluarga Bapak Ahmad Subagyo&#10;&amp; Keluarga Bapak Rudi Hartono" oninput="debounceSave()"></textarea></div>
+        <div class="form-group"><label class="label">Nama Grup / Komunitas <span class="opt">opsional</span></label><input type="text" id="groupName" placeholder="cth: Keluarga Besar Masjid Al-Ikhlas" oninput="debounceSave()"></div>
+      </div>
+      <div class="section-footer"><span class="saved-badge" id="savedBadge1">Tersimpan &#9989;</span><button class="btn btn-primary" onclick="saveSection(1)">&#128190; Simpan Seksi Ini</button></div>
+    </div>
+    <!-- SECTION 2 -->
+    <div class="section" id="section-2">
+      <div class="section-header"><div class="section-title">&#127912; Tema Undangan</div><span class="badge-optional">opsional</span></div>
+      <div class="card">
+        <div class="form-group"><label class="label">Color Theme</label><select id="colorTheme" onchange="handleColorThemeChange();debounceSave()"><option value="Putih-Gold">Putih-Gold</option><option value="Sage Green">Sage Green</option><option value="Dusty Pink">Dusty Pink</option><option value="Navy">Navy</option><option value="WhatsApp Green">WhatsApp Green</option><option value="Custom">Custom</option></select></div>
+        <div class="form-group" id="customColorGroup" style="display:none"><label class="label">Warna Custom</label><div class="color-row"><input type="color" id="customColor" value="#25d366" oninput="document.getElementById('customColorHex').value=this.value;debounceSave()"><input type="text" id="customColorHex" placeholder="#25d366" style="max-width:130px" oninput="syncColorFromHex()"></div></div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Konsep</label><select id="concept" onchange="debounceSave()"><option>Minimalis</option><option>Elegan</option><option>Rustic</option><option>Modern</option><option>Islami</option><option>Adat</option></select></div>
+          <div class="form-group"><label class="label">Background</label><select id="background" onchange="debounceSave()"><option>Bunga</option><option>Daun</option><option>Pattern</option><option>Polos</option></select></div>
+        </div>
+        <div class="form-group"><label class="label">Gaya Font</label><select id="font" onchange="debounceSave()"><option>Formal</option><option>Kaligrafi</option><option>Modern Clean</option></select></div>
+        <div class="form-group"><label class="label">Catatan Tema <span class="opt">opsional</span></label><textarea id="temaNotes" placeholder="Tuliskan preferensi atau catatan tema..." rows="3" oninput="debounceSave()"></textarea></div>
+      </div>
+      <div class="section-footer"><span class="saved-badge" id="savedBadge2">Tersimpan &#9989;</span><button class="btn btn-primary" onclick="saveSection(2)">&#128190; Simpan Seksi Ini</button></div>
+    </div>
+    <!-- SECTION 3 -->
+    <div class="section" id="section-3">
+      <div class="section-header"><div class="section-title">&#128197; Detail Acara</div><span class="badge-wajib">&#11088; WAJIB</span></div>
+      <div class="card">
+        <div class="card-title">&#128141; Akad Nikah</div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Tanggal <span class="wajib">&#11088;</span></label><input type="date" id="akadTanggal" oninput="debounceSave()"></div>
+          <div class="form-group"><label class="label">Jam Mulai <span class="wajib">&#11088;</span></label><input type="time" id="akadJamMulai" oninput="debounceSave()"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Jam Selesai <span class="opt">opsional</span></label><input type="time" id="akadJamSelesai" oninput="debounceSave()"></div>
+          <div class="form-group"><label class="label">Nama Lokasi <span class="wajib">&#11088;</span></label><input type="text" id="akadLokasi" placeholder="cth: Masjid Raya Al-Azhar" oninput="debounceSave()"></div>
+        </div>
+        <div class="form-group"><label class="label">Alamat Lengkap <span class="wajib">&#11088;</span></label><textarea id="akadAlamat" rows="2" placeholder="cth: Jl. Sisingamangaraja, Kebayoran Baru, Jakarta Selatan" oninput="debounceSave()"></textarea></div>
+        <div class="form-group"><label class="label">Link Google Maps <span class="wajib">&#11088;</span></label><input type="url" id="akadMaps" placeholder="https://maps.google.com/..." oninput="debounceSave()"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">&#127882; Resepsi</div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Tanggal <span class="wajib">&#11088;</span></label><input type="date" id="resepsiTanggal" oninput="debounceSave()"></div>
+          <div class="form-group"><label class="label">Dress Code <span class="opt">opsional</span></label><input type="text" id="resepsiDressCode" placeholder="cth: Hijau sage / Putih" oninput="debounceSave()"></div>
+        </div>
+        <div class="form-group"><label class="label">Sesi 1</label>
+          <div class="form-row" style="margin-bottom:0">
+            <div class="form-group" style="margin-bottom:0"><label class="label" style="font-weight:400;font-size:12px">Mulai <span class="wajib">&#11088;</span></label><input type="time" id="resepsiSesi1Mulai" oninput="debounceSave()"></div>
+            <div class="form-group" style="margin-bottom:0"><label class="label" style="font-weight:400;font-size:12px">Selesai <span class="wajib">&#11088;</span></label><input type="time" id="resepsiSesi1Selesai" oninput="debounceSave()"></div>
+          </div>
+        </div>
+        <div class="form-group"><label class="label">Sesi 2 <span class="opt">opsional</span></label>
+          <div class="form-row" style="margin-bottom:0">
+            <div class="form-group" style="margin-bottom:0"><label class="label" style="font-weight:400;font-size:12px">Mulai</label><input type="time" id="resepsiSesi2Mulai" oninput="debounceSave()"></div>
+            <div class="form-group" style="margin-bottom:0"><label class="label" style="font-weight:400;font-size:12px">Selesai</label><input type="time" id="resepsiSesi2Selesai" oninput="debounceSave()"></div>
+          </div>
+        </div>
+        <div class="form-group"><label class="label">Nama Lokasi <span class="wajib">&#11088;</span></label><input type="text" id="resepsiLokasi" placeholder="cth: Gedung Balai Kartini" oninput="debounceSave()"></div>
+        <div class="form-group"><label class="label">Alamat Lengkap <span class="wajib">&#11088;</span></label><textarea id="resepsiAlamat" rows="2" placeholder="cth: Jl. Gatot Subroto No.37, Jakarta Selatan" oninput="debounceSave()"></textarea></div>
+        <div class="form-group"><label class="label">Link Google Maps <span class="wajib">&#11088;</span></label><input type="url" id="resepsiMaps" placeholder="https://maps.google.com/..." oninput="debounceSave()"></div>
+      </div>
+      <div class="section-footer"><span class="saved-badge" id="savedBadge3">Tersimpan &#9989;</span><button class="btn btn-primary" onclick="saveSection(3)">&#128190; Simpan Seksi Ini</button></div>
+    </div>
+    <!-- SECTION 4 -->
+    <div class="section" id="section-4">
+      <div class="section-header"><div class="section-title">&#9203; Hitungan Mundur</div><span class="badge-optional">opsional</span></div>
+      <div class="card">
+        <div class="form-group"><label class="label">Target Tanggal &amp; Waktu</label><input type="datetime-local" id="countdownTarget" oninput="debounceSave();updateCountdownPreview()"></div>
+        <div class="form-group"><label class="label">Label</label><input type="text" id="countdownLabel" value="Menuju Hari Bahagia" placeholder="cth: Menuju Hari Bahagia" oninput="debounceSave();updateCountdownPreview()"></div>
+        <hr class="divider">
+        <div id="countdownLabelPreview" style="text-align:center;font-weight:700;color:var(--green-dark);margin-bottom:12px;font-size:15px;">Menuju Hari Bahagia</div>
+        <div class="countdown-preview">
+          <div class="countdown-unit"><div class="countdown-num" id="cd-hari">00</div><div class="countdown-lbl">Hari</div></div>
+          <div class="countdown-unit"><div class="countdown-num" id="cd-jam">00</div><div class="countdown-lbl">Jam</div></div>
+          <div class="countdown-unit"><div class="countdown-num" id="cd-menit">00</div><div class="countdown-lbl">Menit</div></div>
+          <div class="countdown-unit"><div class="countdown-num" id="cd-detik">00</div><div class="countdown-lbl">Detik</div></div>
+        </div>
+      </div>
+      <div class="section-footer"><span class="saved-badge" id="savedBadge4">Tersimpan &#9989;</span><button class="btn btn-primary" onclick="saveSection(4)">&#128190; Simpan Seksi Ini</button></div>
+    </div>
+    <!-- SECTION 5 -->
+    <div class="section" id="section-5">
+      <div class="section-header"><div class="section-title">&#128248; Foto Utama</div><span class="badge-optional">opsional</span></div>
+      <div class="card">
+        <div class="form-row">
+          <div class="form-group"><label class="label">Foto Cover / Prewedding</label><input type="file" accept="image/*" onchange="handlePhotoUpload(this,'coverPhoto','coverPhotoPreview')"><img id="coverPhotoPreview" class="photo-preview-rect photo-hidden" src="" alt="Cover"></div>
+          <div class="form-group"><label class="label">Foto Terbaik Bersama</label><input type="file" accept="image/*" onchange="handlePhotoUpload(this,'togetherPhoto','togetherPhotoPreview')"><img id="togetherPhotoPreview" class="photo-preview-rect photo-hidden" src="" alt="Together"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Foto Pengantin Pria</label><input type="file" accept="image/*" onchange="handlePhotoUpload(this,'groomPortrait','groomPortraitPreview')"><img id="groomPortraitPreview" class="photo-preview-rect photo-hidden" src="" alt="Groom Portrait"></div>
+          <div class="form-group"><label class="label">Foto Pengantin Wanita</label><input type="file" accept="image/*" onchange="handlePhotoUpload(this,'bridePortrait','bridePortraitPreview')"><img id="bridePortraitPreview" class="photo-preview-rect photo-hidden" src="" alt="Bride Portrait"></div>
+        </div>
+      </div>
+      <div class="section-footer"><span class="saved-badge" id="savedBadge5">Tersimpan &#9989;</span><button class="btn btn-primary" onclick="saveSection(5)">&#128190; Simpan Seksi Ini</button></div>
+    </div>
+    <!-- SECTION 6 -->
+    <div class="section" id="section-6">
+      <div class="section-header"><div class="section-title">&#128444;&#65039; Galeri Foto</div><span class="badge-optional">opsional</span></div>
+      <div class="card">
+        <div class="form-group"><label class="label">Upload Foto Galeri <span class="opt">max 15 foto</span></label><input type="file" accept="image/*" multiple onchange="handleGaleriUpload(this)"></div>
+        <div id="galeriCounter" style="font-size:13px;color:var(--muted);margin-bottom:6px;">0 foto diupload (max 15)</div>
+        <div class="galeri-grid" id="galeriGrid"></div>
+      </div>
+      <div class="section-footer"><span class="saved-badge" id="savedBadge6">Tersimpan &#9989;</span><button class="btn btn-primary" onclick="saveSection(6)">&#128190; Simpan Seksi Ini</button></div>
+    </div>
+    <!-- SECTION 7 -->
+    <div class="section" id="section-7">
+      <div class="section-header"><div class="section-title">&#127916; Video</div><span class="badge-optional">opsional</span></div>
+      <div class="card">
+        <div class="card-title">&#127909; Video Utama Prewedding</div>
+        <div class="form-group"><label class="label">Sumber Video</label><div class="radio-group"><label class="radio-option"><input type="radio" name="videoMainType" value="youtube" checked onchange="handleVideoTypeChange()"> YouTube URL</label><label class="radio-option"><input type="radio" name="videoMainType" value="upload" onchange="handleVideoTypeChange()"> Upload MP4</label></div></div>
+        <div id="videoYoutubeGroup">
+          <div class="form-group"><label class="label">YouTube URL</label><input type="url" id="videoMainYoutube" placeholder="https://youtube.com/watch?v=..." oninput="debounceSave();updateYtThumb('videoMainYoutube','ytThumb1')"></div>
+          <img id="ytThumb1" class="yt-thumbnail" src="" alt="Thumbnail">
+        </div>
+        <div id="videoUploadGroup" style="display:none">
+          <div class="form-group"><label class="label">Upload File MP4</label><input type="file" accept="video/mp4,video/*" onchange="handleVideoUpload(this)"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">&#127902;&#65039; Video Tambahan</div>
+        <div class="form-group"><label class="label">Video Teaser <span class="opt">opsional</span></label><input type="url" id="videoTeaser" placeholder="https://youtube.com/watch?v=..." oninput="debounceSave();updateYtThumb('videoTeaser','ytThumb2')"><img id="ytThumb2" class="yt-thumbnail" src="" alt="Thumbnail Teaser"></div>
+        <div class="form-group"><label class="label">Video Perjalanan Cinta <span class="opt">opsional</span></label><input type="url" id="videoPerjalanan" placeholder="https://youtube.com/watch?v=..." oninput="debounceSave();updateYtThumb('videoPerjalanan','ytThumb3')"><img id="ytThumb3" class="yt-thumbnail" src="" alt="Thumbnail Perjalanan"></div>
+      </div>
+      <div class="section-footer"><span class="saved-badge" id="savedBadge7">Tersimpan &#9989;</span><button class="btn btn-primary" onclick="saveSection(7)">&#128190; Simpan Seksi Ini</button></div>
+    </div>
+    <!-- SECTION 8 -->
+    <div class="section" id="section-8">
+      <div class="section-header"><div class="section-title">&#127925; Musik Latar</div><span class="badge-optional">opsional</span></div>
+      <div class="card">
+        <div class="form-group"><label class="label">Sumber Musik</label><div class="radio-group"><label class="radio-option"><input type="radio" name="audioType" value="upload" checked onchange="handleAudioTypeChange()"> Upload MP3</label><label class="radio-option"><input type="radio" name="audioType" value="url" onchange="handleAudioTypeChange()"> Streaming URL</label></div></div>
+        <div id="audioUploadGroup">
+          <div class="form-group"><label class="label">Upload File MP3 <span class="opt">rekomendasi max 5MB</span></label><input type="file" accept="audio/mp3,audio/mpeg,audio/*" onchange="handleAudioUpload(this)"><div id="audioInfo" class="audio-info"></div></div>
+        </div>
+        <div id="audioUrlGroup" style="display:none">
+          <div class="form-group"><label class="label">Streaming URL</label><input type="url" id="audioUrl" placeholder="https://example.com/lagu.mp3" oninput="debounceSave();updateAudioPlayBtn()"></div>
+        </div>
+        <div class="form-group"><audio id="audioPlayer" style="display:none"></audio><button class="btn btn-outline btn-sm" id="audioPlayBtn" onclick="toggleAudioPreview()" disabled>&#9654; Play Preview</button></div>
+      </div>
+      <div class="section-footer"><span class="saved-badge" id="savedBadge8">Tersimpan &#9989;</span><button class="btn btn-primary" onclick="saveSection(8)">&#128190; Simpan Seksi Ini</button></div>
+    </div>
+    <!-- SECTION 9 -->
+    <div class="section" id="section-9">
+      <div class="section-header"><div class="section-title">&#128149; Love Story</div><span class="badge-optional">opsional</span></div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;"><span style="font-size:13px;color:var(--muted)">Perjalanan cinta kalian</span><button class="btn btn-primary btn-sm" onclick="addLoveStoryItem()">+ Tambah Momen</button></div>
+        <div id="loveStoryForm"></div>
+      </div>
+      <div class="card"><div class="card-title">&#128197; Preview Timeline</div><div class="timeline" id="loveStoryTimeline"></div></div>
+      <div class="section-footer"><span class="saved-badge" id="savedBadge9">Tersimpan &#9989;</span><button class="btn btn-primary" onclick="saveSection(9)">&#128190; Simpan Seksi Ini</button></div>
+    </div>
+    <!-- SECTION 10 -->
+    <div class="section" id="section-10">
+      <div class="section-header"><div class="section-title">&#127873; Kado Digital</div><span class="badge-optional">opsional</span></div>
+      <div class="card"><div class="card-title">&#127970; Transfer Bank</div><div id="bankList"></div><button class="btn btn-outline btn-sm" onclick="addBankItem()">+ Tambah Rekening</button></div>
+      <div class="card"><div class="card-title">&#128241; E-Wallet</div><div id="ewalletList"></div><button class="btn btn-outline btn-sm" onclick="addEwalletItem()">+ Tambah E-Wallet</button></div>
+      <div class="card"><div class="card-title">&#128247; QRIS</div><div class="form-group"><label class="label">Upload Gambar QRIS</label><input type="file" accept="image/*" onchange="handlePhotoUpload(this,'qrisImage','qrisPreview')"><img id="qrisPreview" class="photo-hidden" src="" alt="QRIS" style="max-width:280px;border-radius:12px;margin-top:8px;display:block;border:1px solid #e5e7eb;"></div></div>
+      <div class="card"><div class="card-title">&#128230; Kado Fisik</div><div class="form-group"><label class="label">Alamat Pengiriman</label><textarea id="kadoAlamat" rows="3" placeholder="Tuliskan alamat lengkap untuk pengiriman kado fisik..." oninput="debounceSave()"></textarea></div></div>
+      <div class="section-footer"><span class="saved-badge" id="savedBadge10">Tersimpan &#9989;</span><button class="btn btn-primary" onclick="saveSection(10)">&#128190; Simpan Seksi Ini</button></div>
+    </div>
+    <!-- SECTION 11 -->
+    <div class="section" id="section-11">
+      <div class="section-header"><div class="section-title">&#128225; Live Streaming</div><span class="badge-optional">opsional</span></div>
+      <div class="card">
+        <div class="form-group"><label class="label">Link Streaming</label><input type="url" id="streamLink" placeholder="https://zoom.us/j/... atau https://youtube.com/live/..." oninput="debounceSave()"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="label">Zoom Meeting ID <span class="opt">opsional</span></label><input type="text" id="zoomId" placeholder="cth: 123 456 7890" oninput="debounceSave()"></div>
+          <div class="form-group"><label class="label">Zoom Passcode <span class="opt">opsional</span></label><input type="text" id="zoomPass" placeholder="cth: wedding2025" oninput="debounceSave()"></div>
+        </div>
+        <div class="form-group"><label class="label">Jadwal Streaming</label><input type="datetime-local" id="streamJadwal" oninput="debounceSave()"></div>
+      </div>
+      <div class="section-footer"><span class="saved-badge" id="savedBadge11">Tersimpan &#9989;</span><button class="btn btn-primary" onclick="saveSection(11)">&#128190; Simpan Seksi Ini</button></div>
+    </div>
+    <!-- SECTION 12 -->
+    <div class="section" id="section-12">
+      <div class="section-header"><div class="section-title">&#128279; Pengaturan Link</div><span class="badge-optional">opsional</span></div>
+      <div class="card">
+        <div class="form-group"><label class="label">Base URL</label><input type="url" id="baseUrl" value="https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/" oninput="debounceSave();updateLinkPreview()"></div>
+        <div class="form-group"><label class="label">Format Query Parameter</label><div class="radio-group"><label class="radio-option"><input type="radio" name="paramFormat" value="?to=" checked onchange="debounceSave();updateLinkPreview()"> ?to=</label><label class="radio-option"><input type="radio" name="paramFormat" value="?nama=" onchange="debounceSave();updateLinkPreview()"> ?nama=</label><label class="radio-option"><input type="radio" name="paramFormat" value="?u=" onchange="debounceSave();updateLinkPreview()"> ?u=</label></div></div>
+        <div class="form-group"><label class="label">Preview Link</label><div id="linkPreview" style="background:#f8fafc;border-radius:10px;padding:12px;font-size:12.5px;color:var(--green-mid);font-family:monospace;word-break:break-all;border:1px solid #e5e7eb;"></div></div>
+        <button class="btn btn-outline" onclick="testLink()">&#128269; Test Link</button>
+      </div>
+      <div class="section-footer"><span class="saved-badge" id="savedBadge12">Tersimpan &#9989;</span><button class="btn btn-primary" onclick="saveSection(12)">&#128190; Simpan Seksi Ini</button></div>
+    </div>
+  </main>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script>
+const STORAGE_KEY='wedding_config';
+let config={},saveTimer=null,cdInterval=null;
+let galeriPhotos=[],loveStoryItems=[],bankItems=[],ewalletItems=[];
+window._photoData={};window._audioBase64='';window._audioFilename='';window._audioFilesize='';
+let audioPlaying=false;
+const SECTIONS=[
+  {id:1,emoji:'&#128107;',name:'Data Pengantin',wajib:true},
+  {id:2,emoji:'&#127912;',name:'Tema Undangan',wajib:false},
+  {id:3,emoji:'&#128197;',name:'Detail Acara',wajib:true},
+  {id:4,emoji:'&#9203;',name:'Hitungan Mundur',wajib:false},
+  {id:5,emoji:'&#128248;',name:'Foto Utama',wajib:false},
+  {id:6,emoji:'&#128444;',name:'Galeri Foto',wajib:false},
+  {id:7,emoji:'&#127916;',name:'Video',wajib:false},
+  {id:8,emoji:'&#127925;',name:'Musik Latar',wajib:false},
+  {id:9,emoji:'&#128149;',name:'Love Story',wajib:false},
+  {id:10,emoji:'&#127873;',name:'Kado Digital',wajib:false},
+  {id:11,emoji:'&#128225;',name:'Live Streaming',wajib:false},
+  {id:12,emoji:'&#128279;',name:'Pengaturan Link',wajib:false},
+];
+function init(){buildSidebar();loadConfig();cdInterval=setInterval(updateCountdownPreview,1000);updateLinkPreview();}
+function buildSidebar(){
+  const sb=document.getElementById('sidebar');
+  sb.innerHTML=SECTIONS.map(s=>`<div class="sidebar-item${s.id===1?' active':''}" id="sidebarItem-${s.id}" onclick="showSection(${s.id})"><span class="sidebar-emoji">${s.emoji}</span><span class="sidebar-name">${s.name}${s.wajib?'<small>WAJIB</small>':''}</span><span class="sidebar-badge" id="sidebarBadge-${s.id}">&#11036;</span></div>`).join('');
+}
+function showSection(id){
+  document.querySelectorAll('.section').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  document.getElementById('sidebarItem-'+id).classList.add('active');
+  if(window.innerWidth<=768){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('show');}
+}
+function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('show');}
+function debounceSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveConfig(false),800);}
+function saveConfig(toast=true){
+  config=readAllFields();
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(config));}
+  catch(e){showToast('&#9888;&#65039; Storage penuh! Kurangi ukuran foto.','warn');return;}
+  updateProgress();updateSidebarBadges();
+  if(toast)showToast('&#9989; Konfigurasi tersimpan!');
+}
+function saveSection(num){
+  saveConfig(false);
+  const badge=document.getElementById('savedBadge'+num);
+  badge.classList.add('show');setTimeout(()=>badge.classList.remove('show'),2200);
+  showToast('&#9989; Seksi '+num+' berhasil disimpan!');
+}
+function readAllFields(){
+  return{
+    pengantin:{
+      groom:{namaLengkap:v('groomName'),namaPanggilan:v('groomNick'),namaAyah:v('groomFather'),namaIbu:v('groomMother'),urutanAnak:v('groomOrder'),alamat:v('groomAddress'),instagram:v('groomInstagram'),foto:pd('groomPhoto')},
+      bride:{namaLengkap:v('brideName'),namaPanggilan:v('brideNick'),namaAyah:v('brideFather'),namaIbu:v('brideMother'),urutanAnak:v('brideOrder'),alamat:v('brideAddress'),instagram:v('brideInstagram'),foto:pd('bridePhoto')},
+      judulUndangan:v('weddingTitle'),yangMengundang:v('weddingHosts'),namaGrup:v('groupName'),
+    },
+    tema:{colorTheme:v('colorTheme'),customColor:v('customColor'),concept:v('concept'),background:v('background'),font:v('font'),notes:v('temaNotes')},
+    acara:{
+      akad:{tanggal:v('akadTanggal'),jamMulai:v('akadJamMulai'),jamSelesai:v('akadJamSelesai'),namaLokasi:v('akadLokasi'),alamat:v('akadAlamat'),linkMaps:v('akadMaps')},
+      resepsi:{tanggal:v('resepsiTanggal'),sesi1Mulai:v('resepsiSesi1Mulai'),sesi1Selesai:v('resepsiSesi1Selesai'),sesi2Mulai:v('resepsiSesi2Mulai'),sesi2Selesai:v('resepsiSesi2Selesai'),namaLokasi:v('resepsiLokasi'),alamat:v('resepsiAlamat'),linkMaps:v('resepsiMaps'),dressCode:v('resepsiDressCode')},
+    },
+    countdown:{target:v('countdownTarget'),label:v('countdownLabel')},
+    fotoUtama:{cover:pd('coverPhoto'),groom:pd('groomPortrait'),bride:pd('bridePortrait'),together:pd('togetherPhoto')},
+    galeri:[...galeriPhotos],
+    video:{mainType:radio('videoMainType'),mainYoutube:v('videoMainYoutube'),teaser:v('videoTeaser'),perjalanan:v('videoPerjalanan')},
+    audio:{type:radio('audioType'),url:v('audioUrl'),file:window._audioBase64||'',filename:window._audioFilename||'',filesize:window._audioFilesize||''},
+    loveStory:[...loveStoryItems],
+    kado:{bank:[...bankItems],ewallet:[...ewalletItems],qris:pd('qrisImage'),alamatFisik:v('kadoAlamat')},
+    streaming:{link:v('streamLink'),zoomId:v('zoomId'),zoomPass:v('zoomPass'),jadwal:v('streamJadwal')},
+    link:{baseUrl:v('baseUrl'),paramFormat:radio('paramFormat')},
+  };
+}
+function fillAllFields(c){
+  if(!c)return;
+  const p=c.pengantin||{},g=p.groom||{},b=p.bride||{};
+  sv('groomName',g.namaLengkap);sv('groomNick',g.namaPanggilan);sv('groomFather',g.namaAyah);sv('groomMother',g.namaIbu);sv('groomOrder',g.urutanAnak);sv('groomAddress',g.alamat);sv('groomInstagram',g.instagram);
+  if(g.foto){window._photoData['groomPhoto']=g.foto;showPrev('groomPhotoPreview',g.foto);}
+  sv('brideName',b.namaLengkap);sv('brideNick',b.namaPanggilan);sv('brideFather',b.namaAyah);sv('brideMother',b.namaIbu);sv('brideOrder',b.urutanAnak);sv('brideAddress',b.alamat);sv('brideInstagram',b.instagram);
+  if(b.foto){window._photoData['bridePhoto']=b.foto;showPrev('bridePhotoPreview',b.foto);}
+  sv('weddingTitle',p.judulUndangan);sv('weddingHosts',p.yangMengundang);sv('groupName',p.namaGrup);
+  const t=c.tema||{};
+  sv('colorTheme',t.colorTheme);sv('customColor',t.customColor||'#25d366');sv('customColorHex',t.customColor||'#25d366');sv('concept',t.concept);sv('background',t.background);sv('font',t.font);sv('temaNotes',t.notes);
+  handleColorThemeChange();
+  const a=c.acara||{},ak=a.akad||{},re=a.resepsi||{};
+  sv('akadTanggal',ak.tanggal);sv('akadJamMulai',ak.jamMulai);sv('akadJamSelesai',ak.jamSelesai);sv('akadLokasi',ak.namaLokasi);sv('akadAlamat',ak.alamat);sv('akadMaps',ak.linkMaps);
+  sv('resepsiTanggal',re.tanggal);sv('resepsiSesi1Mulai',re.sesi1Mulai);sv('resepsiSesi1Selesai',re.sesi1Selesai);sv('resepsiSesi2Mulai',re.sesi2Mulai);sv('resepsiSesi2Selesai',re.sesi2Selesai);sv('resepsiLokasi',re.namaLokasi);sv('resepsiAlamat',re.alamat);sv('resepsiMaps',re.linkMaps);sv('resepsiDressCode',re.dressCode);
+  const cd=c.countdown||{};sv('countdownTarget',cd.target);sv('countdownLabel',cd.label||'Menuju Hari Bahagia');updateCountdownPreview();
+  const fo=c.fotoUtama||{};
+  const fMap={cover:'coverPhoto',groom:'groomPortrait',bride:'bridePortrait',together:'togetherPhoto'};
+  const pMap={cover:'coverPhotoPreview',groom:'groomPortraitPreview',bride:'bridePortraitPreview',together:'togetherPhotoPreview'};
+  ['cover','groom','bride','together'].forEach(k=>{if(fo[k]){window._photoData[fMap[k]]=fo[k];showPrev(pMap[k],fo[k]);}});
+  galeriPhotos=c.galeri||[];renderGaleri();
+  const vid=c.video||{};setRadio('videoMainType',vid.mainType||'youtube');sv('videoMainYoutube',vid.mainYoutube);sv('videoTeaser',vid.teaser);sv('videoPerjalanan',vid.perjalanan);
+  handleVideoTypeChange();
+  if(vid.mainYoutube)updateYtThumb('videoMainYoutube','ytThumb1');
+  if(vid.teaser)updateYtThumb('videoTeaser','ytThumb2');
+  if(vid.perjalanan)updateYtThumb('videoPerjalanan','ytThumb3');
+  const au=c.audio||{};setRadio('audioType',au.type||'upload');sv('audioUrl',au.url);
+  if(au.file){window._audioBase64=au.file;window._audioFilename=au.filename||'';window._audioFilesize=au.filesize||'';}
+  handleAudioTypeChange();updateAudioInfo();
+  loveStoryItems=(c.loveStory&&c.loveStory.length>0)?c.loveStory:defaultLS();
+  renderLSForm();renderLSTimeline();
+  const k=c.kado||{};bankItems=k.bank||[];ewalletItems=k.ewallet||[];
+  if(k.qris){window._photoData['qrisImage']=k.qris;showPrev('qrisPreview',k.qris);}
+  sv('kadoAlamat',k.alamatFisik);renderBankList();renderEwalletList();
+  const st=c.streaming||{};sv('streamLink',st.link);sv('zoomId',st.zoomId);sv('zoomPass',st.zoomPass);sv('streamJadwal',st.jadwal);
+  const lk=c.link||{};sv('baseUrl',lk.baseUrl||'https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/');setRadio('paramFormat',lk.paramFormat||'?to=');updateLinkPreview();
+}
+function loadConfig(){
+  const raw=localStorage.getItem(STORAGE_KEY);
+  if(!raw){loveStoryItems=defaultLS();renderLSForm();renderLSTimeline();renderBankList();renderEwalletList();renderGaleri();return;}
+  try{config=JSON.parse(raw);fillAllFields(config);updateProgress();updateSidebarBadges();}catch(e){console.error(e);}
+}
+function defaultLS(){return[{date:'2019',title:'Pertama Bertemu',desc:'Sebuah pertemuan tak terduga yang mengubah segalanya.'},{date:'2021',title:'Mulai Serius',desc:'Dari teman menjadi lebih dari sekedar teman.'},{date:'2025',title:'Lamaran',desc:'Momen indah yang menjadi awal perjalanan baru.'},{date:'2026',title:'Menikah',desc:'Hari paling bahagia dalam hidup kami.'}];}
+function v(id){const el=document.getElementById(id);return el?el.value:'';}
+function sv(id,val){const el=document.getElementById(id);if(el&&val!=null)el.value=val;}
+function pd(key){return window._photoData[key]||'';}
+function radio(name){const el=document.querySelector('input[name="'+name+'"]:checked');return el?el.value:'';}
+function setRadio(name,val){const el=document.querySelector('input[name="'+name+'"][value="'+val+'"]');if(el)el.checked=true;}
+function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showPrev(id,src){const el=document.getElementById(id);if(el&&src){el.src=src;el.classList.remove('photo-hidden');}}
+function handlePhotoUpload(input,key,prevId){
+  const f=input.files[0];if(!f)return;
+  if(f.size>6*1024*1024){showToast('&#9888;&#65039; Foto terlalu besar! Max 6MB','warn');return;}
+  const r=new FileReader();r.onload=e=>{window._photoData[key]=e.target.result;showPrev(prevId,e.target.result);debounceSave();};r.readAsDataURL(f);
+}
+function handleGaleriUpload(input){
+  const files=Array.from(input.files),remaining=15-galeriPhotos.length;
+  if(remaining<=0){showToast('&#9888;&#65039; Maksimal 15 foto!','warn');input.value='';return;}
+  const toAdd=files.slice(0,remaining);let done=0;
+  if(!toAdd.length){input.value='';return;}
+  toAdd.forEach(f=>{const r=new FileReader();r.onload=e=>{galeriPhotos.push(e.target.result);done++;if(done===toAdd.length){renderGaleri();debounceSave();}};r.readAsDataURL(f);});
+  if(files.length>remaining)showToast('&#9888;&#65039; Hanya '+remaining+' foto pertama ditambahkan','warn');
+  input.value='';
+}
+function removeGaleriPhoto(i){galeriPhotos.splice(i,1);renderGaleri();debounceSave();}
+function renderGaleri(){
+  document.getElementById('galeriCounter').textContent=galeriPhotos.length+' foto diupload (max 15)';
+  document.getElementById('galeriGrid').innerHTML=galeriPhotos.map((src,i)=>'<div class="galeri-item"><img src="'+src+'" alt="G'+i+'"><button class="galeri-remove" onclick="removeGaleriPhoto('+i+')" title="Hapus">&#10005;</button></div>').join('');
+}
+function extractYtId(url){if(!url)return null;const m=url.match(/(?:youtube\.com\/(?:watch\?.*v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);return m?m[1]:null;}
+function updateYtThumb(inputId,imgId){const ytId=extractYtId(v(inputId));const img=document.getElementById(imgId);if(ytId){img.src='https://img.youtube.com/vi/'+ytId+'/hqdefault.jpg';img.style.display='block';}else{img.style.display='none';}}
+function handleVideoTypeChange(){const t=radio('videoMainType');document.getElementById('videoYoutubeGroup').style.display=t==='youtube'?'block':'none';document.getElementById('videoUploadGroup').style.display=t==='upload'?'block':'none';}
+function handleVideoUpload(input){const f=input.files[0];if(f){showToast('&#127909; File dipilih: '+f.name);debounceSave();}}
+function handleAudioTypeChange(){const t=radio('audioType');document.getElementById('audioUploadGroup').style.display=t==='upload'?'block':'none';document.getElementById('audioUrlGroup').style.display=t==='url'?'block':'none';updateAudioPlayBtn();}
+function handleAudioUpload(input){
+  const f=input.files[0];if(!f)return;
+  window._audioFilename=f.name;window._audioFilesize=(f.size/1024/1024).toFixed(2)+' MB';
+  const r=new FileReader();r.onload=e=>{window._audioBase64=e.target.result;document.getElementById('audioPlayer').src=e.target.result;updateAudioInfo();updateAudioPlayBtn();debounceSave();};r.readAsDataURL(f);
+}
+function updateAudioInfo(){const info=document.getElementById('audioInfo');if(window._audioFilename){const over=parseFloat(window._audioFilesize)>5;info.innerHTML='&#128196; '+esc(window._audioFilename)+' ('+esc(window._audioFilesize)+')' +(over?' <span style="color:var(--yellow)">&#9888;&#65039; Melebihi rekomendasi 5MB</span>':'');}else{info.innerHTML='';}}
+function updateAudioPlayBtn(){const t=radio('audioType');const has=(t==='upload'&&window._audioBase64)||(t==='url'&&v('audioUrl'));document.getElementById('audioPlayBtn').disabled=!has;if(t==='url'&&v('audioUrl'))document.getElementById('audioPlayer').src=v('audioUrl');}
+function toggleAudioPreview(){const p=document.getElementById('audioPlayer');const btn=document.getElementById('audioPlayBtn');if(audioPlaying){p.pause();btn.textContent='&#9654; Play Preview';audioPlaying=false;}else{p.play().then(()=>{btn.textContent='&#9208; Pause Preview';audioPlaying=true;}).catch(()=>showToast('&#9888;&#65039; Tidak bisa memutar audio','warn'));}}
+function addLoveStoryItem(){loveStoryItems.push({date:'',title:'',desc:''});renderLSForm();renderLSTimeline();debounceSave();}
+function removeLSItem(i){loveStoryItems.splice(i,1);renderLSForm();renderLSTimeline();debounceSave();}
+function updateLS(i,field,val){loveStoryItems[i][field]=val;renderLSTimeline();debounceSave();}
+function renderLSForm(){
+  document.getElementById('loveStoryForm').innerHTML=loveStoryItems.map((item,i)=>`<div class="entry-item"><div class="entry-item-row" style="margin-bottom:8px"><div class="form-group" style="flex:0 0 120px;margin-bottom:0"><label class="label" style="font-size:11.5px">Tahun/Tanggal</label><input type="text" value="${esc(item.date)}" placeholder="cth: 2024" oninput="updateLS(${i},'date',this.value)"></div><div class="form-group" style="flex:1;margin-bottom:0"><label class="label" style="font-size:11.5px">Judul Momen</label><input type="text" value="${esc(item.title)}" placeholder="cth: Pertama Bertemu" oninput="updateLS(${i},'title',this.value)"></div><button class="btn btn-danger btn-sm" onclick="removeLSItem(${i})" style="margin-top:20px;flex-shrink:0">&#128465;</button></div><div class="form-group" style="margin-bottom:0"><label class="label" style="font-size:11.5px">Deskripsi</label><textarea rows="2" placeholder="Ceritakan momen ini..." oninput="updateLS(${i},'desc',this.value)">${esc(item.desc)}</textarea></div></div>`).join('');
+}
+function renderLSTimeline(){
+  const c=document.getElementById('loveStoryTimeline');
+  if(!loveStoryItems.length){c.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">Belum ada momen. Klik &quot;+ Tambah Momen&quot; untuk menambahkan.</p>';return;}
+  c.innerHTML=loveStoryItems.map(item=>`<div class="timeline-item"><div class="timeline-year">${esc(item.date)||'&#8212;'}</div><div class="timeline-title-text">${esc(item.title)||'Untitled'}</div>${item.desc?'<div class="timeline-desc-text">'+esc(item.desc)+'</div>':''}</div>`).join('');
+}
+function addBankItem(){bankItems.push({nama:'',pemilik:'',nomor:''});renderBankList();debounceSave();}
+function removeBankItem(i){bankItems.splice(i,1);renderBankList();debounceSave();}
+function updBank(i,f,val){bankItems[i][f]=val;debounceSave();}
+function renderBankList(){
+  const c=document.getElementById('bankList');
+  if(!bankItems.length){c.innerHTML='<p style="font-size:13px;color:var(--muted);margin-bottom:10px">Belum ada rekening bank.</p>';return;}
+  c.innerHTML=bankItems.map((item,i)=>`<div class="entry-item"><div class="entry-item-row"><div class="form-group" style="flex:1;margin-bottom:0"><label class="label" style="font-size:11.5px">Nama Bank</label><input type="text" value="${esc(item.nama)}" placeholder="cth: BCA" oninput="updBank(${i},'nama',this.value)"></div><div class="form-group" style="flex:1;margin-bottom:0"><label class="label" style="font-size:11.5px">Atas Nama</label><input type="text" value="${esc(item.pemilik)}" placeholder="cth: Ahmad Fauzan" oninput="updBank(${i},'pemilik',this.value)"></div><div class="form-group" style="flex:1;margin-bottom:0"><label class="label" style="font-size:11.5px">Nomor Rekening</label><input type="text" value="${esc(item.nomor)}" placeholder="cth: 1234567890" oninput="updBank(${i},'nomor',this.value)"></div><button class="btn btn-danger btn-sm" onclick="removeBankItem(${i})" style="margin-top:20px;flex-shrink:0">&#128465;</button></div></div>`).join('');
+}
+function addEwalletItem(){ewalletItems.push({type:'OVO',nomor:''});renderEwalletList();debounceSave();}
+function removeEwalletItem(i){ewalletItems.splice(i,1);renderEwalletList();debounceSave();}
+function updEwallet(i,f,val){ewalletItems[i][f]=val;debounceSave();}
+function renderEwalletList(){
+  const c=document.getElementById('ewalletList');
+  if(!ewalletItems.length){c.innerHTML='<p style="font-size:13px;color:var(--muted);margin-bottom:10px">Belum ada e-wallet.</p>';return;}
+  c.innerHTML=ewalletItems.map((item,i)=>`<div class="entry-item"><div class="entry-item-row"><div class="form-group" style="flex:0 0 150px;margin-bottom:0"><label class="label" style="font-size:11.5px">Tipe</label><select onchange="updEwallet(${i},'type',this.value)">${['OVO','DANA','GoPay','ShopeePay'].map(t=>'<option value="'+t+'"'+(item.type===t?' selected':'')+'>'+t+'</option>').join('')}</select></div><div class="form-group" style="flex:1;margin-bottom:0"><label class="label" style="font-size:11.5px">Nomor / Username</label><input type="text" value="${esc(item.nomor)}" placeholder="cth: 08123456789" oninput="updEwallet(${i},'nomor',this.value)"></div><button class="btn btn-danger btn-sm" onclick="removeEwalletItem(${i})" style="margin-top:20px;flex-shrink:0">&#128465;</button></div></div>`).join('');
+}
+function updateCountdownPreview(){
+  const label=v('countdownLabel')||'Menuju Hari Bahagia';
+  document.getElementById('countdownLabelPreview').textContent=label;
+  const target=v('countdownTarget');
+  if(!target){['cd-hari','cd-jam','cd-menit','cd-detik'].forEach(id=>document.getElementById(id).textContent='00');return;}
+  const diff=new Date(target).getTime()-Date.now();
+  if(diff<=0){['cd-hari','cd-jam','cd-menit','cd-detik'].forEach(id=>document.getElementById(id).textContent='00');return;}
+  document.getElementById('cd-hari').textContent=String(Math.floor(diff/86400000)).padStart(2,'0');
+  document.getElementById('cd-jam').textContent=String(Math.floor(diff%86400000/3600000)).padStart(2,'0');
+  document.getElementById('cd-menit').textContent=String(Math.floor(diff%3600000/60000)).padStart(2,'0');
+  document.getElementById('cd-detik').textContent=String(Math.floor(diff%60000/1000)).padStart(2,'0');
+}
+function handleColorThemeChange(){document.getElementById('customColorGroup').style.display=v('colorTheme')==='Custom'?'block':'none';}
+function syncColorFromHex(){const hex=v('customColorHex');if(/^#[0-9a-fA-F]{6}$/.test(hex))document.getElementById('customColor').value=hex;debounceSave();}
+function updateLinkPreview(){const base=v('baseUrl')||'https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/';const param=radio('paramFormat')||'?to=';const el=document.getElementById('linkPreview');if(el)el.textContent=base+param+'{nama_tamu}';}
+function testLink(){const base=v('baseUrl')||'https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/';const param=radio('paramFormat')||'?to=';window.open(base+param+'preview','_blank');}
+function isFilled(id){
+  switch(id){
+    case 1:return!!(v('groomName')||v('brideName'));
+    case 2:return!!(v('temaNotes')||v('colorTheme')==='Custom');
+    case 3:return!!v('akadTanggal');
+    case 4:return!!v('countdownTarget');
+    case 5:return!!(pd('coverPhoto')||pd('groomPortrait')||pd('bridePortrait')||pd('togetherPhoto'));
+    case 6:return galeriPhotos.length>0;
+    case 7:return!!(v('videoMainYoutube')||v('videoTeaser')||v('videoPerjalanan'));
+    case 8:return!!(window._audioBase64||v('audioUrl'));
+    case 9:return loveStoryItems.length>0&&loveStoryItems.some(i=>i.title);
+    case 10:return!!(bankItems.length||ewalletItems.length||pd('qrisImage')||v('kadoAlamat'));
+    case 11:return!!v('streamLink');
+    case 12:return!!v('baseUrl');
+    default:return false;
+  }
+}
+function updateProgress(){let count=0;for(let i=1;i<=12;i++)if(isFilled(i))count++;document.getElementById('progressText').textContent=count+' dari 12 seksi sudah diisi';document.getElementById('progressFill').style.width=Math.round(count/12*100)+'%';}
+function updateSidebarBadges(){for(let i=1;i<=12;i++){const el=document.getElementById('sidebarBadge-'+i);if(el)el.textContent=isFilled(i)?'&#9989;':'&#11036;';}}
+function exportConfig(){
+  saveConfig(false);
+  const blob=new Blob([JSON.stringify(config,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='wedding-config.json';a.click();URL.revokeObjectURL(url);
+  showToast('&#11015;&#65039; Config berhasil diexport!');
+}
+function importConfig(input){
+  const f=input.files[0];if(!f)return;
+  const r=new FileReader();r.onload=e=>{
+    try{const parsed=JSON.parse(e.target.result);
+      window._photoData={};window._audioBase64='';window._audioFilename='';window._audioFilesize='';
+      galeriPhotos=[];loveStoryItems=[];bankItems=[];ewalletItems=[];
+      config=parsed;localStorage.setItem(STORAGE_KEY,JSON.stringify(config));
+      fillAllFields(config);updateProgress();updateSidebarBadges();
+      showToast('&#11014;&#65039; Config berhasil diimport!');
+    }catch(err){showToast('&#10060; File tidak valid! Pastikan format JSON.','error');}
+  };r.readAsText(f);input.value='';
+}
+function showToast(msg,type='success'){
+  const c=document.getElementById('toastContainer');const t=document.createElement('div');
+  t.className='toast'+(type==='error'?' error':(type==='warn'?' warn':''));t.innerHTML=msg;c.appendChild(t);
+  setTimeout(()=>{t.style.animation='toastOut 0.26s ease forwards';setTimeout(()=>t.remove(),280);},3200);
+}
+init();
+</script>
+</body>
+</html>
