@@ -1,0 +1,1231 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Configure Undangan · Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--green-dark:#075e54;--green-mid:#128c7e;--green-light:#25d366;--bg:#f0f2f5;--card:#fff;--text:#111827;--muted:#6b7280;--red:#ef4444;--red-bg:#fee2e2;--yellow:#f59e0b;--yellow-bg:#fef3c7;--border:#e5e7eb;--shadow:0 2px 8px rgba(0,0,0,.08)}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:inherit}
+
+/* HEADER */
+.header{background:var(--green-dark);color:#fff;padding:10px 16px;position:sticky;top:0;z-index:30}
+.header-row1{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.header-row1 h1{flex:1;font-size:16px;font-weight:800}
+.back-btn{background:none;border:none;color:#fff;font-size:14px;padding:4px 8px;border-radius:8px;white-space:nowrap}
+.back-btn:hover{background:rgba(255,255,255,.15)}
+.header-actions{display:flex;gap:6px;flex-wrap:wrap}
+.hbtn{padding:7px 12px;border-radius:10px;border:none;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer;transition:opacity .15s}
+.hbtn:active{opacity:.8}
+.hbtn-draft{background:rgba(255,255,255,.2);color:#fff}
+.hbtn-pub{background:var(--green-light);color:#fff}
+.hbtn-share{background:none;color:#fff;border:1px solid rgba(255,255,255,.5)}
+.hbtn-preview{background:none;color:#fff;border:1px solid rgba(255,255,255,.5)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+.badge-draft{background:var(--yellow-bg);color:#92400e}
+.badge-pub{background:#d1fae5;color:#065f46}
+.badge-saved{background:rgba(255,255,255,.25);color:#fff;font-size:11px;padding:2px 8px;border-radius:20px;display:none}
+
+/* PROGRESS */
+.progress-wrap{background:var(--green-mid);padding:8px 16px}
+.progress-label{font-size:11px;color:rgba(255,255,255,.85);margin-bottom:4px}
+.progress-track{background:rgba(255,255,255,.3);border-radius:4px;height:6px;overflow:hidden}
+.progress-fill{height:100%;background:#fff;border-radius:4px;transition:width .4s ease}
+
+/* LAYOUT */
+.layout{display:flex;gap:0;max-width:960px;margin:0 auto}
+@media(min-width:768px){.layout{gap:16px;padding:16px}}
+.sidebar{display:none}
+@media(min-width:768px){
+  .sidebar{display:block;width:220px;flex-shrink:0;position:sticky;top:110px;align-self:flex-start;max-height:calc(100vh - 130px);overflow-y:auto}
+}
+.main{flex:1;min-width:0;padding:12px}
+@media(min-width:768px){.main{padding:0}}
+
+/* SIDEBAR */
+.sidebar-list{background:var(--card);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.sidebar-item{display:flex;align-items:center;gap:8px;padding:10px 14px;font-size:12px;color:var(--text);cursor:pointer;border-bottom:1px solid var(--border);transition:background .15s}
+.sidebar-item:last-child{border-bottom:none}
+.sidebar-item:hover{background:#f9fafb}
+.sidebar-item.active{background:var(--green-mid);color:#fff}
+.sidebar-check{font-size:14px;margin-left:auto}
+
+/* SECTION CARDS */
+.section-card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
+.section-header{display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;border-left:4px solid var(--green-light)}
+.section-header.required{border-left-color:var(--red)}
+.section-num{width:24px;height:24px;border-radius:50%;background:var(--green-mid);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;flex-shrink:0}
+.section-title-text{flex:1;font-size:14px;font-weight:700}
+.section-badge-req{background:var(--red-bg);color:var(--red);font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px}
+.section-badge-opt{color:var(--muted);font-size:10px;font-style:italic}
+.section-check{font-size:16px}
+.section-toggle{color:var(--muted);font-size:14px;transition:transform .2s}
+.section-toggle.open{transform:rotate(180deg)}
+.section-body{padding:16px;border-top:1px solid var(--border);display:none}
+.section-body.open{display:block}
+
+/* FORM */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px}
+.field label .req{color:var(--red);margin-left:2px}
+.field label .opt{color:var(--muted);font-size:10px;font-style:italic;margin-left:4px}
+.field input,.field select,.field textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;font-family:inherit;background:var(--card);color:var(--text);transition:border-color .15s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--green-light)}
+.field input.error,.field select.error,.field textarea.error{border-color:var(--red)!important;background:var(--red-bg)}
+.field textarea{resize:vertical;min-height:80px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.subsection{margin-bottom:16px}
+.subsection-title{font-size:13px;font-weight:700;color:var(--green-dark);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+
+/* PHOTO PREVIEW */
+.photo-preview-row{display:flex;align-items:center;gap:12px;margin-top:8px}
+.photo-circle{width:80px;height:80px;border-radius:50%;border:2px solid var(--border);object-fit:cover;background:#f3f4f6;display:block}
+.photo-rect{width:100px;height:70px;border-radius:8px;border:2px solid var(--border);object-fit:cover;background:#f3f4f6;display:block}
+.del-btn{background:var(--red-bg);color:var(--red);border:none;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer}
+.del-btn:active{opacity:.8}
+
+/* GALLERY GRID */
+.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.gallery-item{position:relative}
+.gallery-item img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--border);display:block}
+.gallery-del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:12px;display:grid;place-items:center;cursor:pointer;line-height:1}
+.gallery-counter{font-size:12px;color:var(--muted);margin-top:6px}
+
+/* LOVE STORY */
+.story-item{border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;position:relative}
+.story-del{position:absolute;top:10px;right:10px;background:var(--red-bg);color:var(--red);border:none;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer}
+.add-btn{background:var(--card);color:var(--green-dark);border:1px solid var(--green-mid);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;width:100%;margin-top:4px;cursor:pointer}
+.add-btn:active{opacity:.8}
+
+/* BANK/EWALLET LIST */
+.list-item{border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;position:relative}
+.list-del{position:absolute;top:10px;right:10px;background:var(--red-bg);color:var(--red);border:none;border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer}
+
+/* TOGGLE */
+.toggle-row{display:flex;gap:0;border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px}
+.toggle-opt{flex:1;padding:8px;text-align:center;font-size:12px;font-weight:600;cursor:pointer;background:var(--card);color:var(--muted);border:none;transition:background .15s}
+.toggle-opt.active{background:var(--green-mid);color:#fff}
+
+/* COUNTDOWN PREVIEW */
+.countdown-preview{display:flex;gap:12px;margin-top:12px;justify-content:center}
+.cd-unit{text-align:center;background:var(--green-dark);color:#fff;border-radius:12px;padding:10px 16px;min-width:56px}
+.cd-num{font-size:24px;font-weight:800;line-height:1}
+.cd-label{font-size:10px;opacity:.8}
+
+/* TIMELINE PREVIEW */
+.timeline{position:relative;padding-left:24px;margin-top:12px}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--green-light)}
+.timeline-item{position:relative;margin-bottom:16px}
+.timeline-dot{position:absolute;left:-20px;top:4px;width:12px;height:12px;border-radius:50%;background:var(--green-light);border:2px solid var(--card)}
+.timeline-year{font-size:11px;font-weight:700;color:var(--green-mid)}
+.timeline-title{font-size:13px;font-weight:700;margin:2px 0}
+.timeline-desc{font-size:12px;color:var(--muted)}
+
+/* RADIO GROUP */
+.radio-group{display:flex;gap:16px;flex-wrap:wrap;margin-top:6px}
+.radio-group label{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+@media(min-width:600px){.modal-overlay{align-items:center}}
+.modal-sheet{background:var(--card);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto}
+@media(min-width:600px){.modal-sheet{border-radius:20px}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-header h2{font-size:16px;font-weight:800}
+.modal-close{background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer}
+.modal-btn{width:100%;padding:12px;border-radius:10px;border:none;font-size:14px;font-weight:700;margin-top:8px;cursor:pointer;transition:opacity .15s}
+.modal-btn:active{opacity:.8}
+.modal-btn.primary{background:var(--green-light);color:#fff}
+.modal-btn.secondary{background:var(--card);color:var(--green-dark);border:1px solid var(--green-mid)}
+select.modal-select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;background:var(--card);color:var(--text);font-family:inherit}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;height:60px;z-index:20}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;color:var(--muted);border:none;background:none;cursor:pointer;transition:color .15s}
+.nav-item.active{color:var(--green-mid);font-weight:700}
+.nav-item .nav-icon{font-size:20px;line-height:1}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;right:16px;background:#1f2937;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;z-index:200;display:none;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+
+/* YT THUMB */
+.yt-thumb{width:100%;max-width:300px;height:auto;border-radius:8px;margin-top:8px;display:none}
+
+/* NOTE */
+.note{font-size:11px;color:var(--muted);font-style:italic;margin-top:4px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-row1">
+    <button class="back-btn" onclick="location.href='admin.html'">← Dashboard</button>
+    <h1>⚙️ Configure Undangan</h1>
+    <span class="badge badge-draft" id="statusBadge">DRAFT</span>
+    <span class="badge-saved" id="savedBadge">💾 Tersimpan</span>
+  </div>
+  <div class="header-actions">
+    <button class="hbtn hbtn-draft" onclick="saveDraft()">💾 Simpan Draft</button>
+    <button class="hbtn hbtn-pub" onclick="publish()">✅ Publish</button>
+    <button class="hbtn hbtn-share" onclick="location.href='share.html'">🎁 Bagikan</button>
+    <button class="hbtn hbtn-preview" onclick="openPreviewModal()">👁️ Preview</button>
+  </div>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-label" id="progressLabel">0 dari 12 seksi sudah diisi</div>
+  <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-list" id="sidebarList"></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main" id="mainContent">
+
+    <!-- SECTION 1: Data Pengantin -->
+    <div class="section-card" id="sec-1">
+      <div class="section-header required" onclick="toggleSection(1)">
+        <div class="section-num">1</div>
+        <div class="section-title-text">Data Pengantin</div>
+        <span class="section-badge-req">WAJIB</span>
+        <span class="section-check" id="check-1">⬜</span>
+        <span class="section-toggle" id="toggle-1">▾</span>
+      </div>
+      <div class="section-body open" id="body-1">
+        <!-- Mempelai Pria -->
+        <div class="subsection">
+          <div class="subsection-title">🤵 Mempelai Pria</div>
+          <div class="field"><label>Nama Lengkap<span class="req">*</span></label><input id="groomFullName" placeholder="Kartika Eko Hari Wibowo" data-required="1"/></div>
+          <div class="field"><label>Nama Panggilan<span class="opt">opsional</span></label><input id="groomNickname" placeholder="Bowo"/></div>
+          <div class="grid2">
+            <div class="field"><label>Nama Ayah<span class="req">*</span></label><input id="groomFather" placeholder="Bpk. Suratman" data-required="1"/></div>
+            <div class="field"><label>Nama Ibu<span class="req">*</span></label><input id="groomMother" placeholder="Ibu Suminah" data-required="1"/></div>
+          </div>
+          <div class="field"><label>Urutan Anak<span class="opt">opsional</span></label><input id="groomChildOrder" placeholder="Putra kedua dari tiga bersaudara"/></div>
+          <div class="field"><label>Alamat Domisili<span class="opt">opsional</span></label><input id="groomAddress" placeholder="Bantul, DIY"/></div>
+          <div class="field"><label>Instagram<span class="opt">opsional</span></label><input id="groomInstagram" placeholder="https://instagram.com/username"/></div>
+          <div class="field">
+            <label>Foto Profil<span class="opt">opsional</span></label>
+            <div class="photo-preview-row">
+              <img class="photo-circle" id="groomPhotoPreview" src="" onerror="this.src=''" alt="Foto pria"/>
+              <div>
+                <input type="file" id="groomPhotoInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(this,'groomPhotoPreview','groomPhoto')"/>
+                <button type="button" onclick="document.getElementById('groomPhotoInput').click()" style="padding:8px 14px;border-radius:8px;border:1px solid var(--green-mid);color:var(--green-dark);background:var(--card);font-size:12px;font-weight:600;cursor:pointer">📷 Pilih Foto</button>
+                <button type="button" class="del-btn" style="margin-top:6px;display:block" onclick="clearPhoto('groomPhotoPreview','groomPhoto')">✕ Hapus</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mempelai Wanita -->
+        <div class="subsection">
+          <div class="subsection-title">👰 Mempelai Wanita</div>
+          <div class="field"><label>Nama Lengkap<span class="req">*</span></label><input id="brideFullName" placeholder="Noor Khasanah" data-required="1"/></div>
+          <div class="field"><label>Nama Panggilan<span class="opt">opsional</span></label><input id="brideNickname" placeholder="Nana"/></div>
+          <div class="grid2">
+            <div class="field"><label>Nama Ayah<span class="req">*</span></label><input id="brideFather" placeholder="Bpk. Slamet" data-required="1"/></div>
+            <div class="field"><label>Nama Ibu<span class="req">*</span></label><input id="brideMother" placeholder="Ibu Wartini" data-required="1"/></div>
+          </div>
+          <div class="field"><label>Urutan Anak<span class="opt">opsional</span></label><input id="brideChildOrder" placeholder="Putri pertama dari dua bersaudara"/></div>
+          <div class="field"><label>Alamat Domisili<span class="opt">opsional</span></label><input id="brideAddress" placeholder="Kulonprogo, DIY"/></div>
+          <div class="field"><label>Instagram<span class="opt">opsional</span></label><input id="brideInstagram" placeholder="https://instagram.com/username"/></div>
+          <div class="field">
+            <label>Foto Profil<span class="opt">opsional</span></label>
+            <div class="photo-preview-row">
+              <img class="photo-circle" id="bridePhotoPreview" src="" onerror="this.src=''" alt="Foto wanita"/>
+              <div>
+                <input type="file" id="bridePhotoInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(this,'bridePhotoPreview','bridePhoto')"/>
+                <button type="button" onclick="document.getElementById('bridePhotoInput').click()" style="padding:8px 14px;border-radius:8px;border:1px solid var(--green-mid);color:var(--green-dark);background:var(--card);font-size:12px;font-weight:600;cursor:pointer">📷 Pilih Foto</button>
+                <button type="button" class="del-btn" style="margin-top:6px;display:block" onclick="clearPhoto('bridePhotoPreview','bridePhoto')">✕ Hapus</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Info Umum -->
+        <div class="subsection">
+          <div class="subsection-title">📋 Info Umum</div>
+          <div class="field"><label>Judul Undangan<span class="req">*</span></label><input id="fTitle" placeholder="Pernikahan Nana & Bowo" data-required="1"/></div>
+          <div class="field"><label>Yang Mengundang<span class="req">*</span></label><input id="whoInvites" placeholder="Keluarga Besar Bpk. Slamet & Bpk. Suratman" data-required="1"/></div>
+          <div class="field"><label>Nama Grup/Komunitas<span class="opt">opsional</span></label><input id="groupName" placeholder="Warga Desa Penari"/></div>
+          <div class="field"><label>Deskripsi Grup<span class="opt">opsional</span></label><input id="groupDesc" placeholder="Pengumuman Resmi & Silaturahmi Warga"/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: Tema -->
+    <div class="section-card" id="sec-2">
+      <div class="section-header" onclick="toggleSection(2)">
+        <div class="section-num">2</div>
+        <div class="section-title-text">Tema Undangan</div>
+        <span class="section-badge-opt">opsional</span>
+        <span class="section-check" id="check-2">⬜</span>
+        <span class="section-toggle" id="toggle-2">▾</span>
+      </div>
+      <div class="section-body" id="body-2">
+        <div class="grid2">
+          <div class="field"><label>Tema Warna</label>
+            <select id="themeColor"><option value="">Pilih...</option><option>Putih-Gold</option><option>Sage Green</option><option>Dusty Pink</option><option>Navy</option><option>WhatsApp Green</option><option>Custom</option></select>
+          </div>
+          <div class="field"><label>Konsep</label>
+            <select id="themeConcept"><option value="">Pilih...</option><option>Minimalis</option><option>Elegan</option><option>Rustic</option><option>Modern</option><option>Islami</option><option>Adat</option></select>
+          </div>
+          <div class="field"><label>Background</label>
+            <select id="themeBackground"><option value="">Pilih...</option><option>Bunga</option><option>Daun</option><option>Pattern</option><option>Polos</option></select>
+          </div>
+          <div class="field"><label>Font</label>
+            <select id="themeFont"><option value="">Pilih...</option><option>Formal</option><option>Kaligrafi</option><option>Modern Clean</option></select>
+          </div>
+        </div>
+        <div class="field"><label>Catatan Tema<span class="opt">opsional</span></label><textarea id="themeNote" placeholder="Catatan tambahan tentang tema..."></textarea></div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: Detail Acara -->
+    <div class="section-card" id="sec-3">
+      <div class="section-header required" onclick="toggleSection(3)">
+        <div class="section-num">3</div>
+        <div class="section-title-text">Detail Acara</div>
+        <span class="section-badge-req">WAJIB</span>
+        <span class="section-check" id="check-3">⬜</span>
+        <span class="section-toggle" id="toggle-3">▾</span>
+      </div>
+      <div class="section-body" id="body-3">
+        <div class="subsection">
+          <div class="subsection-title">🕌 Akad Nikah</div>
+          <div class="grid2">
+            <div class="field"><label>Tanggal<span class="req">*</span></label><input type="date" id="akadDate" data-required="1"/></div>
+            <div class="field"><label>Jam Mulai<span class="req">*</span></label><input type="time" id="akadTimeStart" data-required="1"/></div>
+          </div>
+          <div class="field"><label>Jam Selesai<span class="opt">opsional</span></label><input type="time" id="akadTimeEnd"/></div>
+          <div class="field"><label>Nama Lokasi<span class="req">*</span></label><input id="akadLocation" placeholder="Joglo YOSO" data-required="1"/></div>
+          <div class="field"><label>Alamat Lengkap<span class="req">*</span></label><input id="akadAddress" placeholder="Bantul, DIY" data-required="1"/></div>
+          <div class="field"><label>Link Google Maps<span class="req">*</span></label><input id="akadMaps" placeholder="https://maps.app.goo.gl/..." data-required="1"/></div>
+        </div>
+        <div class="subsection">
+          <div class="subsection-title">🎉 Resepsi / Walimatul 'Ursy</div>
+          <div class="field"><label>Tanggal<span class="req">*</span></label><input type="date" id="resepsiDate" data-required="1"/></div>
+          <div class="grid2">
+            <div class="field"><label>Sesi 1 Mulai<span class="req">*</span></label><input type="time" id="resepsiS1Start" data-required="1"/></div>
+            <div class="field"><label>Sesi 1 Selesai<span class="req">*</span></label><input type="time" id="resepsiS1End" data-required="1"/></div>
+            <div class="field"><label>Sesi 2 Mulai<span class="opt">opsional</span></label><input type="time" id="resepsiS2Start"/></div>
+            <div class="field"><label>Sesi 2 Selesai<span class="opt">opsional</span></label><input type="time" id="resepsiS2End"/></div>
+          </div>
+          <div class="field"><label>Nama Lokasi<span class="req">*</span></label><input id="resepsiLocation" placeholder="Joglo YOSO" data-required="1"/></div>
+          <div class="field"><label>Alamat Lengkap<span class="req">*</span></label><input id="resepsiAddress" placeholder="Bantul, DIY" data-required="1"/></div>
+          <div class="field"><label>Link Google Maps<span class="req">*</span></label><input id="resepsiMaps" placeholder="https://maps.app.goo.gl/..." data-required="1"/></div>
+          <div class="field"><label>Dress Code<span class="opt">opsional</span></label><input id="dresscode" placeholder="Batik / Formal / Casual"/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 4: Countdown -->
+    <div class="section-card" id="sec-4">
+      <div class="section-header" onclick="toggleSection(4)">
+        <div class="section-num">4</div>
+        <div class="section-title-text">Hitungan Mundur</div>
+        <span class="section-badge-opt">opsional</span>
+        <span class="section-check" id="check-4">⬜</span>
+        <span class="section-toggle" id="toggle-4">▾</span>
+      </div>
+      <div class="section-body" id="body-4">
+        <div class="field"><label>Target Waktu</label><input type="datetime-local" id="countdownTarget" oninput="updateCountdownPreview()"/></div>
+        <div class="field"><label>Label</label><input id="countdownLabel" placeholder="Menuju Hari Bahagia" oninput="updateCountdownPreview()"/></div>
+        <div class="countdown-preview" id="countdownPreview" style="display:none">
+          <div class="cd-unit"><div class="cd-num" id="cdDays">00</div><div class="cd-label">Hari</div></div>
+          <div class="cd-unit"><div class="cd-num" id="cdHours">00</div><div class="cd-label">Jam</div></div>
+          <div class="cd-unit"><div class="cd-num" id="cdMins">00</div><div class="cd-label">Menit</div></div>
+          <div class="cd-unit"><div class="cd-num" id="cdSecs">00</div><div class="cd-label">Detik</div></div>
+        </div>
+        <div id="countdownLabelPreview" style="text-align:center;margin-top:8px;font-size:13px;color:var(--muted)"></div>
+      </div>
+    </div>
+
+    <!-- SECTION 5: Foto Utama -->
+    <div class="section-card" id="sec-5">
+      <div class="section-header" onclick="toggleSection(5)">
+        <div class="section-num">5</div>
+        <div class="section-title-text">Foto Utama</div>
+        <span class="section-badge-opt">opsional</span>
+        <span class="section-check" id="check-5">⬜</span>
+        <span class="section-toggle" id="toggle-5">▾</span>
+      </div>
+      <div class="section-body" id="body-5">
+        <div class="grid2">
+          <div class="field">
+            <label>Foto Cover</label>
+            <input type="file" id="coverInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(this,'coverPreview','coverPhoto')"/>
+            <img class="photo-rect" id="coverPreview" alt="Cover"/>
+            <div style="margin-top:6px;display:flex;gap:6px">
+              <button type="button" onclick="document.getElementById('coverInput').click()" style="padding:6px 10px;border-radius:8px;border:1px solid var(--green-mid);color:var(--green-dark);background:var(--card);font-size:11px;cursor:pointer">📷 Pilih</button>
+              <button type="button" class="del-btn" onclick="clearPhoto('coverPreview','coverPhoto')">✕</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Portrait Pria</label>
+            <input type="file" id="groomPortInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(this,'groomPortPreview','groomPortrait')"/>
+            <img class="photo-rect" id="groomPortPreview" alt="Portrait pria"/>
+            <div style="margin-top:6px;display:flex;gap:6px">
+              <button type="button" onclick="document.getElementById('groomPortInput').click()" style="padding:6px 10px;border-radius:8px;border:1px solid var(--green-mid);color:var(--green-dark);background:var(--card);font-size:11px;cursor:pointer">📷 Pilih</button>
+              <button type="button" class="del-btn" onclick="clearPhoto('groomPortPreview','groomPortrait')">✕</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Portrait Wanita</label>
+            <input type="file" id="bridePortInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(this,'bridePortPreview','bridePortrait')"/>
+            <img class="photo-rect" id="bridePortPreview" alt="Portrait wanita"/>
+            <div style="margin-top:6px;display:flex;gap:6px">
+              <button type="button" onclick="document.getElementById('bridePortInput').click()" style="padding:6px 10px;border-radius:8px;border:1px solid var(--green-mid);color:var(--green-dark);background:var(--card);font-size:11px;cursor:pointer">📷 Pilih</button>
+              <button type="button" class="del-btn" onclick="clearPhoto('bridePortPreview','bridePortrait')">✕</button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Foto Bersama</label>
+            <input type="file" id="togetherInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(this,'togetherPreview','togetherPhoto')"/>
+            <img class="photo-rect" id="togetherPreview" alt="Bersama"/>
+            <div style="margin-top:6px;display:flex;gap:6px">
+              <button type="button" onclick="document.getElementById('togetherInput').click()" style="padding:6px 10px;border-radius:8px;border:1px solid var(--green-mid);color:var(--green-dark);background:var(--card);font-size:11px;cursor:pointer">📷 Pilih</button>
+              <button type="button" class="del-btn" onclick="clearPhoto('togetherPreview','togetherPhoto')">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 6: Galeri -->
+    <div class="section-card" id="sec-6">
+      <div class="section-header" onclick="toggleSection(6)">
+        <div class="section-num">6</div>
+        <div class="section-title-text">Galeri</div>
+        <span class="section-badge-opt">opsional</span>
+        <span class="section-check" id="check-6">⬜</span>
+        <span class="section-toggle" id="toggle-6">▾</span>
+      </div>
+      <div class="section-body" id="body-6">
+        <input type="file" id="galleryInput" accept="image/*" multiple style="display:none" onchange="handleGalleryUpload(this.files)"/>
+        <button type="button" class="add-btn" onclick="document.getElementById('galleryInput').click()">📷 Tambah Foto Galeri (max 15)</button>
+        <div class="gallery-counter" id="galleryCounter">0 / 15 foto</div>
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </div>
+    </div>
+
+    <!-- SECTION 7: Video -->
+    <div class="section-card" id="sec-7">
+      <div class="section-header" onclick="toggleSection(7)">
+        <div class="section-num">7</div>
+        <div class="section-title-text">Video</div>
+        <span class="section-badge-opt">opsional</span>
+        <span class="section-check" id="check-7">⬜</span>
+        <span class="section-toggle" id="toggle-7">▾</span>
+      </div>
+      <div class="section-body" id="body-7">
+        <div class="subsection">
+          <div class="subsection-title">🎬 Video Prewedding Utama</div>
+          <div class="toggle-row">
+            <button type="button" class="toggle-opt active" id="videoTypeYT" onclick="setVideoType('youtube')">YouTube URL</button>
+            <button type="button" class="toggle-opt" id="videoTypeFile" onclick="setVideoType('file')">Upload MP4</button>
+          </div>
+          <div id="videoYTWrap">
+            <div class="field"><label>YouTube URL</label><input id="videoMainUrl" placeholder="https://www.youtube.com/watch?v=..." oninput="updateYTThumb()"/></div>
+            <img class="yt-thumb" id="ytThumb" alt="YouTube thumbnail"/>
+          </div>
+          <div id="videoFileWrap" style="display:none">
+            <input type="file" id="videoFileInput" accept="video/mp4" style="display:none" onchange="handleVideoUpload(this)"/>
+            <button type="button" class="add-btn" onclick="document.getElementById('videoFileInput').click()">🎥 Pilih File MP4</button>
+            <div id="videoFileName" class="note"></div>
+          </div>
+        </div>
+        <div class="field"><label>Video Teaser URL<span class="opt">opsional</span></label><input id="videoTeaser" placeholder="https://www.youtube.com/watch?v=..."/></div>
+        <div class="field"><label>Video Perjalanan Cinta URL<span class="opt">opsional</span></label><input id="videoStory" placeholder="https://www.youtube.com/watch?v=..."/></div>
+      </div>
+    </div>
+
+    <!-- SECTION 8: Audio -->
+    <div class="section-card" id="sec-8">
+      <div class="section-header" onclick="toggleSection(8)">
+        <div class="section-num">8</div>
+        <div class="section-title-text">Audio / Backsound</div>
+        <span class="section-badge-opt">opsional</span>
+        <span class="section-check" id="check-8">⬜</span>
+        <span class="section-toggle" id="toggle-8">▾</span>
+      </div>
+      <div class="section-body" id="body-8">
+        <div class="toggle-row">
+          <button type="button" class="toggle-opt active" id="audioTypeFile" onclick="setAudioType('file')">Upload MP3</button>
+          <button type="button" class="toggle-opt" id="audioTypeUrl" onclick="setAudioType('url')">URL Streaming</button>
+        </div>
+        <div id="audioFileWrap">
+          <input type="file" id="audioInput" accept="audio/mpeg,audio/mp3" style="display:none" onchange="handleAudioUpload(this)"/>
+          <button type="button" class="add-btn" onclick="document.getElementById('audioInput').click()">🎵 Pilih File MP3</button>
+          <div id="audioFileName" class="note"></div>
+          <div class="note" style="margin-top:6px">Maksimal 5MB</div>
+        </div>
+        <div id="audioUrlWrap" style="display:none">
+          <div class="field"><label>URL Audio</label><input id="audioUrl" placeholder="https://example.com/music.mp3"/></div>
+        </div>
+        <audio id="audioPreviewEl" controls style="width:100%;margin-top:10px;display:none"></audio>
+      </div>
+    </div>
+
+    <!-- SECTION 9: Love Story -->
+    <div class="section-card" id="sec-9">
+      <div class="section-header" onclick="toggleSection(9)">
+        <div class="section-num">9</div>
+        <div class="section-title-text">Love Story</div>
+        <span class="section-badge-opt">opsional</span>
+        <span class="section-check" id="check-9">⬜</span>
+        <span class="section-toggle" id="toggle-9">▾</span>
+      </div>
+      <div class="section-body" id="body-9">
+        <div id="loveStoryList"></div>
+        <button type="button" class="add-btn" onclick="addLoveStoryItem()">➕ Tambah Momen</button>
+        <div class="timeline" id="loveStoryTimeline" style="margin-top:16px"></div>
+      </div>
+    </div>
+
+    <!-- SECTION 10: Kado Digital -->
+    <div class="section-card" id="sec-10">
+      <div class="section-header" onclick="toggleSection(10)">
+        <div class="section-num">10</div>
+        <div class="section-title-text">Kado Digital</div>
+        <span class="section-badge-opt">opsional</span>
+        <span class="section-check" id="check-10">⬜</span>
+        <span class="section-toggle" id="toggle-10">▾</span>
+      </div>
+      <div class="section-body" id="body-10">
+        <div class="subsection">
+          <div class="subsection-title">🏦 Transfer Bank</div>
+          <div id="bankList"></div>
+          <button type="button" class="add-btn" onclick="addBankItem()">➕ Tambah Bank</button>
+        </div>
+        <div class="subsection" style="margin-top:16px">
+          <div class="subsection-title">💳 E-Wallet</div>
+          <div id="ewalletList"></div>
+          <button type="button" class="add-btn" onclick="addEwalletItem()">➕ Tambah E-Wallet</button>
+        </div>
+        <div class="subsection" style="margin-top:16px">
+          <div class="subsection-title">📱 QRIS</div>
+          <input type="file" id="qrisInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(this,'qrisPreview','qrisPhoto')"/>
+          <img class="photo-rect" id="qrisPreview" alt="QRIS"/>
+          <div style="margin-top:6px;display:flex;gap:6px">
+            <button type="button" onclick="document.getElementById('qrisInput').click()" style="padding:6px 10px;border-radius:8px;border:1px solid var(--green-mid);color:var(--green-dark);background:var(--card);font-size:11px;cursor:pointer">📷 Upload QRIS</button>
+            <button type="button" class="del-btn" onclick="clearPhoto('qrisPreview','qrisPhoto')">✕</button>
+          </div>
+        </div>
+        <div class="subsection" style="margin-top:16px">
+          <div class="subsection-title">📦 Alamat Kado Fisik</div>
+          <div class="field"><textarea id="physicalAddress" placeholder="Alamat lengkap untuk pengiriman hadiah fisik..."></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 11: Live Streaming -->
+    <div class="section-card" id="sec-11">
+      <div class="section-header" onclick="toggleSection(11)">
+        <div class="section-num">11</div>
+        <div class="section-title-text">Live Streaming</div>
+        <span class="section-badge-opt">opsional</span>
+        <span class="section-check" id="check-11">⬜</span>
+        <span class="section-toggle" id="toggle-11">▾</span>
+      </div>
+      <div class="section-body" id="body-11">
+        <div class="field"><label>Link Zoom / YouTube Live</label><input id="liveLink" placeholder="https://zoom.us/j/... atau https://youtube.com/live/..."/></div>
+        <div class="grid2">
+          <div class="field"><label>Zoom ID<span class="opt">opsional</span></label><input id="zoomId" placeholder="123 456 789"/></div>
+          <div class="field"><label>Zoom Passcode<span class="opt">opsional</span></label><input id="zoomPass" placeholder="abc123"/></div>
+        </div>
+        <div class="field"><label>Jadwal Live</label><input type="datetime-local" id="liveSchedule"/></div>
+      </div>
+    </div>
+
+    <!-- SECTION 12: Pengaturan Link -->
+    <div class="section-card" id="sec-12">
+      <div class="section-header" onclick="toggleSection(12)">
+        <div class="section-num">12</div>
+        <div class="section-title-text">Pengaturan Link</div>
+        <span class="section-badge-opt">opsional</span>
+        <span class="section-check" id="check-12">⬜</span>
+        <span class="section-toggle" id="toggle-12">▾</span>
+      </div>
+      <div class="section-body open" id="body-12">
+        <div class="field"><label>Base URL</label><input id="baseUrl" value="https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/"/></div>
+        <div class="field">
+          <label>Format Parameter</label>
+          <div class="radio-group">
+            <label><input type="radio" name="paramFormat" value="to" checked/> ?to=</label>
+            <label><input type="radio" name="paramFormat" value="nama"/> ?nama=</label>
+            <label><input type="radio" name="paramFormat" value="u"/> ?u=</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="modal-overlay" id="previewModal" onclick="closePreviewModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h2>👁️ Tampilkan Undangan</h2>
+      <button class="modal-close" onclick="closePreviewModal()">✕</button>
+    </div>
+    <div style="margin-bottom:20px">
+      <h4 style="font-size:13px;font-weight:700;margin-bottom:8px">A. Preview Umum (tanpa nama tamu)</h4>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Buka undangan tanpa nama tamu tertentu</p>
+      <button class="modal-btn primary" onclick="openPreviewGeneral()">🌐 Buka Preview Umum</button>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin-bottom:16px"/>
+    <div>
+      <h4 style="font-size:13px;font-weight:700;margin-bottom:8px">B. Preview sebagai tamu tertentu</h4>
+      <select class="modal-select" id="guestSelect"><option value="">— Pilih tamu —</option></select>
+      <button class="modal-btn secondary" onclick="openPreviewGuest()">👤 Buka Preview sebagai Tamu Ini</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item" onclick="location.href='admin.html'">
+    <span class="nav-icon">🏠</span>Dashboard
+  </button>
+  <button class="nav-item active">
+    <span class="nav-icon">⚙️</span>Configure
+  </button>
+  <button class="nav-item" onclick="location.href='share.html'">
+    <span class="nav-icon">🎁</span>Bagikan
+  </button>
+  <button class="nav-item" onclick="openPreviewModal()">
+    <span class="nav-icon">👁️</span>Preview
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ───
+let galleryPhotos = [];
+let loveStoryItems = [];
+let bankItems = [];
+let ewalletItems = [];
+let photoData = {};
+let videoType = 'youtube';
+let audioType = 'file';
+let cdInterval = null;
+
+// ─── UTILS ───
+function getLS(key){try{return JSON.parse(localStorage.getItem(key));}catch(e){return null;}}
+function setLS(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(toast._t);toast._t=setTimeout(()=>t.style.display='none',2500);}
+function escHtml(s){return(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+function val(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+function setVal(id,v){const el=document.getElementById(id);if(el)el.value=v||'';}
+function getChecked(name){const el=document.querySelector(`input[name="${name}"]:checked`);return el?el.value:'';}
+function setChecked(name,v){const el=document.querySelector(`input[name="${name}"][value="${v}"]`);if(el)el.checked=true;}
+
+// ─── SECTIONS ───
+const SECTIONS = [
+  {n:1,title:'Data Pengantin',icon:'💍',required:true},
+  {n:2,title:'Tema Undangan',icon:'🎨',required:false},
+  {n:3,title:'Detail Acara',icon:'📅',required:true},
+  {n:4,title:'Hitungan Mundur',icon:'⏱️',required:false},
+  {n:5,title:'Foto Utama',icon:'🖼️',required:false},
+  {n:6,title:'Galeri',icon:'📸',required:false},
+  {n:7,title:'Video',icon:'🎬',required:false},
+  {n:8,title:'Audio',icon:'🎵',required:false},
+  {n:9,title:'Love Story',icon:'💌',required:false},
+  {n:10,title:'Kado Digital',icon:'🎁',required:false},
+  {n:11,title:'Live Streaming',icon:'📺',required:false},
+  {n:12,title:'Pengaturan Link',icon:'🔗',required:false},
+];
+
+function buildSidebar(){
+  const list=document.getElementById('sidebarList');
+  list.innerHTML=SECTIONS.map(s=>`
+    <div class="sidebar-item" id="sidebar-${s.n}" onclick="jumpToSection(${s.n})">
+      <span>${s.icon}</span>
+      <span style="flex:1">${s.n}. ${s.title}</span>
+      <span class="sidebar-check" id="scheck-${s.n}">⬜</span>
+    </div>
+  `).join('');
+}
+
+function toggleSection(n){
+  const body=document.getElementById(`body-${n}`);
+  const tog=document.getElementById(`toggle-${n}`);
+  const isOpen=body.classList.contains('open');
+  body.classList.toggle('open',!isOpen);
+  tog.classList.toggle('open',!isOpen);
+}
+
+function jumpToSection(n){
+  const el=document.getElementById(`sec-${n}`);
+  if(el){
+    const body=document.getElementById(`body-${n}`);
+    if(!body.classList.contains('open'))toggleSection(n);
+    el.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active'));
+  const si=document.getElementById(`sidebar-${n}`);
+  if(si)si.classList.add('active');
+}
+
+// ─── PROGRESS ───
+function isSectionFilled(n){
+  switch(n){
+    case 1: return !!(val('groomFullName')&&val('groomFather')&&val('groomMother')&&val('brideFullName')&&val('brideFather')&&val('brideMother')&&val('fTitle')&&val('whoInvites'));
+    case 2: return !!(val('themeColor')||val('themeConcept')||val('themeBackground')||val('themeFont'));
+    case 3: return !!(val('akadDate')&&val('akadTimeStart')&&val('akadLocation')&&val('akadAddress')&&val('akadMaps')&&val('resepsiDate')&&val('resepsiS1Start')&&val('resepsiS1End')&&val('resepsiLocation')&&val('resepsiAddress')&&val('resepsiMaps'));
+    case 4: return !!(val('countdownTarget'));
+    case 5: return !!(photoData.coverPhoto||photoData.groomPortrait||photoData.bridePortrait||photoData.togetherPhoto);
+    case 6: return galleryPhotos.length>0;
+    case 7: return !!(val('videoMainUrl')||photoData.videoFile);
+    case 8: return !!(photoData.audioFile||val('audioUrl'));
+    case 9: return loveStoryItems.length>0;
+    case 10: return !!(bankItems.length>0||ewalletItems.length>0||photoData.qrisPhoto||val('physicalAddress'));
+    case 11: return !!(val('liveLink'));
+    case 12: return !!(val('baseUrl'));
+    default: return false;
+  }
+}
+
+function updateProgress(){
+  let filled=0;
+  SECTIONS.forEach(s=>{
+    const ok=isSectionFilled(s.n);
+    if(ok)filled++;
+    const check=document.getElementById(`check-${s.n}`);
+    if(check)check.textContent=ok?'✅':'⬜';
+    const scheck=document.getElementById(`scheck-${s.n}`);
+    if(scheck)scheck.textContent=ok?'✅':'⬜';
+  });
+  document.getElementById('progressLabel').textContent=`${filled} dari 12 seksi sudah diisi`;
+  document.getElementById('progressFill').style.width=`${Math.round(filled/12*100)}%`;
+}
+
+// ─── GATHER DATA ───
+function gatherData(status){
+  return {
+    status: status||'draft',
+    updatedAt: new Date().toISOString(),
+    title: val('fTitle'),
+    groupName: val('groupName'),
+    groupDesc: val('groupDesc'),
+    whoInvites: val('whoInvites'),
+    groom:{
+      fullName:val('groomFullName'),nickname:val('groomNickname'),
+      fatherName:val('groomFather'),motherName:val('groomMother'),
+      childOrder:val('groomChildOrder'),address:val('groomAddress'),
+      instagram:val('groomInstagram'),photo:photoData.groomPhoto||null
+    },
+    bride:{
+      fullName:val('brideFullName'),nickname:val('brideNickname'),
+      fatherName:val('brideFather'),motherName:val('brideMother'),
+      childOrder:val('brideChildOrder'),address:val('brideAddress'),
+      instagram:val('brideInstagram'),photo:photoData.bridePhoto||null
+    },
+    akad:{
+      date:val('akadDate'),timeStart:val('akadTimeStart'),timeEnd:val('akadTimeEnd'),
+      locationName:val('akadLocation'),address:val('akadAddress'),mapsUrl:val('akadMaps')
+    },
+    resepsi:{
+      date:val('resepsiDate'),
+      session1Start:val('resepsiS1Start'),session1End:val('resepsiS1End'),
+      session2Start:val('resepsiS2Start'),session2End:val('resepsiS2End'),
+      locationName:val('resepsiLocation'),address:val('resepsiAddress'),
+      mapsUrl:val('resepsiMaps'),dresscode:val('dresscode')
+    },
+    theme:{color:val('themeColor'),concept:val('themeConcept'),background:val('themeBackground'),font:val('themeFont'),note:val('themeNote')},
+    countdown:{target:val('countdownTarget'),label:val('countdownLabel')},
+    photos:{
+      cover:photoData.coverPhoto||null,
+      groomPortrait:photoData.groomPortrait||null,
+      bridePortrait:photoData.bridePortrait||null,
+      together:photoData.togetherPhoto||null,
+      gallery:galleryPhotos,
+      preview:galleryPhotos.slice(0,3)
+    },
+    video:{
+      main:{type:videoType,src:videoType==='youtube'?val('videoMainUrl'):(photoData.videoFile||'')},
+      teaser:val('videoTeaser'),story:val('videoStory')
+    },
+    audio:{type:audioType,src:audioType==='file'?(photoData.audioFile||''):val('audioUrl')},
+    loveStory:loveStoryItems.map(item=>({year:item.year,title:item.title,desc:item.desc})),
+    gifts:{
+      banks:bankItems.map(b=>({bankName:b.bankName,accountName:b.accountName,accountNumber:b.accountNumber})),
+      ewallets:ewalletItems.map(e=>({type:e.type,number:e.number})),
+      qris:photoData.qrisPhoto||null,
+      physicalAddress:val('physicalAddress')
+    },
+    livestream:{link:val('liveLink'),zoomId:val('zoomId'),zoomPass:val('zoomPass'),schedule:val('liveSchedule')},
+    linkSettings:{baseUrl:val('baseUrl'),paramFormat:getChecked('paramFormat')},
+    instagram:{bride:val('brideInstagram'),groom:val('groomInstagram')}
+  };
+}
+
+// ─── FILL FORM ───
+function fillForm(cfg){
+  if(!cfg)return;
+  setVal('fTitle',cfg.title);
+  setVal('groupName',cfg.groupName);
+  setVal('groupDesc',cfg.groupDesc);
+  setVal('whoInvites',cfg.whoInvites);
+  if(cfg.groom){
+    setVal('groomFullName',cfg.groom.fullName);setVal('groomNickname',cfg.groom.nickname);
+    setVal('groomFather',cfg.groom.fatherName);setVal('groomMother',cfg.groom.motherName);
+    setVal('groomChildOrder',cfg.groom.childOrder);setVal('groomAddress',cfg.groom.address);
+    setVal('groomInstagram',cfg.groom.instagram);
+    if(cfg.groom.photo){photoData.groomPhoto=cfg.groom.photo;const el=document.getElementById('groomPhotoPreview');if(el)el.src=cfg.groom.photo;}
+  }
+  if(cfg.bride){
+    setVal('brideFullName',cfg.bride.fullName);setVal('brideNickname',cfg.bride.nickname);
+    setVal('brideFather',cfg.bride.fatherName);setVal('brideMother',cfg.bride.motherName);
+    setVal('brideChildOrder',cfg.bride.childOrder);setVal('brideAddress',cfg.bride.address);
+    setVal('brideInstagram',cfg.bride.instagram);
+    if(cfg.bride.photo){photoData.bridePhoto=cfg.bride.photo;const el=document.getElementById('bridePhotoPreview');if(el)el.src=cfg.bride.photo;}
+  }
+  if(cfg.akad){
+    setVal('akadDate',cfg.akad.date);setVal('akadTimeStart',cfg.akad.timeStart);setVal('akadTimeEnd',cfg.akad.timeEnd);
+    setVal('akadLocation',cfg.akad.locationName);setVal('akadAddress',cfg.akad.address);setVal('akadMaps',cfg.akad.mapsUrl);
+  }
+  if(cfg.resepsi){
+    setVal('resepsiDate',cfg.resepsi.date);
+    setVal('resepsiS1Start',cfg.resepsi.session1Start);setVal('resepsiS1End',cfg.resepsi.session1End);
+    setVal('resepsiS2Start',cfg.resepsi.session2Start);setVal('resepsiS2End',cfg.resepsi.session2End);
+    setVal('resepsiLocation',cfg.resepsi.locationName);setVal('resepsiAddress',cfg.resepsi.address);
+    setVal('resepsiMaps',cfg.resepsi.mapsUrl);setVal('dresscode',cfg.resepsi.dresscode);
+  }
+  if(cfg.theme){
+    setVal('themeColor',cfg.theme.color);setVal('themeConcept',cfg.theme.concept);
+    setVal('themeBackground',cfg.theme.background);setVal('themeFont',cfg.theme.font);
+    setVal('themeNote',cfg.theme.note);
+  }
+  if(cfg.countdown){
+    setVal('countdownTarget',cfg.countdown.target);setVal('countdownLabel',cfg.countdown.label);
+    if(cfg.countdown.target)updateCountdownPreview();
+  }
+  if(cfg.photos){
+    if(cfg.photos.cover){photoData.coverPhoto=cfg.photos.cover;const el=document.getElementById('coverPreview');if(el)el.src=cfg.photos.cover;}
+    if(cfg.photos.groomPortrait){photoData.groomPortrait=cfg.photos.groomPortrait;const el=document.getElementById('groomPortPreview');if(el)el.src=cfg.photos.groomPortrait;}
+    if(cfg.photos.bridePortrait){photoData.bridePortrait=cfg.photos.bridePortrait;const el=document.getElementById('bridePortPreview');if(el)el.src=cfg.photos.bridePortrait;}
+    if(cfg.photos.together){photoData.togetherPhoto=cfg.photos.together;const el=document.getElementById('togetherPreview');if(el)el.src=cfg.photos.together;}
+    if(cfg.photos.gallery&&cfg.photos.gallery.length){galleryPhotos=cfg.photos.gallery;renderGallery();}
+  }
+  if(cfg.video&&cfg.video.main){
+    setVideoType(cfg.video.main.type||'youtube');
+    if(cfg.video.main.type==='youtube')setVal('videoMainUrl',cfg.video.main.src);
+    else if(cfg.video.main.src)photoData.videoFile=cfg.video.main.src;
+    setVal('videoTeaser',cfg.video.teaser);setVal('videoStory',cfg.video.story);
+    updateYTThumb();
+  }
+  if(cfg.audio){
+    setAudioType(cfg.audio.type||'file');
+    if(cfg.audio.type==='file'&&cfg.audio.src)photoData.audioFile=cfg.audio.src;
+    else setVal('audioUrl',cfg.audio.src);
+  }
+  if(cfg.loveStory&&cfg.loveStory.length){
+    cfg.loveStory.forEach(item=>addLoveStoryItem(item));
+  }
+  if(cfg.gifts){
+    if(cfg.gifts.banks)cfg.gifts.banks.forEach(b=>addBankItem(b));
+    if(cfg.gifts.ewallets)cfg.gifts.ewallets.forEach(e=>addEwalletItem(e));
+    if(cfg.gifts.qris){photoData.qrisPhoto=cfg.gifts.qris;const el=document.getElementById('qrisPreview');if(el)el.src=cfg.gifts.qris;}
+    setVal('physicalAddress',cfg.gifts.physicalAddress);
+  }
+  if(cfg.livestream){
+    setVal('liveLink',cfg.livestream.link);setVal('zoomId',cfg.livestream.zoomId);
+    setVal('zoomPass',cfg.livestream.zoomPass);setVal('liveSchedule',cfg.livestream.schedule);
+  }
+  if(cfg.linkSettings){
+    setVal('baseUrl',cfg.linkSettings.baseUrl||'https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/');
+    setChecked('paramFormat',cfg.linkSettings.paramFormat||'to');
+  }
+  // status badge
+  const badge=document.getElementById('statusBadge');
+  if(cfg.status==='published'){badge.textContent='PUBLISHED';badge.className='badge badge-pub';}
+  else{badge.textContent='DRAFT';badge.className='badge badge-draft';}
+}
+
+// ─── SAVE ───
+function validateRequired(){
+  const fields=document.querySelectorAll('[data-required="1"]');
+  let ok=true;
+  fields.forEach(f=>{
+    if(!f.value.trim()){f.classList.add('error');ok=false;}
+    else f.classList.remove('error');
+  });
+  return ok;
+}
+
+function saveDraft(){
+  const data=gatherData('draft');
+  setLS('wedding_config',data);
+  updateProgress();
+  const badge=document.getElementById('statusBadge');
+  badge.textContent='DRAFT';badge.className='badge badge-draft';
+  const savedBadge=document.getElementById('savedBadge');
+  savedBadge.style.display='inline-block';
+  clearTimeout(saveDraft._t);
+  saveDraft._t=setTimeout(()=>savedBadge.style.display='none',2000);
+  toast('Draft tersimpan ✅');
+}
+
+function publish(){
+  if(!validateRequired()){
+    toast('⚠️ Isi dulu field WAJIB sebelum publish');
+    // scroll to first error
+    const first=document.querySelector('.error');
+    if(first)first.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  if(!confirm('Publish undangan? Status akan berubah menjadi PUBLISHED dan undangan dapat diakses tamu.'))return;
+  const data=gatherData('published');
+  setLS('wedding_config',data);
+  updateProgress();
+  const badge=document.getElementById('statusBadge');
+  badge.textContent='PUBLISHED';badge.className='badge badge-pub';
+  toast('Undangan dipublish ✅');
+}
+
+// ─── AUTO-SAVE ───
+let autoSaveTimer=null;
+function scheduleAutoSave(){
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer=setTimeout(()=>{
+    const existing=getLS('wedding_config');
+    if(!existing)return; // only auto-save if already saved once
+    const data=gatherData(existing.status||'draft');
+    setLS('wedding_config',data);
+    updateProgress();
+    const savedBadge=document.getElementById('savedBadge');
+    savedBadge.style.display='inline-block';
+    clearTimeout(saveDraft._t);
+    saveDraft._t=setTimeout(()=>savedBadge.style.display='none',2000);
+  },800);
+}
+
+// ─── PHOTO UPLOAD ───
+function handlePhotoUpload(input, previewId, dataKey){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const data=e.target.result;
+    photoData[dataKey]=data;
+    const preview=document.getElementById(previewId);
+    if(preview)preview.src=data;
+    updateProgress();
+    scheduleAutoSave();
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearPhoto(previewId, dataKey){
+  delete photoData[dataKey];
+  const preview=document.getElementById(previewId);
+  if(preview)preview.src='';
+  updateProgress();
+  scheduleAutoSave();
+}
+
+// ─── GALLERY ───
+function handleGalleryUpload(files){
+  const remaining=15-galleryPhotos.length;
+  const toAdd=Math.min(files.length,remaining);
+  let loaded=0;
+  for(let i=0;i<toAdd;i++){
+    const reader=new FileReader();
+    reader.onload=e=>{
+      galleryPhotos.push(e.target.result);
+      loaded++;
+      if(loaded===toAdd){renderGallery();updateProgress();scheduleAutoSave();}
+    };
+    reader.readAsDataURL(files[i]);
+  }
+  if(files.length>remaining)toast(`Hanya ${remaining} foto lagi yang bisa ditambahkan (max 15)`);
+}
+
+function renderGallery(){
+  const grid=document.getElementById('galleryGrid');
+  grid.innerHTML=galleryPhotos.map((src,i)=>`
+    <div class="gallery-item">
+      <img src="${escHtml(src)}" alt="Foto ${i+1}"/>
+      <button class="gallery-del" onclick="removeGalleryPhoto(${i})">✕</button>
+    </div>
+  `).join('');
+  document.getElementById('galleryCounter').textContent=`${galleryPhotos.length} / 15 foto`;
+}
+
+function removeGalleryPhoto(idx){
+  galleryPhotos.splice(idx,1);
+  renderGallery();updateProgress();scheduleAutoSave();
+}
+
+// ─── VIDEO ───
+function setVideoType(type){
+  videoType=type;
+  document.getElementById('videoTypeYT').classList.toggle('active',type==='youtube');
+  document.getElementById('videoTypeFile').classList.toggle('active',type==='file');
+  document.getElementById('videoYTWrap').style.display=type==='youtube'?'block':'none';
+  document.getElementById('videoFileWrap').style.display=type==='file'?'block':'none';
+}
+
+function updateYTThumb(){
+  const url=val('videoMainUrl');
+  const thumb=document.getElementById('ytThumb');
+  const match=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?\s]+)/);
+  if(match){
+    thumb.src=`https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+    thumb.style.display='block';
+  } else {
+    thumb.style.display='none';
+  }
+}
+
+function handleVideoUpload(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    photoData.videoFile=e.target.result;
+    document.getElementById('videoFileName').textContent='📹 '+file.name;
+    scheduleAutoSave();
+  };
+  reader.readAsDataURL(file);
+}
+
+// ─── AUDIO ───
+function setAudioType(type){
+  audioType=type;
+  document.getElementById('audioTypeFile').classList.toggle('active',type==='file');
+  document.getElementById('audioTypeUrl').classList.toggle('active',type==='url');
+  document.getElementById('audioFileWrap').style.display=type==='file'?'block':'none';
+  document.getElementById('audioUrlWrap').style.display=type==='url'?'block':'none';
+}
+
+function handleAudioUpload(input){
+  const file=input.files[0];
+  if(!file)return;
+  if(file.size>5*1024*1024){toast('File terlalu besar! Maksimal 5MB');return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    photoData.audioFile=e.target.result;
+    document.getElementById('audioFileName').textContent='🎵 '+file.name;
+    const preview=document.getElementById('audioPreviewEl');
+    preview.src=e.target.result;preview.style.display='block';
+    scheduleAutoSave();
+  };
+  reader.readAsDataURL(file);
+}
+
+// ─── COUNTDOWN ───
+function updateCountdownPreview(){
+  const target=val('countdownTarget');
+  const label=val('countdownLabel');
+  const preview=document.getElementById('countdownPreview');
+  const labelPreview=document.getElementById('countdownLabelPreview');
+  if(!target){preview.style.display='none';labelPreview.textContent='';return;}
+  preview.style.display='flex';
+  labelPreview.textContent=label||'Menuju Hari Bahagia';
+  // Start/restart interval
+  if(cdInterval)clearInterval(cdInterval);
+  function update(){
+    const diff=new Date(target)-Date.now();
+    if(diff<=0){
+      document.getElementById('cdDays').textContent='00';
+      document.getElementById('cdHours').textContent='00';
+      document.getElementById('cdMins').textContent='00';
+      document.getElementById('cdSecs').textContent='00';
+      return;
+    }
+    const d=Math.floor(diff/86400000);
+    const h=Math.floor((diff%86400000)/3600000);
+    const m=Math.floor((diff%3600000)/60000);
+    const s=Math.floor((diff%60000)/1000);
+    document.getElementById('cdDays').textContent=String(d).padStart(2,'0');
+    document.getElementById('cdHours').textContent=String(h).padStart(2,'0');
+    document.getElementById('cdMins').textContent=String(m).padStart(2,'0');
+    document.getElementById('cdSecs').textContent=String(s).padStart(2,'0');
+  }
+  update();
+  cdInterval=setInterval(update,1000);
+}
+
+// ─── LOVE STORY ───
+function addLoveStoryItem(data){
+  const id=Date.now()+Math.random();
+  const item={id,year:data?.year||'',title:data?.title||'',desc:data?.desc||''};
+  loveStoryItems.push(item);
+  renderLoveStory();
+  updateProgress();
+}
+
+function removeLoveStoryItem(id){
+  loveStoryItems=loveStoryItems.filter(i=>i.id!==id);
+  renderLoveStory();updateProgress();scheduleAutoSave();
+}
+
+function renderLoveStory(){
+  const list=document.getElementById('loveStoryList');
+  list.innerHTML=loveStoryItems.map((item,idx)=>`
+    <div class="story-item">
+      <button class="story-del" onclick="removeLoveStoryItem(${item.id})">✕ Hapus</button>
+      <div class="grid2" style="margin-bottom:8px">
+        <div class="field" style="margin:0"><label>Tahun</label><input value="${escHtml(item.year)}" placeholder="2020" oninput="updateLoveStory(${item.id},'year',this.value)"/></div>
+        <div class="field" style="margin:0"><label>Judul</label><input value="${escHtml(item.title)}" placeholder="Pertama bertemu" oninput="updateLoveStory(${item.id},'title',this.value)"/></div>
+      </div>
+      <div class="field" style="margin:0"><label>Deskripsi</label><textarea rows="2" placeholder="Ceritakan momen ini..." oninput="updateLoveStory(${item.id},'desc',this.value)">${escHtml(item.desc)}</textarea></div>
+    </div>
+  `).join('');
+  // Render timeline
+  const timeline=document.getElementById('loveStoryTimeline');
+  if(loveStoryItems.length===0){timeline.innerHTML='';return;}
+  timeline.innerHTML=loveStoryItems.map(item=>`
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-year">${escHtml(item.year)}</div>
+      <div class="timeline-title">${escHtml(item.title)}</div>
+      <div class="timeline-desc">${escHtml(item.desc)}</div>
+    </div>
+  `).join('');
+}
+
+function updateLoveStory(id,field,value){
+  const item=loveStoryItems.find(i=>i.id===id);
+  if(item)item[field]=value;
+  // Re-render timeline only
+  const timeline=document.getElementById('loveStoryTimeline');
+  timeline.innerHTML=loveStoryItems.map(item=>`
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-year">${escHtml(item.year)}</div>
+      <div class="timeline-title">${escHtml(item.title)}</div>
+      <div class="timeline-desc">${escHtml(item.desc)}</div>
+    </div>
+  `).join('');
+  scheduleAutoSave();
+}
+
+// ─── BANK / EWALLET ───
+function addBankItem(data){
+  const id=Date.now()+Math.random();
+  const item={id,bankName:data?.bankName||'',accountName:data?.accountName||'',accountNumber:data?.accountNumber||''};
+  bankItems.push(item);
+  renderBanks();updateProgress();
+}
+
+function removeBankItem(id){
+  bankItems=bankItems.filter(i=>i.id!==id);
+  renderBanks();updateProgress();scheduleAutoSave();
+}
+
+function renderBanks(){
+  const list=document.getElementById('bankList');
+  list.innerHTML=bankItems.map(item=>`
+    <div class="list-item">
+      <button class="list-del" onclick="removeBankItem(${item.id})">✕ Hapus</button>
+      <div class="grid3">
+        <div class="field" style="margin:0"><label>Nama Bank</label><input value="${escHtml(item.bankName)}" placeholder="BCA" oninput="updateBank(${item.id},'bankName',this.value)"/></div>
+        <div class="field" style="margin:0"><label>Nama Pemilik</label><input value="${escHtml(item.accountName)}" placeholder="Nama Lengkap" oninput="updateBank(${item.id},'accountName',this.value)"/></div>
+        <div class="field" style="margin:0"><label>Nomor Rekening</label><input value="${escHtml(item.accountNumber)}" placeholder="1234567890" oninput="updateBank(${item.id},'accountNumber',this.value)"/></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateBank(id,field,value){const item=bankItems.find(i=>i.id===id);if(item)item[field]=value;scheduleAutoSave();}
+
+function addEwalletItem(data){
+  const id=Date.now()+Math.random();
+  const item={id,type:data?.type||'OVO',number:data?.number||''};
+  ewalletItems.push(item);
+  renderEwallets();updateProgress();
+}
+
+function removeEwalletItem(id){
+  ewalletItems=ewalletItems.filter(i=>i.id!==id);
+  renderEwallets();updateProgress();scheduleAutoSave();
+}
+
+function renderEwallets(){
+  const list=document.getElementById('ewalletList');
+  list.innerHTML=ewalletItems.map(item=>`
+    <div class="list-item">
+      <button class="list-del" onclick="removeEwalletItem(${item.id})">✕ Hapus</button>
+      <div class="grid2">
+        <div class="field" style="margin:0">
+          <label>Jenis</label>
+          <select onchange="updateEwallet(${item.id},'type',this.value)">
+            ${['OVO','DANA','GoPay','ShopeePay'].map(t=>`<option${t===item.type?' selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field" style="margin:0"><label>Nomor</label><input value="${escHtml(item.number)}" placeholder="08xxxxxxxxxx" oninput="updateEwallet(${item.id},'number',this.value)"/></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateEwallet(id,field,value){const item=ewalletItems.find(i=>i.id===id);if(item)item[field]=value;scheduleAutoSave();}
+
+// ─── PREVIEW MODAL ───
+function openPreviewModal(){
+  // Load guests for select
+  const guests=getLS('wedding_guests')||[];
+  const sel=document.getElementById('guestSelect');
+  sel.innerHTML='<option value="">— Pilih tamu —</option>';
+  guests.forEach(g=>{
+    const opt=document.createElement('option');
+    opt.value=g.kode;opt.textContent=g.nama;sel.appendChild(opt);
+  });
+  document.getElementById('previewModal').classList.add('open');
+}
+
+function closePreviewModal(e){
+  if(!e||e.target===document.getElementById('previewModal'))
+    document.getElementById('previewModal').classList.remove('open');
+}
+
+function openPreviewGeneral(){window.open('index.html?draft=1','_blank','noopener,noreferrer');closePreviewModal();}
+function openPreviewGuest(){
+  const kode=document.getElementById('guestSelect').value;
+  if(!kode){toast('Pilih tamu terlebih dahulu');return;}
+  window.open('index.html?draft=1&to='+encodeURIComponent(kode),'_blank','noopener,noreferrer');
+  closePreviewModal();
+}
+
+// ─── INPUT LISTENERS ───
+function setupListeners(){
+  document.querySelectorAll('input,select,textarea').forEach(el=>{
+    el.addEventListener('input',()=>{updateProgress();scheduleAutoSave();});
+    el.addEventListener('change',()=>{updateProgress();scheduleAutoSave();});
+  });
+}
+
+// ─── ESC TO CLOSE MODAL ───
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePreviewModal();});
+
+// ─── INIT ───
+buildSidebar();
+const cfg=getLS('wedding_config');
+if(cfg){fillForm(cfg);}
+else{
+  // Set defaults
+  setVal('baseUrl','https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/');
+  setChecked('paramFormat','to');
+}
+updateProgress();
+setupListeners();
+</script>
+</body>
+</html>
