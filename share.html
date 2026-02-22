@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Bagikan Undangan · Admin</title>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{--green-dark:#075e54;--green-mid:#128c7e;--green-light:#25d366;--bg:#f0f2f5;--card:#fff;--text:#111827;--muted:#6b7280;--red:#ef4444;--red-bg:#fee2e2;--yellow:#f59e0b;--yellow-bg:#fef3c7;--border:#e5e7eb;--shadow:0 2px 8px rgba(0,0,0,.08)}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
+a{text-decoration:none;color:inherit}
+button{cursor:pointer;font-family:inherit}
+
+/* HEADER */
+.header{background:var(--green-dark);color:#fff;padding:12px 16px;position:sticky;top:0;z-index:30}
+.header-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.header h1{flex:1;font-size:16px;font-weight:800}
+.hbtn{padding:7px 12px;border-radius:10px;border:none;font-size:12px;font-weight:700;white-space:nowrap;cursor:pointer;transition:opacity .15s;color:#fff;background:none}
+.hbtn:active{opacity:.8}
+.hbtn-outline{border:1px solid rgba(255,255,255,.5)}
+
+/* WRAP */
+.wrap{max-width:960px;margin:0 auto;padding:16px}
+
+/* CARD */
+.card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:16px;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:700;margin-bottom:12px;color:var(--text)}
+
+/* FORM */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:600;margin-bottom:4px}
+.field textarea,.field input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:13px;font-family:inherit;background:var(--card);color:var(--text);transition:border-color .15s}
+.field textarea:focus,.field input:focus{outline:none;border-color:var(--green-light)}
+.field textarea{resize:vertical}
+.helper{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* VAR BADGES */
+.var-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.var-badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--green-mid);color:var(--green-dark);background:var(--card);cursor:pointer;transition:background .15s}
+.var-badge:hover{background:var(--green-light);color:#fff;border-color:var(--green-light)}
+
+/* BUTTONS */
+.btn-primary{background:var(--green-light);color:#fff;border:none;border-radius:12px;padding:14px 20px;font-size:15px;font-weight:700;width:100%;margin-bottom:16px;transition:opacity .15s}
+.btn-primary:active{opacity:.8}
+.btn-secondary{background:var(--card);color:var(--green-dark);border:1px solid var(--green-mid);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.btn-secondary:active{opacity:.8}
+.btn-danger{background:var(--red-bg);color:var(--red);border:none;border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer}
+.btn-sm{padding:5px 10px;border-radius:8px;border:none;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn-sm-green{background:#d1fae5;color:#065f46}
+.btn-sm-blue{background:#dbeafe;color:#1e40af}
+.btn-sm-wa{background:#dcfce7;color:var(--green-dark)}
+
+/* FILE UPLOAD */
+.upload-area{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:border-color .15s}
+.upload-area:hover{border-color:var(--green-light)}
+.upload-area .icon{font-size:32px;margin-bottom:8px}
+.upload-area p{font-size:13px;color:var(--muted)}
+
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:600px}
+th{text-align:left;padding:8px 10px;background:#f9fafb;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+.action-btns{display:flex;gap:4px;flex-wrap:wrap}
+
+/* GLOBAL ACTIONS */
+.global-actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.global-actions button{flex:1;min-width:140px}
+
+/* IMPORT PREVIEW */
+.import-preview{margin-top:12px}
+.import-count{font-size:12px;color:var(--muted);margin-bottom:8px}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+@media(min-width:600px){.modal-overlay{align-items:center}}
+.modal-sheet{background:var(--card);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto}
+@media(min-width:600px){.modal-sheet{border-radius:20px}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-header h2{font-size:16px;font-weight:800}
+.modal-close{background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer}
+.modal-btn{width:100%;padding:12px;border-radius:10px;border:none;font-size:14px;font-weight:700;margin-top:8px;cursor:pointer;transition:opacity .15s}
+.modal-btn.primary{background:var(--green-light);color:#fff}
+.modal-btn.secondary{background:var(--card);color:var(--green-dark);border:1px solid var(--green-mid)}
+select.modal-select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;background:var(--card);color:var(--text);font-family:inherit}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;height:60px;z-index:20}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;color:var(--muted);border:none;background:none;cursor:pointer;transition:color .15s}
+.nav-item.active{color:var(--green-mid);font-weight:700}
+.nav-item .nav-icon{font-size:20px;line-height:1}
+
+/* TOAST */
+.toast{position:fixed;bottom:80px;right:16px;background:#1f2937;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;z-index:200;display:none;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+
+/* EMPTY */
+.empty{text-align:center;padding:24px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <h1>🎁 Bagikan Undangan</h1>
+    <button class="hbtn hbtn-outline" onclick="location.href='admin.html'">← Dashboard</button>
+    <button class="hbtn hbtn-outline" onclick="location.href='configure.html'">⚙️ Configure</button>
+    <button class="hbtn hbtn-outline" onclick="openPreviewModal()">👁️ Preview</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- SECTION A: INPUT MANUAL -->
+  <div class="card">
+    <div class="card-title">📝 Input Nama Tamu Manual</div>
+    <div class="field">
+      <label>Silakan Masukkan Nama Tamu</label>
+      <textarea id="namesInput" rows="8" placeholder="Bapak Ahmad&#10;Ibu Siti &amp; Keluarga&#10;Rekan Kantor - Tim Finance"></textarea>
+      <div class="helper">Gunakan baris baru untuk memisahkan nama</div>
+    </div>
+  </div>
+
+  <!-- SECTION B: IMPORT EXCEL -->
+  <div class="card">
+    <div class="card-title">📊 Import dari Excel / CSV</div>
+    <input type="file" id="excelInput" accept=".xlsx,.csv" style="display:none" onchange="handleExcelImport(this)"/>
+    <div class="upload-area" onclick="document.getElementById('excelInput').click()">
+      <div class="icon">📂</div>
+      <p>Klik untuk pilih file Excel (.xlsx) atau CSV (.csv)</p>
+      <p style="font-size:11px;margin-top:4px">Kolom: nama (wajib), no_hp, kategori, jumlah_tamu, kode</p>
+    </div>
+    <div id="importPreview" class="import-preview" style="display:none">
+      <div class="import-count" id="importCount"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nama</th><th>No HP</th><th>Kategori</th><th>Jml Tamu</th><th>Kode</th></tr></thead>
+          <tbody id="importTableBody"></tbody>
+        </table>
+      </div>
+      <button class="btn-secondary" style="margin-top:10px;width:100%" onclick="mergeImportedToTextarea()">✅ Tambahkan ke Daftar</button>
+    </div>
+  </div>
+
+  <!-- SECTION C: TEMPLATE -->
+  <div class="card">
+    <div class="card-title">💬 Template Pesan Pengantar</div>
+    <div class="var-badges">
+      <span class="var-badge" onclick="insertVar('[nama]')">[nama]</span>
+      <span class="var-badge" onclick="insertVar('[judul-undangan]')">[judul-undangan]</span>
+      <span class="var-badge" onclick="insertVar('[link-undangan]')">[link-undangan]</span>
+      <span class="var-badge" onclick="insertVar('[mempelai-wanita]')">[mempelai-wanita]</span>
+      <span class="var-badge" onclick="insertVar('[mempelai-pria]')">[mempelai-pria]</span>
+      <span class="var-badge" onclick="insertVar('[yang-mengundang]')">[yang-mengundang]</span>
+    </div>
+    <div class="field">
+      <textarea id="templateInput" rows="12"></textarea>
+    </div>
+  </div>
+
+  <!-- GENERATE BUTTON -->
+  <button class="btn-primary" onclick="generateGuests()">⚡ Generate & Simpan</button>
+
+  <!-- RESULTS -->
+  <div id="resultsSection" style="display:none">
+    <div class="global-actions">
+      <button class="btn-secondary" onclick="copyAll()">📋 Salin Semua</button>
+      <button class="btn-secondary" onclick="downloadCSV()">⬇️ Download CSV</button>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 Daftar Tamu Undangan</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama Tamu</th>
+              <th>Kode</th>
+              <th>Link Undangan</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="resultsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- PREVIEW MODAL -->
+<div class="modal-overlay" id="previewModal" onclick="closePreviewModal(event)">
+  <div class="modal-sheet">
+    <div class="modal-header">
+      <h2>👁️ Tampilkan Undangan</h2>
+      <button class="modal-close" onclick="closePreviewModal()">✕</button>
+    </div>
+    <div style="margin-bottom:20px">
+      <h4 style="font-size:13px;font-weight:700;margin-bottom:8px">A. Preview Umum</h4>
+      <button class="modal-btn primary" onclick="openPreviewGeneral()">🌐 Buka Preview Umum</button>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin-bottom:16px"/>
+    <div>
+      <h4 style="font-size:13px;font-weight:700;margin-bottom:8px">B. Preview sebagai tamu tertentu</h4>
+      <select class="modal-select" id="guestSelect"><option value="">— Pilih tamu —</option></select>
+      <button class="modal-btn secondary" onclick="openPreviewGuest()">👤 Buka Preview sebagai Tamu Ini</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-item" onclick="location.href='admin.html'">
+    <span class="nav-icon">🏠</span>Dashboard
+  </button>
+  <button class="nav-item" onclick="location.href='configure.html'">
+    <span class="nav-icon">⚙️</span>Configure
+  </button>
+  <button class="nav-item active">
+    <span class="nav-icon">🎁</span>Bagikan
+  </button>
+  <button class="nav-item" onclick="openPreviewModal()">
+    <span class="nav-icon">👁️</span>Preview
+  </button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── UTILS ───
+function getLS(key){try{return JSON.parse(localStorage.getItem(key));}catch(e){return null;}}
+function setLS(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';clearTimeout(toast._t);toast._t=setTimeout(()=>t.style.display='none',2500);}
+function escHtml(s){return(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+
+// ─── SLUG ───
+function makeSlug(name){
+  return name.toLowerCase()
+    .replace(/[^a-z0-9\s]/g,'')
+    .replace(/\s+/g,'-')
+    .replace(/-+/g,'-')
+    .replace(/^-|-$/g,'');
+}
+
+function uniqueSlug(base, existingCodes){
+  let candidate = base;
+  let n = 1;
+  while(existingCodes.has(candidate)){
+    candidate = base + '-' + String(n).padStart(3,'0');
+    n++;
+  }
+  return candidate;
+}
+
+// ─── LINK ───
+function makeLink(kode){
+  const cfg=getLS('wedding_config')||{};
+  const settings=cfg.linkSettings||{};
+  const base=settings.baseUrl||'https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/';
+  const param=settings.paramFormat||'to';
+  return base+'?'+param+'='+encodeURIComponent(kode);
+}
+
+// ─── TEMPLATE ───
+const DEFAULT_TEMPLATE=`Assalamu'alaikum Wr. Wb.
+
+Yth. [nama]
+Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri [judul-undangan] putra-putri kami:
+
+[mempelai-pria] & [mempelai-wanita]
+
+Link undangan:
+[link-undangan]
+
+Hormat kami,
+[yang-mengundang]`;
+
+function fillTemplate(template, guest){
+  const cfg=getLS('wedding_config')||{};
+  return template
+    .replace(/\[nama\]/g, guest.nama||'')
+    .replace(/\[judul-undangan\]/g, cfg.title||'Pernikahan')
+    .replace(/\[link-undangan\]/g, makeLink(guest.kode))
+    .replace(/\[mempelai-wanita\]/g, cfg.bride?.nickname||cfg.bride?.fullName||'Mempelai Wanita')
+    .replace(/\[mempelai-pria\]/g, cfg.groom?.nickname||cfg.groom?.fullName||'Mempelai Pria')
+    .replace(/\[yang-mengundang\]/g, cfg.whoInvites||'Keluarga');
+}
+
+function insertVar(v){
+  const ta=document.getElementById('templateInput');
+  const start=ta.selectionStart, end=ta.selectionEnd;
+  ta.value=ta.value.slice(0,start)+v+ta.value.slice(end);
+  ta.selectionStart=ta.selectionEnd=start+v.length;
+  ta.focus();
+}
+
+// ─── EXCEL IMPORT ───
+let importedRows = [];
+
+function handleExcelImport(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=new Uint8Array(e.target.result);
+      const wb=XLSX.read(data,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+      importedRows=rows.map(r=>({
+        nama: String(r.nama||r.Nama||r.NAMA||'').trim(),
+        noHp: String(r.no_hp||r.noHp||r.hp||r.HP||r['No HP']||'').trim(),
+        kategori: String(r.kategori||r.Kategori||'').trim(),
+        jumlahTamu: parseInt(r.jumlah_tamu||r.jumlahTamu||r['Jumlah Tamu']||1)||1,
+        kode: String(r.kode||r.Kode||'').trim()
+      })).filter(r=>r.nama);
+      renderImportPreview();
+      toast(`${importedRows.length} baris berhasil dibaca`);
+    }catch(err){toast('Gagal membaca file: '+err.message);}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderImportPreview(){
+  if(!importedRows.length){document.getElementById('importPreview').style.display='none';return;}
+  document.getElementById('importPreview').style.display='block';
+  document.getElementById('importCount').textContent=`${importedRows.length} data ditemukan`;
+  const tbody=document.getElementById('importTableBody');
+  tbody.innerHTML=importedRows.map(r=>`
+    <tr>
+      <td>${escHtml(r.nama)}</td>
+      <td>${escHtml(r.noHp)}</td>
+      <td>${escHtml(r.kategori)}</td>
+      <td>${r.jumlahTamu}</td>
+      <td>${escHtml(r.kode||'(auto)')}</td>
+    </tr>
+  `).join('');
+}
+
+function mergeImportedToTextarea(){
+  const ta=document.getElementById('namesInput');
+  const existing=ta.value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const toAdd=importedRows.map(r=>r.nama).filter(n=>!existing.includes(n));
+  if(toAdd.length){
+    ta.value=(existing.join('\n')+(existing.length?'\n':'')+toAdd.join('\n')).trim();
+    toast(`${toAdd.length} nama ditambahkan`);
+  }else{
+    toast('Semua nama sudah ada di daftar');
+  }
+  document.getElementById('importPreview').style.display='none';
+}
+
+// ─── GENERATE ───
+function generateGuests(){
+  const namesRaw=document.getElementById('namesInput').value;
+  const names=namesRaw.split('\n').map(s=>s.trim()).filter(Boolean);
+  if(!names.length){toast('⚠️ Masukkan nama tamu terlebih dahulu');return;}
+
+  const existingGuests=getLS('wedding_guests')||[];
+  const existingCodes=new Set(existingGuests.map(g=>g.kode));
+  const existingNames=new Set(existingGuests.map(g=>g.nama.toLowerCase()));
+
+  const newGuests=[];
+  names.forEach(nama=>{
+    if(existingNames.has(nama.toLowerCase()))return; // skip duplicate names
+    // Check if we have import data for this name
+    const importRow=importedRows.find(r=>r.nama===nama);
+    const base=makeSlug(nama)||'tamu';
+    const kode=importRow?.kode?importRow.kode:uniqueSlug(base,existingCodes);
+    existingCodes.add(kode);
+    existingNames.add(nama.toLowerCase());
+    newGuests.push({
+      id: Date.now()+'-'+Math.random().toString(36).slice(2),
+      nama,
+      kode,
+      noHp: importRow?.noHp||'',
+      kategori: importRow?.kategori||'',
+      jumlahTamu: importRow?.jumlahTamu||1,
+      createdAt: new Date().toISOString()
+    });
+  });
+
+  const allGuests=[...existingGuests,...newGuests];
+  setLS('wedding_guests',allGuests);
+
+  toast(`✅ ${newGuests.length} tamu baru ditambahkan. Total: ${allGuests.length}`);
+  renderResultsTable(allGuests);
+  importedRows=[];
+  document.getElementById('importPreview').style.display='none';
+}
+
+// ─── RENDER TABLE ───
+function renderResultsTable(guests){
+  if(!guests||guests.length===0){
+    document.getElementById('resultsSection').style.display='none';
+    return;
+  }
+  document.getElementById('resultsSection').style.display='block';
+  const template=document.getElementById('templateInput').value;
+  const tbody=document.getElementById('resultsTableBody');
+  tbody.innerHTML=guests.map((g,i)=>{
+    const link=makeLink(g.kode);
+    const hasWa=g.noHp&&g.noHp.trim();
+    const waBtn=hasWa?`<button class="btn-sm btn-sm-wa" data-action="wa" data-kode="${escHtml(g.kode)}" data-hp="${escHtml(g.noHp)}">💬 WA</button>`:'';
+    return `<tr id="row-${escHtml(g.id)}">
+      <td style="color:var(--muted)">${i+1}</td>
+      <td style="font-weight:600;white-space:nowrap">${escHtml(g.nama)}</td>
+      <td style="font-family:monospace;font-size:11px;color:var(--muted)">${escHtml(g.kode)}</td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><a href="${escHtml(link)}" target="_blank" rel="noopener noreferrer" style="color:var(--green-mid);font-size:11px">${escHtml(link)}</a></td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-sm btn-sm-green" data-action="copyLink" data-kode="${escHtml(g.kode)}">📋 Link</button>
+          <button class="btn-sm btn-sm-blue" data-action="copyText" data-kode="${escHtml(g.kode)}">📋 Teks</button>
+          ${waBtn}
+          <button class="btn-sm btn-sm-green" data-action="preview" data-kode="${escHtml(g.kode)}">👁️</button>
+          <button class="btn-danger" data-action="delete" data-id="${escHtml(g.id)}">🗑️</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  // Also update preview modal guest list
+  const sel=document.getElementById('guestSelect');
+  sel.innerHTML='<option value="">— Pilih tamu —</option>';
+  guests.forEach(g=>{
+    const opt=document.createElement('option');
+    opt.value=g.kode;opt.textContent=g.nama;sel.appendChild(opt);
+  });
+}
+
+// ─── TABLE EVENT DELEGATION ───
+document.getElementById('resultsTableBody').addEventListener('click',function(e){
+  const btn=e.target.closest('button[data-action]');
+  if(!btn)return;
+  const action=btn.dataset.action;
+  if(action==='copyLink')copyLink(btn.dataset.kode);
+  else if(action==='copyText')copyText(btn.dataset.kode);
+  else if(action==='wa')kirimWA(btn.dataset.kode,btn.dataset.hp);
+  else if(action==='preview')previewGuest(btn.dataset.kode);
+  else if(action==='delete')deleteGuest(btn.dataset.id);
+});
+
+// ─── ACTIONS ───
+function copyLink(kode){
+  navigator.clipboard.writeText(makeLink(kode))
+    .then(()=>toast('Link tersalin ✅'))
+    .catch(()=>toast('Gagal menyalin'));
+}
+
+function copyText(kode){
+  const guests=getLS('wedding_guests')||[];
+  const guest=guests.find(g=>g.kode===kode);
+  if(!guest){toast('Tamu tidak ditemukan');return;}
+  const template=document.getElementById('templateInput').value;
+  const text=fillTemplate(template,guest);
+  navigator.clipboard.writeText(text)
+    .then(()=>toast('Teks tersalin ✅'))
+    .catch(()=>toast('Gagal menyalin'));
+}
+
+function kirimWA(kode, noHp){
+  const guests=getLS('wedding_guests')||[];
+  const guest=guests.find(g=>g.kode===kode);
+  if(!guest){toast('Tamu tidak ditemukan');return;}
+  const template=document.getElementById('templateInput').value;
+  const text=fillTemplate(template,guest);
+  const phone=noHp.replace(/[^0-9]/g,'').replace(/^0/,'62');
+  window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(text),'_blank','noopener,noreferrer');
+}
+
+function previewGuest(kode){
+  window.open('index.html?draft=1&to='+encodeURIComponent(kode),'_blank','noopener,noreferrer');
+}
+
+function deleteGuest(id){
+  if(!confirm('Hapus tamu ini?'))return;
+  const guests=(getLS('wedding_guests')||[]).filter(g=>g.id!==id);
+  setLS('wedding_guests',guests);
+  renderResultsTable(guests);
+  toast('Tamu dihapus');
+}
+
+function copyAll(){
+  const guests=getLS('wedding_guests')||[];
+  if(!guests.length){toast('Belum ada tamu');return;}
+  const template=document.getElementById('templateInput').value;
+  const all=guests.map(g=>fillTemplate(template,g)).join('\n---\n');
+  navigator.clipboard.writeText(all)
+    .then(()=>toast('Semua teks tersalin ✅'))
+    .catch(()=>toast('Gagal menyalin'));
+}
+
+function downloadCSV(){
+  const guests=getLS('wedding_guests')||[];
+  if(!guests.length){toast('Belum ada tamu');return;}
+  const rows=[['Nama','Kode','Link','No HP'],...guests.map(g=>[g.nama,g.kode,makeLink(g.kode),g.noHp||''])];
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='tamu-undangan.csv';a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── MODAL ───
+function openPreviewModal(){
+  const guests=getLS('wedding_guests')||[];
+  const sel=document.getElementById('guestSelect');
+  sel.innerHTML='<option value="">— Pilih tamu —</option>';
+  guests.forEach(g=>{
+    const opt=document.createElement('option');
+    opt.value=g.kode;opt.textContent=g.nama;sel.appendChild(opt);
+  });
+  document.getElementById('previewModal').classList.add('open');
+}
+function closePreviewModal(e){
+  if(!e||e.target===document.getElementById('previewModal'))
+    document.getElementById('previewModal').classList.remove('open');
+}
+function openPreviewGeneral(){window.open('index.html?draft=1','_blank','noopener,noreferrer');closePreviewModal();}
+function openPreviewGuest(){
+  const kode=document.getElementById('guestSelect').value;
+  if(!kode){toast('Pilih tamu terlebih dahulu');return;}
+  window.open('index.html?draft=1&to='+encodeURIComponent(kode),'_blank','noopener,noreferrer');
+  closePreviewModal();
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePreviewModal();});
+
+// ─── INIT ───
+document.getElementById('templateInput').value=DEFAULT_TEMPLATE;
+const existingGuests=getLS('wedding_guests')||[];
+if(existingGuests.length)renderResultsTable(existingGuests);
+</script>
+</body>
+</html>
