@@ -376,16 +376,19 @@ function closePreviewModal(e) {
 }
 
 function openPreviewGeneral() {
-  window.open('index.html?draft=1', '_blank');
+  window.open('index.html?draft=1', '_blank', 'noopener,noreferrer');
   closePreviewModal();
 }
 
 function openPreviewGuest() {
   const kode = document.getElementById('guestSelect').value;
   if (!kode) { toast('Pilih tamu terlebih dahulu'); return; }
-  window.open('index.html?draft=1&to=' + encodeURIComponent(kode), '_blank');
+  window.open('index.html?draft=1&to=' + encodeURIComponent(kode), '_blank', 'noopener,noreferrer');
   closePreviewModal();
 }
+
+// ESC key closes modal
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePreviewModal(); });
 
 // Init
 loadStats();
