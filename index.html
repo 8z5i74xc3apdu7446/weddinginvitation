@@ -358,6 +358,11 @@
 <div class="app">
 <div class="phone" id="phone">
 
+  <!-- Admin back button (hanya tampil saat draft/preview) -->
+  <div id="adminBackBtn" style="display:none;position:absolute;top:8px;right:8px;z-index:50">
+    <a href="admin.html" style="background:#075e54;color:#fff;padding:6px 10px;border-radius:12px;font-size:11px;text-decoration:none;font-weight:700">⚙️ Admin</a>
+  </div>
+
   <audio id="bgm" preload="auto" loop>
     <source src="assets/backsound.mp3" type="audio/mpeg">
   </audio>
@@ -706,6 +711,29 @@
 
 <script>
 // ══════════════════════════════════════════════════════
+// ADMIN CONFIG LOADER
+// ══════════════════════════════════════════════════════
+function loadAdminConfig() {
+  try {
+    const raw = localStorage.getItem('wedding_config');
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
+
+function loadGuestName(slug) {
+  try {
+    const raw = localStorage.getItem('wedding_guests');
+    if (!raw) return null;
+    const guests = JSON.parse(raw);
+    const found = guests.find(g => g.kode === slug);
+    return found ? found.nama : null;
+  } catch(e) { return null; }
+}
+
+const _adminCfg = loadAdminConfig();
+
+// ══════════════════════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════��══════════════════════
 const CONFIG = {
@@ -750,6 +778,38 @@ const CONFIG = {
     {name:"Anda",role:"Tamu Undangan",emoji:"🙂"}
   ]
 };
+
+// ══════════════════════════════════════════════════════
+// OVERRIDE CONFIG FROM ADMIN (if available)
+// ══════════════════════════════════════════════════════
+if (_adminCfg) {
+  if (_adminCfg.groupName) CONFIG.groupName = _adminCfg.groupName;
+  if (_adminCfg.groupDesc) CONFIG.groupDesc = _adminCfg.groupDesc;
+  if (_adminCfg.bride && (_adminCfg.bride.nickname || _adminCfg.bride.fullName))
+    CONFIG.couple.brideName = _adminCfg.bride.nickname || _adminCfg.bride.fullName;
+  if (_adminCfg.groom && (_adminCfg.groom.nickname || _adminCfg.groom.fullName))
+    CONFIG.couple.groomName = _adminCfg.groom.nickname || _adminCfg.groom.fullName;
+  if (_adminCfg.akad && _adminCfg.akad.mapsUrl) CONFIG.locationUrl = _adminCfg.akad.mapsUrl;
+  if (_adminCfg.akad && _adminCfg.akad.locationName) CONFIG.eventPlace = _adminCfg.akad.locationName;
+  if (_adminCfg.akad && _adminCfg.akad.date) CONFIG.eventDateLabel = _adminCfg.akad.date;
+  if (_adminCfg.instagram) {
+    if (_adminCfg.instagram.bride) CONFIG.instagram = CONFIG.instagram || {};
+    if (_adminCfg.instagram.bride) (CONFIG.instagram = CONFIG.instagram || {}).nana = _adminCfg.instagram.bride;
+    if (_adminCfg.instagram.groom) (CONFIG.instagram = CONFIG.instagram || {}).bowo = _adminCfg.instagram.groom;
+  }
+  if (_adminCfg.photos && _adminCfg.photos.gallery && _adminCfg.photos.gallery.length)
+    CONFIG.allPhotos = _adminCfg.photos.gallery;
+  if (_adminCfg.photos && _adminCfg.photos.preview && _adminCfg.photos.preview.length >= 3)
+    CONFIG.photos = _adminCfg.photos.preview.slice(0, 3);
+  if (_adminCfg.audio && _adminCfg.audio.src) {
+    const bgmEl = document.getElementById('bgm');
+    if (bgmEl) {
+      const src = bgmEl.querySelector('source');
+      if (src) src.src = _adminCfg.audio.src;
+    }
+  }
+}
+
 
 // ══════════════════════════════════════════════════════
 // HELPERS
@@ -1246,6 +1306,17 @@ guestInput.addEventListener("keydown",async e=>{ if(e.key==="Enter"&&!e.shiftKey
 // ══════════════════════════════════════════════════════
 // RSVP
 // ══════════════════════════════════════════════════════
+function saveRsvpToStorage({ kodeTamu, namaTamu, status, jumlahHadir, pesan }) {
+  try {
+    const rsvpList = JSON.parse(localStorage.getItem('wedding_rsvp') || '[]');
+    const idx = rsvpList.findIndex(r => r.kodeTamu === kodeTamu);
+    const entry = { kodeTamu, namaTamu, status, jumlahHadir, pesan, createdAt: new Date().toISOString() };
+    if (idx >= 0) rsvpList[idx] = entry;
+    else rsvpList.push(entry);
+    localStorage.setItem('wedding_rsvp', JSON.stringify(rsvpList));
+  } catch(e) {}
+}
+
 $("#sendRSVP").onclick=async()=>{
   const name=($("#rsvpName").value||"").trim();
   const wish=($("#rsvpWish").value||"").trim();
@@ -1257,6 +1328,16 @@ $("#sendRSVP").onclick=async()=>{
   _lastSender="";
   await sendMsg({dir:"out",text,typing:false});
   closeModal("#modalRSVP"); toast("RSVP terkirim ✅");
+  // Save RSVP to localStorage
+  const toParam=qs("to")||qs("nama")||qs("u")||"";
+  const statusMap={"Hadir":"hadir","Tidak Hadir":"tidak"};
+  saveRsvpToStorage({
+    kodeTamu: toParam||name,
+    namaTamu: name,
+    status: statusMap[attend]||"ragu",
+    jumlahHadir: parseInt(count)||1,
+    pesan: wish
+  });
   await autoReply(attend==="Hadir"?"rsvp-hadir":"rsvp-tidak",{name});
 };
 
@@ -1321,9 +1402,16 @@ $("#goLocation").onclick=()=>window.open(CONFIG.locationUrl,"_blank","noopener")
 // ══════════════════════════════════════════════════════
 async function splashSequence(){
   const name=qs("name")||"";
+  const toParam=qs("to")||qs("nama")||qs("u")||"";
   await wait(300);
-  if(name){ $("#guestNameDisplay").textContent=escapeHtml(name); }
-  else { $("#guestNameDisplay").style.display="none"; }
+  if(toParam && toParam!=="preview"){
+    const guestName=loadGuestName(toParam)||toParam;
+    $("#guestNameDisplay").textContent=escapeHtml(guestName);
+  } else if(name){
+    $("#guestNameDisplay").textContent=escapeHtml(name);
+  } else {
+    $("#guestNameDisplay").style.display="none";
+  }
 }
 
 function enableMain(){
@@ -1367,6 +1455,10 @@ $("#openInviteBtn").addEventListener("click", startApp);
   // Default: icon muted (musik belum play)
   document.getElementById("musicIconOn").style.display  = "none";
   document.getElementById("musicIconOff").style.display = "";
+  // Show admin back button in draft/preview mode
+  if(qs("draft")==="1"||qs("preview")==="1"){
+    document.getElementById("adminBackBtn").style.display="block";
+  }
   splashSequence();
 })();
 </script>
