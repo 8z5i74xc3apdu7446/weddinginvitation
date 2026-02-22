@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel – Digital Wedding Invitation</title>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sidebar-bg:#075e54;
+  --sidebar-active:#128c7e;
+  --accent:#25d366;
+  --content-bg:#f0f2f5;
+  --card-bg:#ffffff;
+  --sidebar-w:240px;
+  --header-h:56px;
+}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--content-bg);color:#222;min-height:100vh;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit;font-size:14px}
+
+/* HEADER */
+.header{position:fixed;top:0;left:0;right:0;height:var(--header-h);background:var(--sidebar-bg);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.header-left{display:flex;align-items:center;gap:10px}
+.header-left .logo{font-size:22px}
+.header-left h1{font-size:17px;font-weight:700;letter-spacing:.3px}
+.hamburger{background:none;border:none;color:#fff;font-size:22px;display:none;padding:4px 8px;border-radius:6px}
+.hamburger:hover{background:rgba(255,255,255,.15)}
+.btn-preview{background:var(--accent);color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;transition:opacity .2s}
+.btn-preview:hover{opacity:.85}
+
+/* SIDEBAR */
+.sidebar{position:fixed;top:var(--header-h);left:0;width:var(--sidebar-w);height:calc(100vh - var(--header-h));background:var(--sidebar-bg);overflow-y:auto;overflow-x:hidden;z-index:90;transition:transform .3s ease;display:flex;flex-direction:column}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:4px}
+.sidebar-nav{flex:1;padding:8px 0}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;color:rgba(255,255,255,.85);font-size:13px;cursor:pointer;transition:background .15s;border-left:3px solid transparent;user-select:none;min-height:42px}
+.nav-item:hover{background:rgba(255,255,255,.08)}
+.nav-item.active{background:var(--sidebar-active);border-left-color:var(--accent);color:#fff;font-weight:600}
+.nav-item .nav-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0}
+.nav-item .nav-label{flex:1;line-height:1.3}
+.nav-item .nav-check{font-size:12px;flex-shrink:0}
+.sidebar-bottom{padding:12px;display:flex;flex-direction:column;gap:8px;border-top:1px solid rgba(255,255,255,.15);margin-top:4px}
+.btn-sidebar{width:100%;padding:9px 12px;border:none;border-radius:8px;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;transition:opacity .2s}
+.btn-export{background:var(--accent);color:#fff}
+.btn-import{background:rgba(255,255,255,.15);color:#fff}
+.btn-sidebar:hover{opacity:.85}
+
+/* MAIN CONTENT */
+.main{margin-left:var(--sidebar-w);margin-top:var(--header-h);padding:20px;min-height:calc(100vh - var(--header-h))}
+.breadcrumb{font-size:12px;color:#666;margin-bottom:8px}
+.breadcrumb span{color:var(--sidebar-bg);font-weight:600}
+
+/* SUMMARY BAR */
+.summary-bar{background:var(--card-bg);border-radius:10px;padding:12px 16px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.08);display:flex;align-items:center;gap:14px}
+.summary-text{font-size:13px;font-weight:600;color:#444;white-space:nowrap}
+.progress-wrap{flex:1;height:8px;background:#e0e0e0;border-radius:4px;overflow:hidden}
+.progress-bar{height:100%;background:var(--accent);border-radius:4px;transition:width .4s ease}
+.save-badge{font-size:11px;color:var(--accent);font-weight:700;white-space:nowrap;opacity:0;transition:opacity .3s}
+.save-badge.show{opacity:1}
+
+/* SECTION */
+.section{display:none}
+.section.active{display:block}
+.section-title{font-size:18px;font-weight:700;color:#222;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.section-title .wajib-badge{background:#e74c3c;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700}
+
+/* CARD */
+.card{background:var(--card-bg);border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.card-title{font-size:14px;font-weight:700;color:var(--sidebar-bg);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--content-bg)}
+
+/* FORM */
+.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.form-group{margin-bottom:14px}
+.form-group:last-child{margin-bottom:0}
+.form-label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:5px}
+.form-label .req{background:#e74c3c;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px;font-weight:700;vertical-align:middle}
+.form-label .opt{color:#888;font-size:11px;font-weight:400;font-style:italic}
+.form-input{width:100%;padding:9px 12px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;background:#fff;color:#222;outline:none;transition:border-color .2s}
+.form-input:focus{border-color:var(--accent)}
+.form-input.error{border-color:#e74c3c}
+.form-input[type=file]{padding:6px 10px;background:#f9f9f9}
+select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+textarea.form-input{resize:vertical;min-height:80px}
+.img-preview{width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid #eee;margin-top:6px;display:none}
+.img-preview.show{display:block}
+
+/* BUTTONS */
+.btn{padding:10px 18px;border:none;border-radius:8px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:6px;transition:opacity .2s}
+.btn:hover{opacity:.85}
+.btn-green{background:var(--accent);color:#fff}
+.btn-outline{background:#fff;color:var(--sidebar-bg);border:1.5px solid var(--sidebar-bg)}
+.btn-danger{background:#e74c3c;color:#fff}
+.btn-gray{background:#eceff1;color:#555}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-xs{padding:4px 9px;font-size:11px}
+.btn-wa{background:#25d366;color:#fff}
+.section-footer{display:flex;align-items:center;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid #eee;flex-wrap:wrap}
+
+/* COUNTDOWN PREVIEW */
+.countdown-widget{display:flex;gap:12px;margin-top:14px;justify-content:center;flex-wrap:wrap}
+.count-box{background:var(--sidebar-bg);color:#fff;border-radius:10px;padding:14px 20px;text-align:center;min-width:70px}
+.count-num{font-size:28px;font-weight:700;line-height:1}
+.count-label{font-size:10px;margin-top:4px;opacity:.8;text-transform:uppercase;letter-spacing:.5px}
+
+/* GALLERY */
+.gallery-drop{border:2px dashed #ccc;border-radius:10px;padding:24px;text-align:center;color:#888;cursor:pointer;transition:border-color .2s;margin-bottom:12px}
+.gallery-drop.dragover{border-color:var(--accent);background:#f0fff4}
+.gallery-drop p{font-size:13px;margin-top:6px}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-top:12px}
+.gallery-item{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1}
+.gallery-item img{width:100%;height:100%;object-fit:cover}
+.gallery-item .del-photo{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.photo-count{font-size:12px;color:#666;margin-bottom:8px}
+
+/* TIMELINE */
+.timeline-item{background:#f9f9f9;border-radius:10px;padding:14px;margin-bottom:10px;position:relative;border-left:3px solid var(--accent)}
+.timeline-del{position:absolute;top:10px;right:10px;background:none;border:none;color:#e74c3c;font-size:16px;cursor:pointer;padding:2px 6px;border-radius:4px}
+.timeline-del:hover{background:#fdecea}
+
+/* BANK/WALLET LIST */
+.list-item{background:#f9f9f9;border-radius:8px;padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start}
+.list-item-fields{flex:1;display:flex;flex-direction:column;gap:8px}
+.list-item-del{background:none;border:none;color:#e74c3c;font-size:18px;cursor:pointer;padding:2px 6px;border-radius:4px;flex-shrink:0;margin-top:2px}
+.list-item-del:hover{background:#fdecea}
+
+/* HASIL TABLE */
+.result-table-wrap{overflow-x:auto;margin-top:14px}
+.result-table{width:100%;border-collapse:collapse;font-size:12px;min-width:700px}
+.result-table th{background:var(--sidebar-bg);color:#fff;padding:9px 10px;text-align:left;font-weight:600}
+.result-table td{padding:8px 10px;border-bottom:1px solid #eee;vertical-align:middle}
+.result-table tr:nth-child(even) td{background:#f9f9f9}
+.result-table td .link-cell{color:#128c7e;word-break:break-all;max-width:200px}
+.result-table td .actions{display:flex;gap:5px;flex-wrap:wrap}
+
+/* VARIABLE BADGES */
+.var-badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.var-badge{background:#e8f5e9;color:#075e54;border:1px solid #c8e6c9;border-radius:12px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:monospace;transition:background .15s}
+.var-badge:hover{background:#c8e6c9}
+
+/* AUDIO PLAYER */
+.audio-player{display:flex;align-items:center;gap:10px;margin-top:10px;background:#f0f2f5;border-radius:8px;padding:10px 14px}
+.audio-player button{background:var(--accent);color:#fff;border:none;border-radius:50%;width:36px;height:36px;font-size:16px;display:flex;align-items:center;justify-content:center}
+.audio-player span{font-size:12px;color:#555;flex:1}
+
+/* YT PREVIEW */
+.yt-thumb{margin-top:10px;border-radius:8px;overflow:hidden;width:100%;max-width:320px;display:none}
+.yt-thumb img{width:100%;display:block}
+.yt-thumb.show{display:block}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 18px;border-radius:10px;color:#fff;font-size:13px;font-weight:600;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:slideIn .3s ease;min-width:200px}
+.toast.success{background:#25d366}
+.toast.error{background:#e74c3c}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:none;opacity:1}}
+@keyframes slideOut{from{transform:none;opacity:1}to{transform:translateX(120%);opacity:0}}
+.toast.out{animation:slideOut .3s ease forwards}
+
+/* OVERLAY (mobile sidebar) */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:89}
+.overlay.show{display:block}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .hamburger{display:flex}
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:none}
+  .main{margin-left:0;padding:14px}
+  .row{grid-template-columns:1fr}
+  .row-3{grid-template-columns:1fr 1fr}
+  .btn-preview span{display:none}
+  .result-table{font-size:11px}
+}
+@media(max-width:480px){
+  .row-3{grid-template-columns:1fr}
+  .countdown-widget{gap:8px}
+  .count-box{min-width:60px;padding:10px 14px}
+  .count-num{font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+    <span class="logo">💍</span>
+    <h1>Admin Panel</h1>
+  </div>
+  <button class="btn-preview" onclick="window.open('index.html?to=preview','_blank')">
+    🔍 <span>Preview Undangan</span>
+  </button>
+</header>
+
+<div class="overlay" id="overlay"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <nav class="sidebar-nav" id="sidebarNav"></nav>
+  <div class="sidebar-bottom">
+    <button class="btn-sidebar btn-export" onclick="exportConfig()">📤 Export Config</button>
+    <button class="btn-sidebar btn-import" onclick="$('importFile').click()">📥 Import Config</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importConfig(event)">
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main" id="mainContent">
+  <div class="breadcrumb" id="breadcrumb">Home &rsaquo; <span id="breadcrumbSection">Data Pengantin</span></div>
+
+  <div class="summary-bar">
+    <div class="summary-text" id="summaryText">0/12 seksi terisi</div>
+    <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+    <div class="save-badge" id="saveBadge">Tersimpan ✅</div>
+  </div>
+
+  <!-- ===== SECTION 1: DATA PENGANTIN ===== -->
+  <section class="section active" id="sec-1">
+    <div class="section-title">⭐ Data Pengantin <span class="wajib-badge">WAJIB</span></div>
+    <div class="row">
+      <div class="card">
+        <div class="card-title">👰 Mempelai Pria</div>
+        <div class="form-group"><label class="form-label">Nama Lengkap <span class="req">WAJIB</span></label><input class="form-input" id="p1_nama" type="text" placeholder="Nama lengkap mempelai pria"></div>
+        <div class="form-group"><label class="form-label">Nama Panggilan <span class="opt">*(opsional)*</span></label><input class="form-input" id="p1_panggilan" type="text" placeholder="Nama panggilan"></div>
+        <div class="form-group"><label class="form-label">Nama Ayah <span class="req">WAJIB</span></label><input class="form-input" id="p1_ayah" type="text" placeholder="Nama ayah"></div>
+        <div class="form-group"><label class="form-label">Nama Ibu <span class="req">WAJIB</span></label><input class="form-input" id="p1_ibu" type="text" placeholder="Nama ibu"></div>
+        <div class="form-group"><label class="form-label">Urutan Anak <span class="opt">*(opsional)*</span></label><input class="form-input" id="p1_urutan" type="text" placeholder="Misal: Putra ke-2"></div>
+        <div class="form-group"><label class="form-label">Alamat Domisili <span class="opt">*(opsional)*</span></label><input class="form-input" id="p1_alamat" type="text" placeholder="Kota domisili"></div>
+        <div class="form-group"><label class="form-label">Instagram <span class="opt">*(opsional)*</span></label><input class="form-input" id="p1_ig" type="url" placeholder="https://instagram.com/..."></div>
+        <div class="form-group"><label class="form-label">Foto Profil <span class="opt">*(opsional)*</span></label><input class="form-input" id="p1_foto_file" type="file" accept="image/*" onchange="previewImg(this,'p1_foto_prev','p1_foto')"><img id="p1_foto_prev" class="img-preview" alt="preview"><input type="hidden" id="p1_foto"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">👸 Mempelai Wanita</div>
+        <div class="form-group"><label class="form-label">Nama Lengkap <span class="req">WAJIB</span></label><input class="form-input" id="p2_nama" type="text" placeholder="Nama lengkap mempelai wanita"></div>
+        <div class="form-group"><label class="form-label">Nama Panggilan <span class="opt">*(opsional)*</span></label><input class="form-input" id="p2_panggilan" type="text" placeholder="Nama panggilan"></div>
+        <div class="form-group"><label class="form-label">Nama Ayah <span class="req">WAJIB</span></label><input class="form-input" id="p2_ayah" type="text" placeholder="Nama ayah"></div>
+        <div class="form-group"><label class="form-label">Nama Ibu <span class="req">WAJIB</span></label><input class="form-input" id="p2_ibu" type="text" placeholder="Nama ibu"></div>
+        <div class="form-group"><label class="form-label">Urutan Anak <span class="opt">*(opsional)*</span></label><input class="form-input" id="p2_urutan" type="text" placeholder="Misal: Putri ke-1"></div>
+        <div class="form-group"><label class="form-label">Alamat Domisili <span class="opt">*(opsional)*</span></label><input class="form-input" id="p2_alamat" type="text" placeholder="Kota domisili"></div>
+        <div class="form-group"><label class="form-label">Instagram <span class="opt">*(opsional)*</span></label><input class="form-input" id="p2_ig" type="url" placeholder="https://instagram.com/..."></div>
+        <div class="form-group"><label class="form-label">Foto Profil <span class="opt">*(opsional)*</span></label><input class="form-input" id="p2_foto_file" type="file" accept="image/*" onchange="previewImg(this,'p2_foto_prev','p2_foto')"><img id="p2_foto_prev" class="img-preview" alt="preview"><input type="hidden" id="p2_foto"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 Info Umum</div>
+      <div class="row">
+        <div class="form-group"><label class="form-label">Judul Undangan <span class="req">WAJIB</span></label><input class="form-input" id="judul_undangan" type="text" placeholder="Misal: Undangan Pernikahan"></div>
+        <div class="form-group"><label class="form-label">Yang Mengundang <span class="req">WAJIB</span></label><input class="form-input" id="yang_mengundang" type="text" placeholder="Nama keluarga yang mengundang"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Nama Grup WhatsApp <span class="opt">*(opsional)*</span></label><input class="form-input" id="nama_grup" type="text" placeholder="Nama grup WA (jika ada)"></div>
+    </div>
+    <div class="section-footer">
+      <button class="btn btn-green" onclick="saveSection(1)">💾 Simpan Seksi Ini</button>
+      <button class="btn btn-gray btn-sm" onclick="resetSection(1)">🔄 Reset ke Default</button>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 2: TEMA ===== -->
+  <section class="section" id="sec-2">
+    <div class="section-title">🎨 Tema Undangan</div>
+    <div class="card">
+      <div class="row">
+        <div class="form-group">
+          <label class="form-label">Tema Warna <span class="opt">*(opsional)*</span></label>
+          <select class="form-input" id="tema_warna">
+            <option value="">— Pilih tema —</option>
+            <option>Putih-Gold</option><option>Sage Green</option><option>Dusty Pink</option>
+            <option>Navy</option><option>WhatsApp Green</option><option>Custom</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Konsep <span class="opt">*(opsional)*</span></label>
+          <select class="form-input" id="tema_konsep">
+            <option value="">— Pilih konsep —</option>
+            <option>Minimalis</option><option>Elegan</option><option>Rustic</option>
+            <option>Modern</option><option>Islami</option><option>Adat</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Background <span class="opt">*(opsional)*</span></label>
+          <select class="form-input" id="tema_bg">
+            <option value="">— Pilih background —</option>
+            <option>Bunga</option><option>Daun</option><option>Pattern</option><option>Polos</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Font <span class="opt">*(opsional)*</span></label>
+          <select class="form-input" id="tema_font">
+            <option value="">— Pilih font —</option>
+            <option>Formal</option><option>Kaligrafi</option><option>Modern Clean</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Catatan Tambahan <span class="opt">*(opsional)*</span></label><textarea class="form-input" id="tema_catatan" rows="3" placeholder="Catatan tambahan untuk desainer..."></textarea></div>
+    </div>
+    <div class="section-footer">
+      <button class="btn btn-green" onclick="saveSection(2)">💾 Simpan Seksi Ini</button>
+      <button class="btn btn-gray btn-sm" onclick="resetSection(2)">🔄 Reset ke Default</button>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 3: DETAIL ACARA ===== -->
+  <section class="section" id="sec-3">
+    <div class="section-title">📅 Detail Acara <span class="wajib-badge">WAJIB (min. 1)</span></div>
+    <div class="card">
+      <div class="card-title">🕌 Akad Nikah / Pemberkatan</div>
+      <div class="row">
+        <div class="form-group"><label class="form-label">Hari & Tanggal <span class="req">WAJIB</span></label><input class="form-input" id="akad_tanggal" type="date"></div>
+        <div class="form-group"><label class="form-label">Jam Mulai <span class="req">WAJIB</span></label><input class="form-input" id="akad_jam_mulai" type="time"></div>
+        <div class="form-group"><label class="form-label">Jam Selesai <span class="opt">*(opsional)*</span></label><input class="form-input" id="akad_jam_selesai" type="time"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Lokasi Lengkap <span class="req">WAJIB</span></label><textarea class="form-input" id="akad_lokasi" rows="2" placeholder="Nama gedung, jalan, kelurahan, kecamatan, kota..."></textarea></div>
+      <div class="form-group"><label class="form-label">Link Google Maps <span class="req">WAJIB</span></label><input class="form-input" id="akad_maps" type="url" placeholder="https://maps.google.com/..."></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🥂 Resepsi</div>
+      <div class="row">
+        <div class="form-group"><label class="form-label">Hari & Tanggal <span class="req">WAJIB</span></label><input class="form-input" id="resepsi_tanggal" type="date"></div>
+        <div class="form-group"><label class="form-label">Dress Code <span class="opt">*(opsional)*</span></label><input class="form-input" id="resepsi_dresscode" type="text" placeholder="Misal: Hijau Sage"></div>
+      </div>
+      <div class="row">
+        <div class="form-group"><label class="form-label">Sesi 1 – Mulai <span class="req">WAJIB</span></label><input class="form-input" id="resepsi_s1_mulai" type="time"></div>
+        <div class="form-group"><label class="form-label">Sesi 1 – Selesai <span class="req">WAJIB</span></label><input class="form-input" id="resepsi_s1_selesai" type="time"></div>
+        <div class="form-group"><label class="form-label">Sesi 2 – Mulai <span class="opt">*(opsional)*</span></label><input class="form-input" id="resepsi_s2_mulai" type="time"></div>
+        <div class="form-group"><label class="form-label">Sesi 2 – Selesai <span class="opt">*(opsional)*</span></label><input class="form-input" id="resepsi_s2_selesai" type="time"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Lokasi Lengkap <span class="req">WAJIB</span></label><textarea class="form-input" id="resepsi_lokasi" rows="2" placeholder="Nama gedung, jalan, kelurahan, kecamatan, kota..."></textarea></div>
+      <div class="form-group"><label class="form-label">Link Google Maps <span class="req">WAJIB</span></label><input class="form-input" id="resepsi_maps" type="url" placeholder="https://maps.google.com/..."></div>
+    </div>
+    <div class="section-footer">
+      <button class="btn btn-green" onclick="saveSection(3)">💾 Simpan Seksi Ini</button>
+      <button class="btn btn-gray btn-sm" onclick="resetSection(3)">🔄 Reset ke Default</button>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 4: HITUNGAN MUNDUR ===== -->
+  <section class="section" id="sec-4">
+    <div class="section-title">⏳ Hitungan Mundur</div>
+    <div class="card">
+      <div class="row">
+        <div class="form-group"><label class="form-label">Tanggal & Waktu Acara Utama <span class="opt">*(opsional)*</span></label><input class="form-input" id="countdown_dt" type="datetime-local" oninput="updateCountdown()"></div>
+        <div class="form-group"><label class="form-label">Label Countdown <span class="opt">*(opsional)*</span></label><input class="form-input" id="countdown_label" type="text" value="Menuju Hari Bahagia" oninput="updateCountdown()"></div>
+      </div>
+      <div style="text-align:center;margin-top:8px"><p style="font-size:13px;color:#555;font-weight:600" id="countdown_title_preview">Menuju Hari Bahagia</p></div>
+      <div class="countdown-widget" id="countdownWidget">
+        <div class="count-box"><div class="count-num" id="cd_days">--</div><div class="count-label">Hari</div></div>
+        <div class="count-box"><div class="count-num" id="cd_hours">--</div><div class="count-label">Jam</div></div>
+        <div class="count-box"><div class="count-num" id="cd_mins">--</div><div class="count-label">Menit</div></div>
+        <div class="count-box"><div class="count-num" id="cd_secs">--</div><div class="count-label">Detik</div></div>
+      </div>
+    </div>
+    <div class="section-footer">
+      <button class="btn btn-green" onclick="saveSection(4)">💾 Simpan Seksi Ini</button>
+      <button class="btn btn-gray btn-sm" onclick="resetSection(4)">🔄 Reset ke Default</button>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 5: FOTO ===== -->
+  <section class="section" id="sec-5">
+    <div class="section-title">📷 Foto</div>
+    <p style="font-size:12px;color:#888;margin-bottom:14px">📌 Foto disimpan sebagai base64 di localStorage</p>
+    <div class="row">
+      <div class="card">
+        <div class="form-group"><label class="form-label">Foto Cover / Prewedding Utama <span class="opt">*(opsional)*</span></label><input class="form-input" id="foto_cover_file" type="file" accept="image/*" onchange="previewImg(this,'foto_cover_prev','foto_cover')"><img id="foto_cover_prev" class="img-preview" style="width:100%;height:auto;max-height:180px" alt="cover"><input type="hidden" id="foto_cover"></div>
+      </div>
+      <div class="card">
+        <div class="form-group"><label class="form-label">Foto Portrait Pengantin Pria <span class="opt">*(opsional)*</span></label><input class="form-input" id="foto_pria_file" type="file" accept="image/*" onchange="previewImg(this,'foto_pria_prev','foto_pria')"><img id="foto_pria_prev" class="img-preview" alt="pria"><input type="hidden" id="foto_pria"></div>
+      </div>
+      <div class="card">
+        <div class="form-group"><label class="form-label">Foto Portrait Pengantin Wanita <span class="opt">*(opsional)*</span></label><input class="form-input" id="foto_wanita_file" type="file" accept="image/*" onchange="previewImg(this,'foto_wanita_prev','foto_wanita')"><img id="foto_wanita_prev" class="img-preview" alt="wanita"><input type="hidden" id="foto_wanita"></div>
+      </div>
+      <div class="card">
+        <div class="form-group"><label class="form-label">Foto Bersama Terbaik <span class="opt">*(opsional)*</span></label><input class="form-input" id="foto_bersama_file" type="file" accept="image/*" onchange="previewImg(this,'foto_bersama_prev','foto_bersama')"><img id="foto_bersama_prev" class="img-preview" alt="bersama"><input type="hidden" id="foto_bersama"></div>
+      </div>
+    </div>
+    <div class="section-footer">
+      <button class="btn btn-green" onclick="saveSection(5)">💾 Simpan Seksi Ini</button>
+      <button class="btn btn-gray btn-sm" onclick="resetSection(5)">🔄 Reset ke Default</button>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 6: GALERI ===== -->
+  <section class="section" id="sec-6">
+    <div class="section-title">🖼️ Galeri</div>
+    <div class="card">
+      <div class="gallery-drop" id="galleryDrop" onclick="$('galleryInput').click()" ondragover="galDragOver(event)" ondragleave="galDragLeave(event)" ondrop="galDrop(event)">
+        <div style="font-size:36px">📸</div>
+        <p>Klik atau drag & drop foto ke sini</p>
+        <p style="font-size:11px;color:#aaa">Format: JPG, PNG, WebP</p>
+      </div>
+      <input type="file" id="galleryInput" accept="image/*" multiple style="display:none" onchange="galFilePick(event)">
+      <div class="photo-count" id="galCount">0 foto</div>
+      <div class="gallery-grid" id="galleryGrid"></div>
+    </div>
+    <div class="section-footer">
+      <button class="btn btn-green" onclick="saveSection(6)">💾 Simpan Seksi Ini</button>
+      <button class="btn btn-gray btn-sm" onclick="resetSection(6)">🔄 Reset ke Default</button>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 7: VIDEO ===== -->
+  <section class="section" id="sec-7">
+    <div class="section-title">🎬 Video</div>
+    <div class="card">
+      <div class="card-title">Video Prewedding Utama</div>
+      <div style="display:flex;gap:16px;margin-bottom:12px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="radio" name="video_type" value="youtube" id="vtype_yt" checked onchange="toggleVideoType()"> YouTube URL</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="radio" name="video_type" value="mp4" id="vtype_mp4" onchange="toggleVideoType()"> Upload MP4</label>
+      </div>
+      <div id="video_yt_wrap">
+        <div class="form-group"><label class="form-label">YouTube URL</label><input class="form-input" id="video_yt_url" type="url" placeholder="https://youtube.com/watch?v=..." oninput="showYtThumb('video_yt_url','video_yt_thumb')"></div>
+        <div class="yt-thumb" id="video_yt_thumb"><img id="video_yt_thumb_img" src="" alt="thumbnail"></div>
+      </div>
+      <div id="video_mp4_wrap" style="display:none">
+        <div class="form-group"><label class="form-label">Upload File MP4</label><input class="form-input" id="video_mp4_file" type="file" accept="video/mp4"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Video Lainnya <span class="opt" style="font-size:12px;color:#888">*(opsional)*</span></div>
+      <div class="form-group"><label class="form-label">Video Teaser – YouTube URL</label><input class="form-input" id="video_teaser" type="url" placeholder="https://youtube.com/..." oninput="showYtThumb('video_teaser','video_teaser_thumb')"></div>
+      <div class="yt-thumb" id="video_teaser_thumb"><img id="video_teaser_thumb_img" src="" alt="thumbnail"></div>
+      <div class="form-group" style="margin-top:12px"><label class="form-label">Video Perjalanan Cinta – YouTube URL</label><input class="form-input" id="video_journey" type="url" placeholder="https://youtube.com/..." oninput="showYtThumb('video_journey','video_journey_thumb')"></div>
+      <div class="yt-thumb" id="video_journey_thumb"><img id="video_journey_thumb_img" src="" alt="thumbnail"></div>
+    </div>
+    <div class="section-footer">
+      <button class="btn btn-green" onclick="saveSection(7)">💾 Simpan Seksi Ini</button>
+      <button class="btn btn-gray btn-sm" onclick="resetSection(7)">🔄 Reset ke Default</button>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 8: AUDIO ===== -->
+  <section class="section" id="sec-8">
+    <div class="section-title">🎵 Audio</div>
+    <div class="card">
+      <div style="display:flex;gap:16px;margin-bottom:14px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="radio" name="audio_type" value="upload" id="atype_upload" checked onchange="toggleAudioType()"> Upload MP3</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="radio" name="audio_type" value="url" id="atype_url" onchange="toggleAudioType()"> URL Streaming</label>
+      </div>
+      <div id="audio_upload_wrap">
+        <div class="form-group"><label class="form-label">File MP3 <span class="opt">*(opsional)*</span></label><input class="form-input" id="audio_mp3_file" type="file" accept="audio/mp3,audio/mpeg" onchange="handleAudioFile(event)"></div>
+        <p style="font-size:11px;color:#888;margin-top:4px">⚠️ Ukuran file disarankan max 5MB</p>
+      </div>
+      <div id="audio_url_wrap" style="display:none">
+        <div class="form-group"><label class="form-label">URL Streaming <span class="opt">*(opsional)*</span></label><input class="form-input" id="audio_stream_url" type="url" placeholder="https://..."></div>
+      </div>
+      <input type="hidden" id="audio_b64">
+      <div class="audio-player" id="audioPlayer" style="display:none">
+        <button onclick="toggleAudioPlay()" id="audioPlayBtn">▶</button>
+        <span id="audioFileName">Tidak ada file</span>
+      </div>
+      <audio id="audioElem" style="display:none"></audio>
+    </div>
+    <div class="section-footer">
+      <button class="btn btn-green" onclick="saveSection(8)">💾 Simpan Seksi Ini</button>
+      <button class="btn btn-gray btn-sm" onclick="resetSection(8)">🔄 Reset ke Default</button>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 9: LOVE STORY ===== -->
+  <section class="section" id="sec-9">
+    <div class="section-title">💌 Love Story</div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <span style="font-size:13px;color:#555">Buat timeline perjalanan cinta kalian</span>
+        <button class="btn btn-green btn-sm" onclick="addTimelineItem()">+ Tambah Momen</button>
+      </div>
+      <div id="timelineList"></div>
+    </div>
+    <div class="section-footer">
+      <button class="btn btn-green" onclick="saveSection(9)">💾 Simpan Seksi Ini</button>
+      <button class="btn btn-gray btn-sm" onclick="resetSection(9)">🔄 Reset ke Default</button>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 10: KADO DIGITAL ===== -->
+  <section class="section" id="sec-10">
+    <div class="section-title">🎁 Kado Digital</div>
+    <div class="card">
+      <div class="card-title">🏦 Transfer Bank</div>
+      <div id="bankList"></div>
+      <button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="addBank()">+ Tambah Rekening</button>
+    </div>
+    <div class="card">
+      <div class="card-title">📱 E-Wallet</div>
+      <div id="walletList"></div>
+      <button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="addWallet()">+ Tambah E-Wallet</button>
+    </div>
+    <div class="card">
+      <div class="card-title">📷 QRIS</div>
+      <div class="form-group"><label class="form-label">Upload QRIS <span class="opt">*(opsional)*</span></label><input class="form-input" id="qris_file" type="file" accept="image/*" onchange="previewImg(this,'qris_prev','qris_b64')"><img id="qris_prev" class="img-preview" alt="QRIS"><input type="hidden" id="qris_b64"></div>
+    </div>
+    <div class="card">
+      <div class="form-group"><label class="form-label">Alamat Kado Fisik <span class="opt">*(opsional)*</span></label><textarea class="form-input" id="kado_alamat" rows="3" placeholder="Alamat pengiriman kado fisik..."></textarea></div>
+    </div>
+    <div class="section-footer">
+      <button class="btn btn-green" onclick="saveSection(10)">💾 Simpan Seksi Ini</button>
+      <button class="btn btn-gray btn-sm" onclick="resetSection(10)">🔄 Reset ke Default</button>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 11: LIVE STREAMING ===== -->
+  <section class="section" id="sec-11">
+    <div class="section-title">📡 Live Streaming</div>
+    <div class="card">
+      <div class="row">
+        <div class="form-group"><label class="form-label">Link Zoom / YouTube Live <span class="opt">*(opsional)*</span></label><input class="form-input" id="live_link" type="url" placeholder="https://..."></div>
+        <div class="form-group"><label class="form-label">Jadwal Live <span class="opt">*(opsional)*</span></label><input class="form-input" id="live_jadwal" type="datetime-local"></div>
+        <div class="form-group"><label class="form-label">Zoom ID <span class="opt">*(opsional)*</span></label><input class="form-input" id="live_zoom_id" type="text" placeholder="123 456 789"></div>
+        <div class="form-group"><label class="form-label">Zoom Passcode <span class="opt">*(opsional)*</span></label><input class="form-input" id="live_zoom_pass" type="text" placeholder="passcode"></div>
+      </div>
+    </div>
+    <div class="section-footer">
+      <button class="btn btn-green" onclick="saveSection(11)">💾 Simpan Seksi Ini</button>
+      <button class="btn btn-gray btn-sm" onclick="resetSection(11)">🔄 Reset ke Default</button>
+    </div>
+  </section>
+
+  <!-- ===== SECTION 12: BAGIKAN UNDANGAN ===== -->
+  <section class="section" id="sec-12">
+    <div class="section-title">💬 Bagikan Undangan <span class="wajib-badge">FITUR UTAMA</span></div>
+
+    <!-- A. Input Manual -->
+    <div class="card">
+      <div class="card-title">A. Input Nama Tamu Manual</div>
+      <div class="form-group">
+        <label class="form-label">Daftar Tamu</label>
+        <textarea class="form-input" id="tamu_manual" rows="6" placeholder="Bapak Ahmad&#10;Ibu Siti &amp; Keluarga&#10;Rekan Kantor - Tim Finance"></textarea>
+        <p style="font-size:11px;color:#888;margin-top:4px">💡 Gunakan baris baru untuk memisahkan nama</p>
+      </div>
+    </div>
+
+    <!-- B. Import Excel -->
+    <div class="card">
+      <div class="card-title">B. Import Excel / CSV</div>
+      <div class="form-group">
+        <label class="form-label">Upload File .xlsx / .csv</label>
+        <input class="form-input" id="excel_file" type="file" accept=".xlsx,.csv" onchange="parseExcel(event)">
+        <p style="font-size:11px;color:#888;margin-top:4px">📋 Kolom: <strong>nama</strong> (wajib), kategori, no_hp, jumlah_tamu, kode</p>
+      </div>
+      <div id="excelPreview"></div>
+    </div>
+
+    <!-- C. Template -->
+    <div class="card">
+      <div class="card-title">C. Template Teks Pengantar</div>
+      <div class="var-badges" id="varBadges">
+        <span class="var-badge" onclick="insertVar('[nama]')">[nama]</span>
+        <span class="var-badge" onclick="insertVar('[judul-undangan]')">[judul-undangan]</span>
+        <span class="var-badge" onclick="insertVar('[link-undangan]')">[link-undangan]</span>
+        <span class="var-badge" onclick="insertVar('[mempelai-wanita]')">[mempelai-wanita]</span>
+        <span class="var-badge" onclick="insertVar('[mempelai-pria]')">[mempelai-pria]</span>
+        <span class="var-badge" onclick="insertVar('[yang-mengundang]')">[yang-mengundang]</span>
+      </div>
+      <textarea class="form-input" id="pesan_template" rows="10"></textarea>
+    </div>
+
+    <!-- D. Format Link -->
+    <div class="card">
+      <div class="card-title">D. Format Link</div>
+      <div class="row">
+        <div class="form-group">
+          <label class="form-label">Base URL</label>
+          <input class="form-input" id="base_url" type="url" value="https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Format Query Parameter</label>
+          <select class="form-input" id="query_param">
+            <option value="?to=">?to=</option>
+            <option value="?nama=">?nama=</option>
+            <option value="?u=">?u=</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- E. Generate -->
+    <div style="text-align:center;margin:16px 0">
+      <button class="btn btn-green" style="font-size:15px;padding:12px 32px" onclick="generateLinks()">⚡ Generate Link</button>
+    </div>
+
+    <!-- F. Hasil -->
+    <div class="card" id="hasilCard" style="display:none">
+      <div class="card-title">F. Hasil Generate</div>
+      <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" onclick="salinSemua()">📋 Salin Semua</button>
+        <button class="btn btn-gray btn-sm" onclick="downloadCSV()">📥 Download CSV</button>
+      </div>
+      <div class="result-table-wrap">
+        <table class="result-table" id="hasilTable">
+          <thead><tr><th>No</th><th>Nama Tamu</th><th>Kode/Slug</th><th>Link Undangan</th><th>Teks Pengantar</th><th>Aksi</th></tr></thead>
+          <tbody id="hasilTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-footer">
+      <button class="btn btn-green" onclick="saveSection(12)">💾 Simpan Seksi Ini</button>
+      <button class="btn btn-gray btn-sm" onclick="resetSection(12)">🔄 Reset ke Default</button>
+    </div>
+  </section>
+</main>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const LS_KEY = 'admin_wedding_data';
+
+// ======================== SECTIONS META ========================
+const SECTIONS = [
+  {id:1, icon:'⭐', label:'Data Pengantin'},
+  {id:2, icon:'🎨', label:'Tema Undangan'},
+  {id:3, icon:'📅', label:'Detail Acara'},
+  {id:4, icon:'⏳', label:'Hitungan Mundur'},
+  {id:5, icon:'📷', label:'Foto'},
+  {id:6, icon:'🖼️', label:'Galeri'},
+  {id:7, icon:'🎬', label:'Video'},
+  {id:8, icon:'🎵', label:'Audio'},
+  {id:9, icon:'💌', label:'Love Story'},
+  {id:10, icon:'🎁', label:'Kado Digital'},
+  {id:11, icon:'📡', label:'Live Streaming'},
+  {id:12, icon:'💬', label:'Bagikan Undangan'},
+];
+
+let currentSection = 1;
+let saveDebounce = null;
+let countdownInterval = null;
+let galleryImages = []; // [{name, b64}]
+let timelineItems = [];
+let bankItems = [];
+let walletItems = [];
+let generatedRows = [];
+let importedTamu = [];
+let audioPlaying = false;
+
+// ======================== INIT ========================
+function init() {
+  buildSidebar();
+  loadFromLocalStorage();
+  initTimeline();
+  initBank();
+  initWallet();
+  setDefaultTemplate();
+  updateSummary();
+  startCountdownTimer();
+}
+
+function buildSidebar() {
+  const nav = $('sidebarNav');
+  nav.innerHTML = '';
+  SECTIONS.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'nav-item' + (s.id === currentSection ? ' active' : '');
+    div.id = 'nav-' + s.id;
+    div.onclick = () => switchSection(s.id);
+    div.innerHTML = `<span class="nav-icon">${s.icon}</span><span class="nav-label">${s.label}</span><span class="nav-check" id="navcheck-${s.id}">⬜</span>`;
+    nav.appendChild(div);
+  });
+}
+
+function switchSection(id) {
+  autoSaveCurrent();
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  $('sec-' + id).classList.add('active');
+  $('nav-' + id).classList.add('active');
+  currentSection = id;
+  const s = SECTIONS.find(x => x.id === id);
+  $('breadcrumbSection').textContent = s.label;
+  closeSidebar();
+  updateSummary();
+  if (id === 4) startCountdownTimer();
+}
+
+// ======================== SIDEBAR MOBILE ========================
+$('hamburger').onclick = () => {
+  $('sidebar').classList.toggle('open');
+  $('overlay').classList.toggle('show');
+};
+$('overlay').onclick = closeSidebar;
+function closeSidebar() {
+  $('sidebar').classList.remove('open');
+  $('overlay').classList.remove('show');
+}
+
+// ======================== LOCALSTORAGE ========================
+function getData() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch(e) { return {}; }
+}
+function setData(d) { localStorage.setItem(LS_KEY, JSON.stringify(d)); }
+
+function loadFromLocalStorage() {
+  const d = getData();
+  const fields = [
+    'p1_nama','p1_panggilan','p1_ayah','p1_ibu','p1_urutan','p1_alamat','p1_ig','p1_foto',
+    'p2_nama','p2_panggilan','p2_ayah','p2_ibu','p2_urutan','p2_alamat','p2_ig','p2_foto',
+    'judul_undangan','yang_mengundang','nama_grup',
+    'tema_warna','tema_konsep','tema_bg','tema_font','tema_catatan',
+    'akad_tanggal','akad_jam_mulai','akad_jam_selesai','akad_lokasi','akad_maps',
+    'resepsi_tanggal','resepsi_s1_mulai','resepsi_s1_selesai','resepsi_s2_mulai','resepsi_s2_selesai','resepsi_lokasi','resepsi_maps','resepsi_dresscode',
+    'countdown_dt','countdown_label',
+    'foto_cover','foto_pria','foto_wanita','foto_bersama',
+    'video_yt_url','video_teaser','video_journey',
+    'audio_b64','audio_stream_url',
+    'live_link','live_jadwal','live_zoom_id','live_zoom_pass',
+    'tamu_manual','pesan_template','base_url','query_param','kado_alamat',
+    'qris_b64',
+  ];
+  fields.forEach(f => {
+    const el = $(f);
+    if (!el) return;
+    if (d[f] !== undefined && d[f] !== null) {
+      el.value = d[f];
+    }
+  });
+
+  // img previews
+  ['p1_foto','p2_foto','foto_cover','foto_pria','foto_wanita','foto_bersama','qris_b64'].forEach(f => {
+    const val = d[f];
+    const prevId = f.replace('_b64','').replace('foto','foto') + '_prev';
+    // map ids
+    const prevMap = {
+      p1_foto:'p1_foto_prev', p2_foto:'p2_foto_prev',
+      foto_cover:'foto_cover_prev', foto_pria:'foto_pria_prev',
+      foto_wanita:'foto_wanita_prev', foto_bersama:'foto_bersama_prev',
+      qris_b64:'qris_prev'
+    };
+    if (val && prevMap[f]) {
+      const img = $(prevMap[f]);
+      if (img) { img.src = val; img.classList.add('show'); }
+    }
+  });
+
+  // gallery
+  if (d.gallery) { galleryImages = d.gallery; renderGallery(); }
+
+  // timeline
+  if (d.timeline && d.timeline.length) { timelineItems = d.timeline; }
+  renderTimeline();
+
+  // bank
+  if (d.banks && d.banks.length) { bankItems = d.banks; }
+  renderBanks();
+
+  // wallets
+  if (d.wallets && d.wallets.length) { walletItems = d.wallets; }
+  renderWallets();
+
+  // video type
+  if (d.video_type === 'mp4') {
+    $('vtype_mp4').checked = true; toggleVideoType();
+  }
+  // yt thumbs
+  if (d.video_yt_url) showYtThumb('video_yt_url','video_yt_thumb');
+  if (d.video_teaser) showYtThumb('video_teaser','video_teaser_thumb');
+  if (d.video_journey) showYtThumb('video_journey','video_journey_thumb');
+
+  // audio type
+  if (d.audio_type === 'url') {
+    $('atype_url').checked = true; toggleAudioType();
+  }
+  if (d.audio_b64) {
+    $('audioPlayer').style.display = 'flex';
+    $('audioFileName').textContent = d.audio_filename || 'File audio';
+    $('audioElem').src = d.audio_b64;
+  }
+  if (d.audio_stream_url) {
+    $('audioElem').src = d.audio_stream_url;
+    $('audioPlayer').style.display = 'flex';
+    $('audioFileName').textContent = d.audio_stream_url;
+  }
+
+  // countdown label default
+  if (!d.countdown_label) $('countdown_label').value = 'Menuju Hari Bahagia';
+  updateCountdown();
+
+  // default template
+  if (!d.pesan_template) setDefaultTemplate();
+
+  // import tamu
+  if (d.importedTamu) { importedTamu = d.importedTamu; }
+
+  updateSummary();
+}
+
+function collectData() {
+  const d = getData();
+  const fields = [
+    'p1_nama','p1_panggilan','p1_ayah','p1_ibu','p1_urutan','p1_alamat','p1_ig','p1_foto',
+    'p2_nama','p2_panggilan','p2_ayah','p2_ibu','p2_urutan','p2_alamat','p2_ig','p2_foto',
+    'judul_undangan','yang_mengundang','nama_grup',
+    'tema_warna','tema_konsep','tema_bg','tema_font','tema_catatan',
+    'akad_tanggal','akad_jam_mulai','akad_jam_selesai','akad_lokasi','akad_maps',
+    'resepsi_tanggal','resepsi_s1_mulai','resepsi_s1_selesai','resepsi_s2_mulai','resepsi_s2_selesai','resepsi_lokasi','resepsi_maps','resepsi_dresscode',
+    'countdown_dt','countdown_label',
+    'foto_cover','foto_pria','foto_wanita','foto_bersama',
+    'video_yt_url','video_teaser','video_journey',
+    'audio_b64','audio_stream_url',
+    'live_link','live_jadwal','live_zoom_id','live_zoom_pass',
+    'tamu_manual','pesan_template','base_url','query_param','kado_alamat',
+    'qris_b64',
+  ];
+  fields.forEach(f => {
+    const el = $(f);
+    if (el) d[f] = el.value;
+  });
+  // radio
+  d.video_type = document.querySelector('input[name="video_type"]:checked')?.value || 'youtube';
+  d.audio_type = document.querySelector('input[name="audio_type"]:checked')?.value || 'upload';
+  d.gallery = galleryImages;
+  d.timeline = timelineItems;
+  d.banks = bankItems;
+  d.wallets = walletItems;
+  d.importedTamu = importedTamu;
+  return d;
+}
+
+function saveAll() {
+  setData(collectData());
+}
+
+function autoSaveCurrent() {
+  saveAll();
+  showSaveBadge();
+  updateSummary();
+}
+
+function debouncedSave() {
+  clearTimeout(saveDebounce);
+  saveDebounce = setTimeout(() => { saveAll(); showSaveBadge(); updateSummary(); }, 500);
+}
+
+// listen all inputs
+document.addEventListener('input', e => {
+  if (e.target.closest('.main')) debouncedSave();
+});
+
+function showSaveBadge() {
+  const b = $('saveBadge');
+  b.classList.add('show');
+  setTimeout(() => b.classList.remove('show'), 2000);
+}
+
+// ======================== SAVE SECTION ========================
+const REQUIRED = {
+  1: ['p1_nama','p1_ayah','p1_ibu','p2_nama','p2_ayah','p2_ibu','judul_undangan','yang_mengundang'],
+  3: ['akad_tanggal','akad_jam_mulai','akad_lokasi','akad_maps','resepsi_tanggal','resepsi_s1_mulai','resepsi_s1_selesai','resepsi_lokasi','resepsi_maps'],
+};
+
+function saveSection(id) {
+  const reqs = REQUIRED[id] || [];
+  let ok = true;
+  reqs.forEach(f => {
+    const el = $(f);
+    if (!el) return;
+    if (!el.value.trim()) {
+      el.classList.add('error');
+      ok = false;
+    } else {
+      el.classList.remove('error');
+    }
+  });
+  if (!ok) { showToast('Mohon isi field yang wajib diisi!', 'error'); return; }
+  saveAll();
+  showSaveBadge();
+  updateSummary();
+  showToast('Seksi berhasil disimpan! ✅', 'success');
+}
+
+function resetSection(id) {
+  if (!confirm('Reset semua data di seksi ini ke default?')) return;
+  const d = getData();
+  const sectionFields = {
+    1: ['p1_nama','p1_panggilan','p1_ayah','p1_ibu','p1_urutan','p1_alamat','p1_ig','p1_foto','p2_nama','p2_panggilan','p2_ayah','p2_ibu','p2_urutan','p2_alamat','p2_ig','p2_foto','judul_undangan','yang_mengundang','nama_grup'],
+    2: ['tema_warna','tema_konsep','tema_bg','tema_font','tema_catatan'],
+    3: ['akad_tanggal','akad_jam_mulai','akad_jam_selesai','akad_lokasi','akad_maps','resepsi_tanggal','resepsi_s1_mulai','resepsi_s1_selesai','resepsi_s2_mulai','resepsi_s2_selesai','resepsi_lokasi','resepsi_maps','resepsi_dresscode'],
+    4: ['countdown_dt','countdown_label'],
+    5: ['foto_cover','foto_pria','foto_wanita','foto_bersama'],
+    6: [],
+    7: ['video_yt_url','video_teaser','video_journey'],
+    8: ['audio_b64','audio_stream_url'],
+    9: [],
+    10: ['kado_alamat','qris_b64'],
+    11: ['live_link','live_jadwal','live_zoom_id','live_zoom_pass'],
+    12: ['tamu_manual','pesan_template','base_url','query_param'],
+  };
+  (sectionFields[id] || []).forEach(f => { delete d[f]; const el=$(f); if(el) el.value=''; });
+  if (id === 6) { d.gallery = []; galleryImages = []; renderGallery(); }
+  if (id === 9) { timelineItems = getDefaultTimeline(); d.timeline = timelineItems; renderTimeline(); }
+  if (id === 10) { bankItems = []; walletItems = []; d.banks = []; d.wallets = []; renderBanks(); renderWallets(); }
+  if (id === 12) { setDefaultTemplate(); importedTamu = []; $('excelPreview').innerHTML=''; $('hasilCard').style.display='none'; }
+  if (id === 4) $('countdown_label').value = 'Menuju Hari Bahagia';
+  setData(d);
+  showToast('Seksi direset ke default', 'success');
+  updateSummary();
+}
+
+// ======================== PROGRESS SUMMARY ========================
+function isSectionFilled(id) {
+  const d = getData();
+  if (id === 1) return !!(d.p1_nama && d.p2_nama && d.judul_undangan && d.yang_mengundang);
+  if (id === 2) return !!(d.tema_warna || d.tema_konsep);
+  if (id === 3) return !!(d.akad_tanggal || d.resepsi_tanggal);
+  if (id === 4) return !!(d.countdown_dt);
+  if (id === 5) return !!(d.foto_cover || d.foto_pria || d.foto_wanita || d.foto_bersama);
+  if (id === 6) return (d.gallery || []).length > 0;
+  if (id === 7) return !!(d.video_yt_url || d.video_teaser);
+  if (id === 8) return !!(d.audio_b64 || d.audio_stream_url);
+  if (id === 9) return (d.timeline || []).length > 0;
+  if (id === 10) return (d.banks || []).length > 0 || (d.wallets || []).length > 0 || !!(d.qris_b64);
+  if (id === 11) return !!(d.live_link);
+  if (id === 12) return !!(d.tamu_manual && d.tamu_manual.trim());
+  return false;
+}
+
+function updateSummary() {
+  let filled = 0;
+  SECTIONS.forEach(s => {
+    const ok = isSectionFilled(s.id);
+    if (ok) filled++;
+    const chk = $('navcheck-' + s.id);
+    if (chk) chk.textContent = ok ? '✅' : '⬜';
+  });
+  $('summaryText').textContent = `${filled}/12 seksi terisi`;
+  $('progressBar').style.width = `${(filled/12)*100}%`;
+}
+
+// ======================== IMAGE PREVIEW ========================
+function previewImg(input, prevId, hiddenId) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const b64 = e.target.result;
+    const prev = $(prevId);
+    if (prev) { prev.src = b64; prev.classList.add('show'); }
+    const hid = $(hiddenId);
+    if (hid) hid.value = b64;
+    debouncedSave();
+  };
+  reader.readAsDataURL(file);
+}
+
+// ======================== COUNTDOWN ========================
+function updateCountdown() {
+  const label = $('countdown_label').value || 'Menuju Hari Bahagia';
+  $('countdown_title_preview').textContent = label;
+}
+function startCountdownTimer() {
+  if (countdownInterval) clearInterval(countdownInterval);
+  countdownInterval = setInterval(tickCountdown, 1000);
+  tickCountdown();
+}
+function tickCountdown() {
+  const dt = $('countdown_dt').value;
+  if (!dt) { ['cd_days','cd_hours','cd_mins','cd_secs'].forEach(id => $(id).textContent = '--'); return; }
+  const target = new Date(dt).getTime();
+  const now = Date.now();
+  const diff = target - now;
+  if (diff <= 0) { ['cd_days','cd_hours','cd_mins','cd_secs'].forEach(id => $(id).textContent = '0'); return; }
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+  $('cd_days').textContent = days;
+  $('cd_hours').textContent = String(hours).padStart(2,'0');
+  $('cd_mins').textContent = String(mins).padStart(2,'0');
+  $('cd_secs').textContent = String(secs).padStart(2,'0');
+}
+
+// ======================== GALLERY ========================
+function galDragOver(e) { e.preventDefault(); $('galleryDrop').classList.add('dragover'); }
+function galDragLeave() { $('galleryDrop').classList.remove('dragover'); }
+function galDrop(e) {
+  e.preventDefault();
+  $('galleryDrop').classList.remove('dragover');
+  const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+  processGalleryFiles(files);
+}
+function galFilePick(e) { processGalleryFiles(Array.from(e.target.files)); e.target.value=''; }
+function processGalleryFiles(files) {
+  files.forEach(f => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      galleryImages.push({name: f.name, b64: ev.target.result});
+      renderGallery();
+      debouncedSave();
+    };
+    reader.readAsDataURL(f);
+  });
+}
+function renderGallery() {
+  $('galCount').textContent = galleryImages.length + ' foto';
+  const grid = $('galleryGrid');
+  grid.innerHTML = '';
+  galleryImages.forEach((img, i) => {
+    const div = document.createElement('div');
+    div.className = 'gallery-item';
+    div.innerHTML = `<img src="${img.b64}" alt="${img.name}"><button class="del-photo" title="Hapus" onclick="deleteGalleryPhoto(${i})">×</button>`;
+    grid.appendChild(div);
+  });
+}
+function deleteGalleryPhoto(i) { galleryImages.splice(i, 1); renderGallery(); debouncedSave(); }
+
+// ======================== VIDEO ========================
+function toggleVideoType() {
+  const type = document.querySelector('input[name="video_type"]:checked').value;
+  $('video_yt_wrap').style.display = type === 'youtube' ? '' : 'none';
+  $('video_mp4_wrap').style.display = type === 'mp4' ? '' : 'none';
+}
+function ytIdFromUrl(url) {
+  const m = url.match(/(?:v=|youtu\.be\/|embed\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+function showYtThumb(inputId, thumbContainerId) {
+  const url = $(inputId).value;
+  const ytid = ytIdFromUrl(url);
+  const wrap = $(thumbContainerId);
+  const img = $(thumbContainerId + '_img');
+  if (ytid && wrap && img) {
+    img.src = `https://img.youtube.com/vi/${ytid}/hqdefault.jpg`;
+    wrap.classList.add('show');
+  } else if (wrap) {
+    wrap.classList.remove('show');
+  }
+}
+
+// ======================== AUDIO ========================
+function toggleAudioType() {
+  const type = document.querySelector('input[name="audio_type"]:checked').value;
+  $('audio_upload_wrap').style.display = type === 'upload' ? '' : 'none';
+  $('audio_url_wrap').style.display = type === 'url' ? '' : 'none';
+}
+function handleAudioFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    $('audio_b64').value = ev.target.result;
+    $('audioElem').src = ev.target.result;
+    $('audioPlayer').style.display = 'flex';
+    $('audioFileName').textContent = file.name;
+    debouncedSave();
+  };
+  reader.readAsDataURL(file);
+}
+function toggleAudioPlay() {
+  const audio = $('audioElem');
+  const src = $('atype_url').checked ? $('audio_stream_url').value : $('audio_b64').value;
+  if (!audio.src && src) audio.src = src;
+  if (audioPlaying) {
+    audio.pause();
+    $('audioPlayBtn').textContent = '▶';
+    audioPlaying = false;
+  } else {
+    audio.play().catch(()=>{});
+    $('audioPlayBtn').textContent = '⏸';
+    audioPlaying = true;
+  }
+}
+$('audio_stream_url').addEventListener('input', function() {
+  $('audioElem').src = this.value;
+  $('audioPlayer').style.display = this.value ? 'flex' : 'none';
+  $('audioFileName').textContent = this.value || 'URL Streaming';
+});
+
+// ======================== TIMELINE ========================
+function getDefaultTimeline() {
+  return [
+    {date:'2019', title:'Pertama Bertemu', desc:'Kisah cinta kami dimulai dari sini...'},
+    {date:'2021', title:'Mulai Serius', desc:'Hubungan kami semakin dekat dan serius.'},
+    {date:'2025', title:'Lamaran', desc:'Saat yang ditunggu pun tiba.'},
+    {date:'2026', title:'Menikah', desc:'Hari paling bahagia dalam hidup kami.'},
+  ];
+}
+function initTimeline() {
+  if (!timelineItems.length) timelineItems = getDefaultTimeline();
+}
+function addTimelineItem() {
+  timelineItems.push({date:'', title:'', desc:''});
+  renderTimeline();
+  debouncedSave();
+}
+function deleteTimelineItem(i) {
+  timelineItems.splice(i, 1);
+  renderTimeline();
+  debouncedSave();
+}
+function renderTimeline() {
+  const list = $('timelineList');
+  list.innerHTML = '';
+  timelineItems.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'timeline-item';
+    div.innerHTML = `
+      <button class="timeline-del" onclick="deleteTimelineItem(${i})" title="Hapus">🗑</button>
+      <div class="row">
+        <div class="form-group"><label class="form-label">Tahun / Tanggal</label>
+          <input class="form-input" value="${esc(item.date)}" oninput="timelineItems[${i}].date=this.value;debouncedSave()" placeholder="2024"></div>
+        <div class="form-group"><label class="form-label">Judul Momen</label>
+          <input class="form-input" value="${esc(item.title)}" oninput="timelineItems[${i}].title=this.value;debouncedSave()" placeholder="Judul momen"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Deskripsi</label>
+        <textarea class="form-input" rows="2" oninput="timelineItems[${i}].desc=this.value;debouncedSave()" placeholder="Ceritakan momen ini...">${esc(item.desc)}</textarea></div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+// ======================== BANK ========================
+function initBank() { if (!bankItems.length) bankItems = []; }
+function addBank() {
+  bankItems.push({nama_bank:'', nama_pemilik:'', nomor:''});
+  renderBanks();
+  debouncedSave();
+}
+function deleteBank(i) { bankItems.splice(i,1); renderBanks(); debouncedSave(); }
+function renderBanks() {
+  const list = $('bankList');
+  list.innerHTML = '';
+  bankItems.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    div.innerHTML = `
+      <div class="list-item-fields">
+        <input class="form-input" value="${esc(item.nama_bank)}" oninput="bankItems[${i}].nama_bank=this.value;debouncedSave()" placeholder="Nama Bank (BCA, BNI, ...)">
+        <input class="form-input" value="${esc(item.nama_pemilik)}" oninput="bankItems[${i}].nama_pemilik=this.value;debouncedSave()" placeholder="Nama Pemilik Rekening">
+        <input class="form-input" value="${esc(item.nomor)}" oninput="bankItems[${i}].nomor=this.value;debouncedSave()" placeholder="Nomor Rekening">
+      </div>
+      <button class="list-item-del" onclick="deleteBank(${i})" title="Hapus">×</button>`;
+    list.appendChild(div);
+  });
+}
+
+// ======================== WALLET ========================
+function initWallet() { if (!walletItems.length) walletItems = []; }
+function addWallet() {
+  walletItems.push({jenis:'OVO', nomor:''});
+  renderWallets();
+  debouncedSave();
+}
+function deleteWallet(i) { walletItems.splice(i,1); renderWallets(); debouncedSave(); }
+function renderWallets() {
+  const list = $('walletList');
+  list.innerHTML = '';
+  walletItems.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'list-item';
+    const opts = ['OVO','DANA','GoPay','ShopeePay'].map(o => `<option${o===item.jenis?' selected':''}>${o}</option>`).join('');
+    div.innerHTML = `
+      <div class="list-item-fields">
+        <select class="form-input" onchange="walletItems[${i}].jenis=this.value;debouncedSave()">${opts}</select>
+        <input class="form-input" value="${esc(item.nomor)}" oninput="walletItems[${i}].nomor=this.value;debouncedSave()" placeholder="Nomor / Username">
+      </div>
+      <button class="list-item-del" onclick="deleteWallet(${i})" title="Hapus">×</button>`;
+    list.appendChild(div);
+  });
+}
+
+// ======================== TEMPLATE ========================
+function setDefaultTemplate() {
+  const el = $('pesan_template');
+  if (!el.value) {
+    el.value = `Assalamu'alaikum Wr. Wb.\n\nYth. [nama]\nTanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i untuk menghadiri [judul-undangan] putra-putri kami:\n\n[mempelai-pria] & [mempelai-wanita]\n\nLink undangan:\n[link-undangan]\n\nHormat kami,\n[yang-mengundang]`;
+  }
+}
+function insertVar(v) {
+  const ta = $('pesan_template');
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  ta.value = ta.value.slice(0,s) + v + ta.value.slice(e);
+  ta.selectionStart = ta.selectionEnd = s + v.length;
+  ta.focus();
+  debouncedSave();
+}
+
+// ======================== EXCEL IMPORT ========================
+function parseExcel(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const wb = XLSX.read(ev.target.result, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+      importedTamu = rows.map(r => ({
+        nama: r.nama || r.Nama || r.NAMA || '',
+        kategori: r.kategori || r.Kategori || '',
+        no_hp: String(r.no_hp || r.NoHP || r['No HP'] || ''),
+        jumlah_tamu: r.jumlah_tamu || r.JumlahTamu || 1,
+        kode: r.kode || r.Kode || '',
+      })).filter(r => r.nama);
+      renderExcelPreview();
+      debouncedSave();
+      showToast(`Berhasil import ${importedTamu.length} tamu dari Excel`, 'success');
+    } catch(err) {
+      showToast('Gagal membaca file: ' + err.message, 'error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+function renderExcelPreview() {
+  const div = $('excelPreview');
+  if (!importedTamu.length) { div.innerHTML=''; return; }
+  let html = `<div style="overflow-x:auto;margin-top:12px"><table class="result-table" style="min-width:400px"><thead><tr><th>No</th><th>Nama</th><th>Kategori</th><th>No HP</th><th>Jumlah</th><th>Kode</th></tr></thead><tbody>`;
+  importedTamu.slice(0,10).forEach((r,i) => {
+    html += `<tr><td>${i+1}</td><td>${esc(r.nama)}</td><td>${esc(r.kategori)}</td><td>${esc(r.no_hp)}</td><td>${r.jumlah_tamu}</td><td>${esc(r.kode)||'<em style="color:#aaa">auto</em>'}</td></tr>`;
+  });
+  if (importedTamu.length > 10) html += `<tr><td colspan="6" style="text-align:center;color:#888;font-style:italic">... dan ${importedTamu.length-10} lainnya</td></tr>`;
+  html += '</tbody></table></div>';
+  div.innerHTML = html;
+}
+
+// ======================== GENERATE LINKS ========================
+function slugify(text) {
+  return text.toString().toLowerCase()
+    .replace(/\s+/g,'-')
+    .replace(/[^a-z0-9\-]/g,'')
+    .replace(/-+/g,'-')
+    .replace(/^-+|-+$/g,'');
+}
+function generateLinks() {
+  const manual = $('tamu_manual').value.trim();
+  const baseUrl = $('base_url').value.trim() || 'https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/';
+  const param = $('query_param').value || '?to=';
+  const template = $('pesan_template').value;
+  const d = getData();
+
+  let tamuList = [];
+  if (manual) {
+    manual.split('\n').filter(l => l.trim()).forEach(nama => {
+      tamuList.push({nama: nama.trim(), kode:'', no_hp:''});
+    });
+  }
+  importedTamu.forEach(t => { if (t.nama) tamuList.push(t); });
+
+  if (!tamuList.length) { showToast('Masukkan daftar tamu terlebih dahulu!', 'error'); return; }
+
+  generatedRows = tamuList.map((t, i) => {
+    const slug = t.kode ? slugify(t.kode) : slugify(t.nama);
+    const link = baseUrl + param + slug;
+    const teks = template
+      .replace(/\[nama\]/g, t.nama)
+      .replace(/\[judul-undangan\]/g, d.judul_undangan || 'Undangan Pernikahan')
+      .replace(/\[link-undangan\]/g, link)
+      .replace(/\[mempelai-wanita\]/g, d.p2_nama || '...')
+      .replace(/\[mempelai-pria\]/g, d.p1_nama || '...')
+      .replace(/\[yang-mengundang\]/g, d.yang_mengundang || '...');
+    return {no: i+1, nama: t.nama, slug, link, teks, no_hp: t.no_hp||''};
+  });
+
+  renderHasilTable();
+  $('hasilCard').style.display = '';
+  showToast(`${generatedRows.length} link berhasil digenerate!`, 'success');
+}
+
+function renderHasilTable() {
+  const tbody = $('hasilTableBody');
+  tbody.innerHTML = '';
+  generatedRows.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    const waBtn = row.no_hp ? `<button class="btn btn-wa btn-xs" onclick="kirimWA(${i})">💬 WA</button>` : '';
+    tr.innerHTML = `
+      <td>${row.no}</td>
+      <td>${esc(row.nama)}</td>
+      <td><code style="font-size:11px">${esc(row.slug)}</code></td>
+      <td><span class="link-cell">${esc(row.link)}</span></td>
+      <td><span style="font-size:11px;color:#555;white-space:pre-wrap;max-width:200px;display:block;overflow:hidden;max-height:60px">${esc(row.teks.slice(0,80))}${row.teks.length>80?'…':''}</span></td>
+      <td><div class="actions">
+        <button class="btn btn-outline btn-xs" onclick="copyText('${encodeURIComponent(row.link)}',this,'📋 Link')">📋 Link</button>
+        <button class="btn btn-outline btn-xs" onclick="copyText('${encodeURIComponent(row.teks)}',this,'📋 Teks')">📋 Teks</button>
+        ${waBtn}
+      </div></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+function copyText(encoded, btn, label) {
+  const text = decodeURIComponent(encoded);
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✅';
+    setTimeout(() => btn.textContent = orig, 1200);
+  }).catch(() => fallbackCopy(text));
+}
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+  document.body.removeChild(ta);
+}
+function salinSemua() {
+  const all = generatedRows.map(r => `${r.nama}\n${r.link}\n${r.teks}`).join('\n\n---\n\n');
+  navigator.clipboard.writeText(all).then(() => showToast('Semua teks disalin!', 'success')).catch(() => { fallbackCopy(all); showToast('Semua teks disalin!', 'success'); });
+}
+function downloadCSV() {
+  if (!generatedRows.length) return;
+  const rows = [['No','Nama Tamu','Kode/Slug','Link Undangan','No HP']];
+  generatedRows.forEach(r => rows.push([r.no, r.nama, r.slug, r.link, r.no_hp]));
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='tamu-undangan.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+function kirimWA(i) {
+  const row = generatedRows[i];
+  if (!row.no_hp) return;
+  const hp = row.no_hp.replace(/[^0-9]/g,'').replace(/^0/,'62');
+  const teks = encodeURIComponent(row.teks);
+  window.open(`https://wa.me/${hp}?text=${teks}`, '_blank');
+}
+
+// ======================== EXPORT / IMPORT ========================
+function exportConfig() {
+  saveAll();
+  const d = getData();
+  const blob = new Blob([JSON.stringify(d,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='wedding-config.json'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Config berhasil diekspor!', 'success');
+}
+function importConfig(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      setData(d);
+      galleryImages = d.gallery || [];
+      timelineItems = d.timeline || getDefaultTimeline();
+      bankItems = d.banks || [];
+      walletItems = d.wallets || [];
+      importedTamu = d.importedTamu || [];
+      loadFromLocalStorage();
+      showToast('Config berhasil diimpor!', 'success');
+      updateSummary();
+    } catch(err) {
+      showToast('Gagal import: file tidak valid', 'error');
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ======================== TOAST ========================
+function showToast(msg, type='success') {
+  const wrap = $('toastContainer');
+  const div = document.createElement('div');
+  div.className = `toast ${type}`;
+  div.textContent = msg;
+  wrap.appendChild(div);
+  setTimeout(() => {
+    div.classList.add('out');
+    div.addEventListener('animationend', () => div.remove());
+  }, 3000);
+}
+
+// ======================== UTILS ========================
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ======================== START ========================
+init();
+</script>
+</body>
+</html>
