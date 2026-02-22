@@ -370,6 +370,11 @@ input[type="color"] { width: 42px; height: 34px; border: 1.5px solid #e5e7eb; bo
 <div class="toast-container" id="toastContainer"></div>
 <script>
 const STORAGE_KEY='wedding_config';
+const DEFAULT_BASE_URL='https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/';
+const AUTOSAVE_DEBOUNCE_MS=800;
+const MAX_PHOTO_SIZE_BYTES=6*1024*1024;
+const MAX_GALLERY_PHOTOS=15;
+const BYTES_PER_MB=1024*1024;
 let config={},saveTimer=null,cdInterval=null;
 let galeriPhotos=[],loveStoryItems=[],bankItems=[],ewalletItems=[];
 window._photoData={};window._audioBase64='';window._audioFilename='';window._audioFilesize='';
@@ -401,7 +406,7 @@ function showSection(id){
   if(window.innerWidth<=768){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('show');}
 }
 function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarOverlay').classList.toggle('show');}
-function debounceSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveConfig(false),800);}
+function debounceSave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveConfig(false),AUTOSAVE_DEBOUNCE_MS);}
 function saveConfig(toast=true){
   config=readAllFields();
   try{localStorage.setItem(STORAGE_KEY,JSON.stringify(config));}
@@ -472,7 +477,7 @@ function fillAllFields(c){
   if(k.qris){window._photoData['qrisImage']=k.qris;showPrev('qrisPreview',k.qris);}
   sv('kadoAlamat',k.alamatFisik);renderBankList();renderEwalletList();
   const st=c.streaming||{};sv('streamLink',st.link);sv('zoomId',st.zoomId);sv('zoomPass',st.zoomPass);sv('streamJadwal',st.jadwal);
-  const lk=c.link||{};sv('baseUrl',lk.baseUrl||'https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/');setRadio('paramFormat',lk.paramFormat||'?to=');updateLinkPreview();
+  const lk=c.link||{};sv('baseUrl',lk.baseUrl||DEFAULT_BASE_URL);setRadio('paramFormat',lk.paramFormat||'?to=');updateLinkPreview();
 }
 function loadConfig(){
   const raw=localStorage.getItem(STORAGE_KEY);
@@ -489,12 +494,12 @@ function esc(s){if(!s)return'';return String(s).replace(/&/g,'&amp;').replace(/<
 function showPrev(id,src){const el=document.getElementById(id);if(el&&src){el.src=src;el.classList.remove('photo-hidden');}}
 function handlePhotoUpload(input,key,prevId){
   const f=input.files[0];if(!f)return;
-  if(f.size>6*1024*1024){showToast('&#9888;&#65039; Foto terlalu besar! Max 6MB','warn');return;}
+  if(f.size>MAX_PHOTO_SIZE_BYTES){showToast('&#9888;&#65039; Foto terlalu besar! Max 6MB','warn');return;}
   const r=new FileReader();r.onload=e=>{window._photoData[key]=e.target.result;showPrev(prevId,e.target.result);debounceSave();};r.readAsDataURL(f);
 }
 function handleGaleriUpload(input){
-  const files=Array.from(input.files),remaining=15-galeriPhotos.length;
-  if(remaining<=0){showToast('&#9888;&#65039; Maksimal 15 foto!','warn');input.value='';return;}
+  const files=Array.from(input.files),remaining=MAX_GALLERY_PHOTOS-galeriPhotos.length;
+  if(remaining<=0){showToast('&#9888;&#65039; Maksimal '+MAX_GALLERY_PHOTOS+' foto!','warn');input.value='';return;}
   const toAdd=files.slice(0,remaining);let done=0;
   if(!toAdd.length){input.value='';return;}
   toAdd.forEach(f=>{const r=new FileReader();r.onload=e=>{galeriPhotos.push(e.target.result);done++;if(done===toAdd.length){renderGaleri();debounceSave();}};r.readAsDataURL(f);});
@@ -503,7 +508,7 @@ function handleGaleriUpload(input){
 }
 function removeGaleriPhoto(i){galeriPhotos.splice(i,1);renderGaleri();debounceSave();}
 function renderGaleri(){
-  document.getElementById('galeriCounter').textContent=galeriPhotos.length+' foto diupload (max 15)';
+  document.getElementById('galeriCounter').textContent=galeriPhotos.length+' foto diupload (max '+MAX_GALLERY_PHOTOS+')';
   document.getElementById('galeriGrid').innerHTML=galeriPhotos.map((src,i)=>'<div class="galeri-item"><img src="'+src+'" alt="G'+i+'"><button class="galeri-remove" onclick="removeGaleriPhoto('+i+')" title="Hapus">&#10005;</button></div>').join('');
 }
 function extractYtId(url){if(!url)return null;const m=url.match(/(?:youtube\.com\/(?:watch\?.*v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);return m?m[1]:null;}
@@ -513,7 +518,7 @@ function handleVideoUpload(input){const f=input.files[0];if(f){showToast('&#1279
 function handleAudioTypeChange(){const t=radio('audioType');document.getElementById('audioUploadGroup').style.display=t==='upload'?'block':'none';document.getElementById('audioUrlGroup').style.display=t==='url'?'block':'none';updateAudioPlayBtn();}
 function handleAudioUpload(input){
   const f=input.files[0];if(!f)return;
-  window._audioFilename=f.name;window._audioFilesize=(f.size/1024/1024).toFixed(2)+' MB';
+  window._audioFilename=f.name;window._audioFilesize=(f.size/BYTES_PER_MB).toFixed(2)+' MB';
   const r=new FileReader();r.onload=e=>{window._audioBase64=e.target.result;document.getElementById('audioPlayer').src=e.target.result;updateAudioInfo();updateAudioPlayBtn();debounceSave();};r.readAsDataURL(f);
 }
 function updateAudioInfo(){const info=document.getElementById('audioInfo');if(window._audioFilename){const over=parseFloat(window._audioFilesize)>5;info.innerHTML='&#128196; '+esc(window._audioFilename)+' ('+esc(window._audioFilesize)+')' +(over?' <span style="color:var(--yellow)">&#9888;&#65039; Melebihi rekomendasi 5MB</span>':'');}else{info.innerHTML='';}}
@@ -560,8 +565,8 @@ function updateCountdownPreview(){
 }
 function handleColorThemeChange(){document.getElementById('customColorGroup').style.display=v('colorTheme')==='Custom'?'block':'none';}
 function syncColorFromHex(){const hex=v('customColorHex');if(/^#[0-9a-fA-F]{6}$/.test(hex))document.getElementById('customColor').value=hex;debounceSave();}
-function updateLinkPreview(){const base=v('baseUrl')||'https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/';const param=radio('paramFormat')||'?to=';const el=document.getElementById('linkPreview');if(el)el.textContent=base+param+'{nama_tamu}';}
-function testLink(){const base=v('baseUrl')||'https://8z5i74xc3apdu7446.github.io/desa-penari-undangan/';const param=radio('paramFormat')||'?to=';window.open(base+param+'preview','_blank');}
+function updateLinkPreview(){const base=v('baseUrl')||DEFAULT_BASE_URL;const param=radio('paramFormat')||'?to=';const el=document.getElementById('linkPreview');if(el)el.textContent=base+param+'{nama_tamu}';}
+function testLink(){const base=v('baseUrl')||DEFAULT_BASE_URL;const param=radio('paramFormat')||'?to=';window.open(base+param+'preview','_blank');}
 function isFilled(id){
   switch(id){
     case 1:return!!(v('groomName')||v('brideName'));
