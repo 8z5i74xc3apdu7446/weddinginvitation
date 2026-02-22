@@ -1002,7 +1002,7 @@ function renderGallery() {
   galleryImages.forEach((img, i) => {
     const div = document.createElement('div');
     div.className = 'gallery-item';
-    div.innerHTML = `<img src="${img.b64}" alt="${img.name}"><button class="del-photo" title="Hapus" onclick="deleteGalleryPhoto(${i})">×</button>`;
+    div.innerHTML = `<img src="${img.b64}" alt="${esc(img.name)}"><button class="del-photo" title="Hapus" onclick="deleteGalleryPhoto(${i})">×</button>`;
     grid.appendChild(div);
   });
 }
@@ -1265,7 +1265,6 @@ function renderHasilTable() {
   tbody.innerHTML = '';
   generatedRows.forEach((row, i) => {
     const tr = document.createElement('tr');
-    const waBtn = row.no_hp ? `<button class="btn btn-wa btn-xs" onclick="kirimWA(${i})">💬 WA</button>` : '';
     tr.innerHTML = `
       <td>${row.no}</td>
       <td>${esc(row.nama)}</td>
@@ -1273,22 +1272,31 @@ function renderHasilTable() {
       <td><span class="link-cell">${esc(row.link)}</span></td>
       <td><span style="font-size:11px;color:#555;white-space:pre-wrap;max-width:200px;display:block;overflow:hidden;max-height:60px">${esc(row.teks.slice(0,80))}${row.teks.length>80?'…':''}</span></td>
       <td><div class="actions">
-        <button class="btn btn-outline btn-xs" onclick="copyText('${encodeURIComponent(row.link)}',this,'📋 Link')">📋 Link</button>
-        <button class="btn btn-outline btn-xs" onclick="copyText('${encodeURIComponent(row.teks)}',this,'📋 Teks')">📋 Teks</button>
-        ${waBtn}
+        <button class="btn btn-outline btn-xs" data-copy-link="${i}">📋 Link</button>
+        <button class="btn btn-outline btn-xs" data-copy-teks="${i}">📋 Teks</button>
+        ${row.no_hp ? `<button class="btn btn-wa btn-xs" data-kirim-wa="${i}">💬 WA</button>` : ''}
       </div></td>
     `;
     tbody.appendChild(tr);
   });
 }
-function copyText(encoded, btn, label) {
-  const text = decodeURIComponent(encoded);
+function copyText(text, btn) {
   navigator.clipboard.writeText(text).then(() => {
     const orig = btn.textContent;
     btn.textContent = '✅';
     setTimeout(() => btn.textContent = orig, 1200);
-  }).catch(() => fallbackCopy(text));
+  }).catch(() => { fallbackCopy(text); const orig = btn.textContent; btn.textContent = '✅'; setTimeout(() => btn.textContent = orig, 1200); });
 }
+
+// Delegated click for hasil table buttons
+document.addEventListener('click', e => {
+  const btnLink = e.target.closest('[data-copy-link]');
+  if (btnLink) { const i = +btnLink.dataset.copyLink; copyText(generatedRows[i].link, btnLink); return; }
+  const btnTeks = e.target.closest('[data-copy-teks]');
+  if (btnTeks) { const i = +btnTeks.dataset.copyTeks; copyText(generatedRows[i].teks, btnTeks); return; }
+  const btnWa = e.target.closest('[data-kirim-wa]');
+  if (btnWa) { kirimWA(+btnWa.dataset.kirimWa); return; }
+});
 function fallbackCopy(text) {
   const ta = document.createElement('textarea');
   ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
